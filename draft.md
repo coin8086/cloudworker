@@ -34,9 +34,11 @@ Problems:
    The answer could be:
 
      * Some IPC call like WCF, gRPC or CGI?
-     * Or make the above code in COM and make wrappers in different languages with callbacks just like Symphony does?
+     * ~~Or make the above code in COM and make wrappers in different languages with callbacks just like Symphony does?~~
      * Or ...?
+
+   We could do some dynamic loading of an assembly, which can support both in-process integration with user code just like linking a library, and out-of-process integration with user code in gRPC, WCF, or CGI, etc.
 
 2. When to end? Is it busy polling the queue endlessly?
 
-   The answer could be a kind of "ending message", which is also a kind of "broadcast" message. However, note that the message order is not ensured and a message may be enqueued more than once.
+   The answer could be a kind of "ending message", which is also a kind of "broadcast" message. The ending message should be the last message sent to the queue. However, note that in Storage Queue the message order is not ensured and a message may be enqueued more than once.
