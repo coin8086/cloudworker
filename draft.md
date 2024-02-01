@@ -3,7 +3,7 @@ Basically, user needs to provide an implementation for
 ```cs
 interface IService
 {
-    async Task<JsonObject> InvokeAsync(JsonObject input)
+    async Task<string> InvokeAsync(string json)
 }
 ```
 
@@ -69,7 +69,7 @@ var cluster = await SimpleSoa.Cluster.CreateAsync(job, 100);
 for (var i = 1; i < 10000; i++) {
     //Alternatively, you can collect all tasks into an array and wait for them all at once
     //to get much more throughput.
-    await job.AddTaskAsync(...);
+    await job.AddTaskAsync(taskInJsonString);
 }
 
 //Completing a job means marking the end of a request queue, so that service hosts won't try to get
