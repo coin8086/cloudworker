@@ -107,3 +107,5 @@ Questions:
 1. Do we save job into a storage table? And what about saving tasks? Then can we accept the cost of saving in performance?
 
 2. How about logging, diagnosis and visibility? What do we provide for user for these?
+
+3. Last but not least, do we need to support multiple programming languages? And how to?
