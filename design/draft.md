@@ -1,4 +1,10 @@
-Basically, user needs to provide an implementation for
+# Cloud Native SOA
+
+## Service
+
+### Used Defined Service (UDS)
+
+A UDS is defined as an implementation of the following interface:
 
 ```cs
 interface IService
@@ -7,42 +13,41 @@ interface IService
 }
 ```
 
-In the Service Host:
+### Service Host
 
-```cs
-//Load user assembly for an implementation of IService
-//And create an instance of IService, say service
+A service host is the one that hosts a UDS.
 
-while (true)
-{
-    //1. Take a message from request queue
+It works like this:
 
-    //2. Start a timer to renew the lease of the message in another thread, periodically
+```mermaid
+flowchart TD
+    init[Create an instance of a UDS]
 
-    //3. Call InvokeAsync on service and wait for result
+    take[Take a message from request queue]
 
-    //4. Put the result in response queue
+    check{Is it an ending message?}
 
-    //5. Delete the request message and stop the lease timer
-}
+    beforeCall[Start a timer to renew the lease
+    of the message in another thread]
+
+    callit[Call InvokeAsync on the UDS instance]
+
+    put[Put the result in response queue]
+
+    afterCall[Delete the request message
+    and stop the lease timer]
+
+    init --> take
+    take --> check
+    check --> |Yes| Quit
+    check --> |No| beforeCall
+    beforeCall --> callit
+    callit --> put
+    put --> afterCall
+    afterCall --> take
 ```
 
-Problems:
-
-1. That's only for C#. What about other languages?
-
-   The answer could be:
-
-     * Some IPC call like WCF, gRPC or CGI?
-     * ~~Or make the above code in COM and make wrappers in different languages with callbacks just like Symphony does?~~
-     * Or ...?
-
-   We could do dynamic loading of an assembly, which can support both in-process integration with user code, and out-of-process integration in gRPC, WCF, or CGI, etc.
-
-2. When to end? Is it busy polling the queue endlessly?
-
-   The answer could be a kind of "ending message", which is also a kind of "broadcast" message. The ending message should be the last message sent to the queue. However, note that in Storage Queue the message order is not ensured and that a message may be enqueued more than once.
-
+## Client
 
 In the client side:
 
