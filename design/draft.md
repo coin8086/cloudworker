@@ -7,9 +7,9 @@
 A UDS is defined as an implementation of the following interface:
 
 ```cs
-interface IService
+interface IUserService
 {
-    async Task<string> InvokeAsync(string json)
+    Task<string> InvokeAsync(string json)
 }
 ```
 

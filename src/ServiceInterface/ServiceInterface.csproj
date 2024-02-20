@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Cloud.Soa</RootNamespace>
+    <AssemblyName>Cloud.Soa.ServiceInterface</AssemblyName>
+  </PropertyGroup>
+
+</Project>

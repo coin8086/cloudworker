@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Cloud.Soa</RootNamespace>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <AssemblyName>Cloud.Soa.EchoService</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceInterface\ServiceInterface.csproj">
+      <!-- NOTE: Do not miss the following two settings! -->
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>
