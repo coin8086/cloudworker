@@ -71,8 +71,7 @@ static class ServiceCollectionUserServiceExtensions
     {
         services.AddTransient<IUserServiceLoader, UserServiceLoader>();
         services.Configure<ServiceLoaderOptions>(configuration.GetSection("UserService"));
-        //TODO: Maybe AddTransient is better for IUserService.
-        services.AddSingleton<IUserService>(provider => provider.GetService<IUserServiceLoader>().CreateServiceInstance());
+        services.AddTransient<IUserService>(provider => provider.GetService<IUserServiceLoader>().CreateServiceInstance());
         return services;
     }
 }
