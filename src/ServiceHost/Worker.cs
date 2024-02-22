@@ -40,7 +40,7 @@ class Worker : BackgroundService
                 var request = await _requests.ReceiveAsync(cancel: stoppingToken, lease: TimeSpan.FromSeconds(48));
                 if (request.IsEnding)
                 {
-                    _logger.LogInformation("Received ending message at {time}. Quit.", DateTimeOffset.Now);
+                    _logger.LogInformation("Ending request is received. Quit.");
                     await request.AckEndingAsync();
                     break;
                 }
@@ -57,13 +57,18 @@ class Worker : BackgroundService
                             _logger.LogWarning("Failed renewing lease for request {id}. Error: {error}", request.Id, ex);
                         }
                     }, null, 15 * 1000, 15 * 1000);
-                    //TODO: Support cancel for InvokeAsync
-                    var result = await _userService.InvokeAsync(request.Message);
+
+                    var result = await _userService.InvokeAsync(request.Message, stoppingToken);
                     await _responses.SendAsync(result);
 
                     //Until result is succesfully sent, then request can be removed from queue.
                     await request.RemoveAsync();
                 }
+            }
+
+            if (stoppingToken.IsCancellationRequested)
+            {
+                _logger.LogInformation("Cancellation is requested. Quit.");
             }
         }
         catch (Exception ex)
