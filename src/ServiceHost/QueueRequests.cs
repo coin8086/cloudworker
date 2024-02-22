@@ -1,5 +1,7 @@
 ﻿using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -65,5 +67,15 @@ class QueueRequests : IQueueRequests
     {
         var message = await _client.ReceiveMessageAsync(lease, cancel);
         return new QueueRequest(_client, message);
+    }
+}
+
+static class ServiceCollectionQueueRequestsExtensions
+{
+    public static IServiceCollection AddQueueRequests(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddTransient<IQueueRequests, QueueRequests>();
+        services.Configure<QueueRequestsOptions>(configuration.GetSection("Requests"));
+        return services;
     }
 }

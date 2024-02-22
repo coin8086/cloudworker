@@ -1,4 +1,6 @@
 ﻿using Azure.Storage.Queues;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
@@ -28,5 +30,15 @@ class QueueResponses : IQueueResponses
     public Task SendAsync(string response)
     {
         return _client.SendMessageAsync(response);
+    }
+}
+
+static class ServiceCollectionQueueResponsesExtensions
+{
+    public static IServiceCollection AddQueueResponses(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddTransient<IQueueResponses, QueueResponses>();
+        services.Configure<QueueResponsesOptions>(configuration.GetSection("Responses"));
+        return services;
     }
 }
