@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,9 +46,11 @@ class QueueRequest : IQueueRequest
 
 class QueueRequestsOptions
 {
-    public string QueueName { get; set; }
+    [Required]
+    public string? QueueName { get; set; }
 
-    public string ConnectionString { get; set; }
+    [Required]
+    public string? ConnectionString { get; set; }
 }
 
 class QueueRequests : IQueueRequests
@@ -75,7 +78,9 @@ static class ServiceCollectionQueueRequestsExtensions
     public static IServiceCollection AddQueueRequests(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddTransient<IQueueRequests, QueueRequests>();
-        services.Configure<QueueRequestsOptions>(configuration.GetSection("Requests"));
+        services.AddOptionsWithValidateOnStart<QueueRequestsOptions>()
+            .Bind(configuration.GetSection("Requests"))
+            .ValidateDataAnnotations();
         return services;
     }
 }

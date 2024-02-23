@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Reflection;
 
@@ -15,7 +16,8 @@ interface IUserServiceLoader
 
 class ServiceLoaderOptions
 {
-    public required string AssemblyPath { get; set; } //TODO: more on required
+    [Required]
+    public string? AssemblyPath { get; set; }
 }
 
 class UserServiceLoader : IUserServiceLoader
@@ -70,7 +72,11 @@ static class ServiceCollectionUserServiceExtensions
     public static IServiceCollection AddUserService(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddTransient<IUserServiceLoader, UserServiceLoader>();
-        services.Configure<ServiceLoaderOptions>(configuration.GetSection("UserService"));
+
+        services.AddOptionsWithValidateOnStart<ServiceLoaderOptions>()
+            .Bind(configuration.GetSection("UserService"))
+            .ValidateDataAnnotations();
+
         services.AddTransient<IUserService>(provider => provider.GetService<IUserServiceLoader>().CreateServiceInstance());
         return services;
     }

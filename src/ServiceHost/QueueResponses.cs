@@ -3,15 +3,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace Cloud.Soa;
 
 class QueueResponsesOptions
 {
-    public string QueueName { get; set; }
+    [Required]
+    public string? QueueName { get; set; }
 
-    public string ConnectionString { get; set; }
+    [Required]
+    public string? ConnectionString { get; set; }
 }
 
 class QueueResponses : IQueueResponses
@@ -38,7 +41,9 @@ static class ServiceCollectionQueueResponsesExtensions
     public static IServiceCollection AddQueueResponses(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddTransient<IQueueResponses, QueueResponses>();
-        services.Configure<QueueResponsesOptions>(configuration.GetSection("Responses"));
+        services.AddOptionsWithValidateOnStart<QueueResponsesOptions>()
+            .Bind(configuration.GetSection("Responses"))
+            .ValidateDataAnnotations();
         return services;
     }
 }
