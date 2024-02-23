@@ -4,12 +4,12 @@
 
 ### Used Defined Service (UDS)
 
-A UDS is defined as an implementation of the following interface:
+A UDS is an implementation of the following interface:
 
 ```cs
 interface IUserService
 {
-    Task<string> InvokeAsync(string json)
+    Task<string> InvokeAsync(string json, CancellationToken token)
 }
 ```
 
