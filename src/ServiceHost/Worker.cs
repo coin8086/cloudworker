@@ -19,15 +19,17 @@ class Worker : BackgroundService
     private readonly IUserService _userService;
     private readonly IQueueRequests _requests;
     private readonly IQueueResponses _responses;
+    private readonly IHostApplicationLifetime _application;
     private readonly WorkerOptions _workerOptions;
 
     public Worker(ILogger<Worker> logger, IUserService userService, IQueueRequests requests, IQueueResponses responses,
-        IOptions<WorkerOptions> options)
+        IHostApplicationLifetime application, IOptions<WorkerOptions> options)
     {
         _logger = logger;
         _userService = userService;
         _requests = requests;
         _responses = responses;
+        _application = application;
         _workerOptions = options.Value;
     }
 
@@ -80,6 +82,7 @@ class Worker : BackgroundService
             {
                 _logger.LogInformation("Cancellation is requested. Quit.");
             }
+            _application.StopApplication();
         }
         catch (Exception ex)
         {
