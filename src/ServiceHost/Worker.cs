@@ -19,17 +19,15 @@ class Worker : BackgroundService
     private readonly IUserService _userService;
     private readonly IQueueRequests _requests;
     private readonly IQueueResponses _responses;
-    private readonly IHostApplicationLifetime _application;
     private readonly WorkerOptions _workerOptions;
 
     public Worker(ILogger<Worker> logger, IUserService userService, IQueueRequests requests, IQueueResponses responses,
-        IHostApplicationLifetime application, IOptions<WorkerOptions> options)
+        IOptions<WorkerOptions> options)
     {
         _logger = logger;
         _userService = userService;
         _requests = requests;
         _responses = responses;
-        _application = application;
         _workerOptions = options.Value;
     }
 
@@ -50,39 +48,30 @@ class Worker : BackgroundService
                     continue;
                 }
 
-                if (request.IsEnding)
-                {
-                    _logger.LogInformation("Ending request is received. Quit.");
-                    await request.AckEndingAsync();
-                    break;
-                }
-                else
-                {
-                    using var timer = new Timer(_ => {
-                        try
-                        {
-                            request.RenewLeaseAsync(TimeSpan.FromSeconds(48));
-                        }
-                        catch (Exception ex)
-                        {
-                            //TODO: Retry when failed?
-                            _logger.LogWarning("Failed renewing lease for request {id}. Error: {error}", request.Id, ex);
-                        }
-                    }, null, 15 * 1000, 15 * 1000);
+                using var timer = new Timer(_ => {
+                    try
+                    {
+                        request.RenewLeaseAsync(TimeSpan.FromSeconds(48));
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO: Retry when failed?
+                        _logger.LogWarning("Failed renewing lease for request {id}. Error: {error}", request.Id, ex);
+                    }
+                }, null, 15 * 1000, 15 * 1000);
 
-                    var result = await _userService.InvokeAsync(request.Message, stoppingToken);
-                    await _responses.SendAsync(result);
+                //TODO: Shall we catch exception from a user service?
+                var result = await _userService.InvokeAsync(request.Message, stoppingToken);
+                await _responses.SendAsync(result);
 
-                    //Until result is succesfully sent, then request can be removed from queue.
-                    await request.RemoveAsync();
-                }
+                //Until result is succesfully sent, then request can be removed from queue.
+                await request.RemoveAsync();
             }
 
             if (stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("Cancellation is requested. Quit.");
             }
-            _application.StopApplication();
         }
         catch (Exception ex)
         {

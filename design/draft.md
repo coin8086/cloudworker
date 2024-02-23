@@ -25,22 +25,18 @@ flowchart TD
 
     take[Take a message from request queue]
 
-    check{Is it an ending message?}
-
-    beforeCall[Start a timer to renew the lease
-    of the message in another thread]
+    beforeCall[Start a timer to renew
+        lease of the message]
 
     callit[Call InvokeAsync on the UDS instance]
 
-    put[Put the result in response queue]
+    put[Put result in response queue]
 
-    afterCall[Delete the request message
+    afterCall[Remove the request from the queue
     and stop the lease timer]
 
     init --> take
-    take --> check
-    check --> |Yes| Quit
-    check --> |No| beforeCall
+    take --> beforeCall
     beforeCall --> callit
     callit --> put
     put --> afterCall

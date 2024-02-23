@@ -26,13 +26,6 @@ class QueueRequest : IQueueRequest
 
     public string Message => _message.MessageText;
 
-    public bool IsEnding => _message.MessageText.Length == 0;
-
-    public Task AckEndingAsync()
-    {
-        return RenewLeaseAsync(default(TimeSpan));
-    }
-
     public Task RenewLeaseAsync(TimeSpan lease)
     {
         return _client.UpdateMessageAsync(_message.MessageId, _message.PopReceipt, visibilityTimeout: lease);

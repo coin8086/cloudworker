@@ -10,10 +10,6 @@ interface IQueueRequest
 
     string Message { get; }
 
-    bool IsEnding { get; }
-
-    Task AckEndingAsync();
-
     Task RenewLeaseAsync(TimeSpan lease);
 
     Task RemoveAsync();
