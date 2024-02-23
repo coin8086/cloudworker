@@ -69,6 +69,10 @@ class QueueRequests : IQueueRequests
     public async Task<IQueueRequest> ReceiveAsync(TimeSpan lease = default, CancellationToken cancel = default)
     {
         var message = await _client.ReceiveMessageAsync(lease, cancel);
+        if (message.Value == null)
+        {
+            throw new NoQueueRequest();
+        }
         return new QueueRequest(_client, message);
     }
 }

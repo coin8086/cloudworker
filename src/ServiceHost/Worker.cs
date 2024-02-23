@@ -37,7 +37,17 @@ class Worker : BackgroundService
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                var request = await _requests.ReceiveAsync(cancel: stoppingToken, lease: TimeSpan.FromSeconds(48));
+                IQueueRequest? request = null;
+                try
+                {
+                    request = await _requests.ReceiveAsync(cancel: stoppingToken, lease: TimeSpan.FromSeconds(48));
+                }
+                catch (NoQueueRequest)
+                {
+                    await Task.Delay(1000);
+                    continue;
+                }
+
                 if (request.IsEnding)
                 {
                     _logger.LogInformation("Ending request is received. Quit.");
@@ -73,7 +83,7 @@ class Worker : BackgroundService
         }
         catch (Exception ex)
         {
-            _logger.LogError("Error in executing: {error}", ex);
+            _logger.LogError("Error in ExecuteAsync: {error}", ex);
             throw;
         }
     }
