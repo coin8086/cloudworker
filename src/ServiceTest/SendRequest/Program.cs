@@ -28,7 +28,7 @@ A single ""-"" means the message is read from stdin.
         string? queueName = null;
         try
         {
-            for (int i = 0; i < args.Length; i++)
+            for (int i = 1; i < args.Length; i++)
             {
                 if ("-c".Equals(args[i], StringComparison.Ordinal))
                 {

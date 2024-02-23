@@ -22,7 +22,7 @@ ReceiveResponse -q {queue} [-v]
         bool verbose = false;
         try
         {
-            for (int i = 0; i < args.Length; i++)
+            for (int i = 1; i < args.Length; i++)
             {
                 if ("-q".Equals(args[i], StringComparison.Ordinal))
                 {
@@ -32,7 +32,7 @@ ReceiveResponse -q {queue} [-v]
                         throw new ArgumentException($"Parameter '-q <name>' must not be empty!");
                     }
                 }
-                if ("-v".Equals(args[i], StringComparison.Ordinal))
+                else if ("-v".Equals(args[i], StringComparison.Ordinal))
                 {
                     verbose = true;
                 }
@@ -85,15 +85,35 @@ ReceiveResponse -q {queue} [-v]
             cts.Cancel();
         };
 
+        int count = 0;
         while (!token.IsCancellationRequested)
         {
             QueueMessage message = client.ReceiveMessage(cancellationToken: token);
-            Console.WriteLine($"Received a message of length {message.MessageText} at {DateTimeOffset.Now}.");
+            if (message == null)
+            {
+                if (verbose)
+                {
+                    Console.WriteLine("No message. Wait.");
+                }
+                try
+                {
+                    Task.Delay(1000).Wait(token);
+                }
+                catch (OperationCanceledException) {}
+                continue;
+            }
+
+            ++count;
+            Console.WriteLine($"Received a message of length {message.MessageText.Length} at {DateTimeOffset.Now}.");
             if (verbose)
             {
                 Console.WriteLine(message.MessageText);
             }
+
+            Console.WriteLine($"Delete message.");
+            client.DeleteMessage(message.MessageId, message.PopReceipt);
         }
+        Console.WriteLine($"Received {count} messages totally.");
         return 0;
     }
 }
