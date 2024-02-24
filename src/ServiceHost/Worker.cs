@@ -40,18 +40,18 @@ class Worker : BackgroundService
                 IQueueRequest? request = null;
                 try
                 {
-                    request = await _requests.ReceiveAsync(cancel: stoppingToken, lease: TimeSpan.FromSeconds(48));
+                    request = await _requests.WaitAsync(cancel: stoppingToken, lease: TimeSpan.FromSeconds(48));
                 }
-                catch (NoQueueRequest)
+                catch (OperationCanceledException)
                 {
-                    await Task.Delay(1000);
-                    continue;
+                    _logger.LogInformation("Waiting for request is cancelled.");
+                    break;
                 }
 
-                using var timer = new Timer(_ => {
+                using var timer = new Timer(async _ => {
                     try
                     {
-                        request.RenewLeaseAsync(TimeSpan.FromSeconds(48));
+                        await request.RenewLeaseAsync(TimeSpan.FromSeconds(48));
                     }
                     catch (Exception ex)
                     {
@@ -60,8 +60,21 @@ class Worker : BackgroundService
                     }
                 }, null, 15 * 1000, 15 * 1000);
 
-                //TODO: Shall we catch exception from a user service?
-                var result = await _userService.InvokeAsync(request.Message, stoppingToken);
+
+                string? result = null;
+                try
+                {
+                    //TODO: Catch exceptions other than OperationCanceledException?
+                    result = await _userService.InvokeAsync(request.Message, stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInformation("User service call is cancelled. Return current request back to the queue.");
+                    timer.Change(Timeout.Infinite, Timeout.Infinite);
+                    await request.RenewLeaseAsync(TimeSpan.Zero);
+                    break;
+                }
+
                 await _responses.SendAsync(result);
 
                 //Until result is succesfully sent, then request can be removed from queue.

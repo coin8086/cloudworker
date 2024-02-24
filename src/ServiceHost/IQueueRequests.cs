@@ -17,9 +17,10 @@ interface IQueueRequest
 
 interface IQueueRequests
 {
+    class NoRequest : ApplicationException {}
+
     Task<IQueueRequest> ReceiveAsync(TimeSpan lease = default, CancellationToken cancel = default);
+
+    Task<IQueueRequest> WaitAsync(TimeSpan lease = default, CancellationToken cancel = default);
 }
 
-class NoQueueRequest : ApplicationException
-{
-}

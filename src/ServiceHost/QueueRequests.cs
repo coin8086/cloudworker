@@ -64,9 +64,25 @@ class QueueRequests : IQueueRequests
         var message = await _client.ReceiveMessageAsync(lease, cancel);
         if (message.Value == null)
         {
-            throw new NoQueueRequest();
+            throw new IQueueRequests.NoRequest();
         }
         return new QueueRequest(_client, message);
+    }
+
+    public async Task<IQueueRequest> WaitAsync(TimeSpan lease = default, CancellationToken cancel = default)
+    {
+        while (true)
+        {
+            try
+            {
+                return await ReceiveAsync(lease, cancel);
+            }
+            catch (IQueueRequests.NoRequest)
+            {
+                await Task.Delay(1000, cancel);
+                continue;
+            }
+        }
     }
 }
 
