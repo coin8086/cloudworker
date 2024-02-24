@@ -24,7 +24,7 @@ class QueueRequest : IQueueRequest
 
     public string Id => _message.MessageId;
 
-    public string Message => _message.MessageText;
+    public string Content => _message.MessageText;
 
     public Task RenewLeaseAsync(TimeSpan lease)
     {
@@ -64,7 +64,7 @@ class RequestQueue : IRequestQueue
         var message = await _client.ReceiveMessageAsync(lease, cancel);
         if (message.Value == null)
         {
-            throw new IRequestQueue.NoRequest();
+            throw new IRequestQueue.NoMessage();
         }
         return new QueueRequest(_client, message);
     }
@@ -77,7 +77,7 @@ class RequestQueue : IRequestQueue
             {
                 return await ReceiveAsync(lease, cancel);
             }
-            catch (IRequestQueue.NoRequest)
+            catch (IRequestQueue.NoMessage)
             {
                 await Task.Delay(1000, cancel);
                 continue;

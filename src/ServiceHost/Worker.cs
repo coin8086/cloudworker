@@ -65,7 +65,7 @@ class Worker : BackgroundService
                 try
                 {
                     //TODO: Catch exceptions other than OperationCanceledException?
-                    result = await _userService.InvokeAsync(request.Message, stoppingToken);
+                    result = await _userService.InvokeAsync(request.Content, stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {

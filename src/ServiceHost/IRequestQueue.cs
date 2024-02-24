@@ -8,7 +8,7 @@ interface IQueueRequest
 {
     string Id { get; }
 
-    string Message { get; }
+    string Content { get; }
 
     Task RenewLeaseAsync(TimeSpan lease);
 
@@ -17,7 +17,7 @@ interface IQueueRequest
 
 interface IRequestQueue
 {
-    class NoRequest : ApplicationException {}
+    class NoMessage : ApplicationException {}
 
     Task<IQueueRequest> ReceiveAsync(TimeSpan lease = default, CancellationToken cancel = default);
 
