@@ -37,7 +37,7 @@ class Worker : BackgroundService
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                IQueueRequest? request = null;
+                IMessage? request = null;
                 try
                 {
                     request = await _requests.WaitAsync(cancel: stoppingToken, lease: TimeSpan.FromSeconds(48));
