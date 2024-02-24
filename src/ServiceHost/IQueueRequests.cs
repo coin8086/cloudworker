@@ -12,7 +12,7 @@ interface IQueueRequest
 
     Task RenewLeaseAsync(TimeSpan lease);
 
-    Task RemoveAsync();
+    Task DeleteAsync();
 }
 
 interface IQueueRequests

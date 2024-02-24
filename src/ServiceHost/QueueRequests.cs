@@ -31,7 +31,7 @@ class QueueRequest : IQueueRequest
         return _client.UpdateMessageAsync(_message.MessageId, _message.PopReceipt, visibilityTimeout: lease);
     }
 
-    public Task RemoveAsync()
+    public Task DeleteAsync()
     {
         return _client.DeleteMessageAsync(_message.MessageId, _message.PopReceipt);
     }

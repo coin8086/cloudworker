@@ -65,7 +65,7 @@ class Worker : BackgroundService
                 await _responses.SendAsync(result);
 
                 //Until result is succesfully sent, then request can be removed from queue.
-                await request.RemoveAsync();
+                await request.DeleteAsync();
             }
 
             if (stoppingToken.IsCancellationRequested)
