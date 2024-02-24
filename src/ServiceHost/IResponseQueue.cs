@@ -2,7 +2,7 @@
 
 namespace Cloud.Soa;
 
-interface IQueueResponses
+interface IResponseQueue
 {
     Task SendAsync(string response);
 }

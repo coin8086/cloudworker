@@ -37,7 +37,7 @@ class QueueRequest : IQueueRequest
     }
 }
 
-class QueueRequestsOptions
+class RequestQueueOptions
 {
     [Required]
     public string? QueueName { get; set; }
@@ -46,13 +46,13 @@ class QueueRequestsOptions
     public string? ConnectionString { get; set; }
 }
 
-class QueueRequests : IQueueRequests
+class RequestQueue : IRequestQueue
 {
     private readonly ILogger _logger;
-    private readonly QueueRequestsOptions _options;
+    private readonly RequestQueueOptions _options;
     private QueueClient _client;
 
-    public QueueRequests(ILogger<QueueRequests> logger, IOptions<QueueRequestsOptions> options)
+    public RequestQueue(ILogger<RequestQueue> logger, IOptions<RequestQueueOptions> options)
     {
         _logger = logger;
         _options = options.Value;
@@ -64,7 +64,7 @@ class QueueRequests : IQueueRequests
         var message = await _client.ReceiveMessageAsync(lease, cancel);
         if (message.Value == null)
         {
-            throw new IQueueRequests.NoRequest();
+            throw new IRequestQueue.NoRequest();
         }
         return new QueueRequest(_client, message);
     }
@@ -77,7 +77,7 @@ class QueueRequests : IQueueRequests
             {
                 return await ReceiveAsync(lease, cancel);
             }
-            catch (IQueueRequests.NoRequest)
+            catch (IRequestQueue.NoRequest)
             {
                 await Task.Delay(1000, cancel);
                 continue;
@@ -86,12 +86,12 @@ class QueueRequests : IQueueRequests
     }
 }
 
-static class ServiceCollectionQueueRequestsExtensions
+static class ServiceCollectionRequestQueueExtensions
 {
-    public static IServiceCollection AddQueueRequests(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddRequestQueue(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddTransient<IQueueRequests, QueueRequests>();
-        services.AddOptionsWithValidateOnStart<QueueRequestsOptions>()
+        services.AddTransient<IRequestQueue, RequestQueue>();
+        services.AddOptionsWithValidateOnStart<RequestQueueOptions>()
             .Bind(configuration.GetSection("Requests"))
             .ValidateDataAnnotations();
         return services;

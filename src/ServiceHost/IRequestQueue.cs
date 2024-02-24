@@ -15,7 +15,7 @@ interface IQueueRequest
     Task DeleteAsync();
 }
 
-interface IQueueRequests
+interface IRequestQueue
 {
     class NoRequest : ApplicationException {}
 

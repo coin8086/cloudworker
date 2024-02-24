@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Cloud.Soa;
 
-class QueueResponsesOptions
+class ResponseQueueOptions
 {
     [Required]
     public string? QueueName { get; set; }
@@ -17,13 +17,13 @@ class QueueResponsesOptions
     public string? ConnectionString { get; set; }
 }
 
-class QueueResponses : IQueueResponses
+class ResponseQueue : IResponseQueue
 {
     private readonly ILogger _logger;
-    private readonly QueueResponsesOptions _options;
+    private readonly ResponseQueueOptions _options;
     private QueueClient _client;
 
-    public QueueResponses(ILogger<QueueResponses> logger, IOptions<QueueResponsesOptions> options)
+    public ResponseQueue(ILogger<ResponseQueue> logger, IOptions<ResponseQueueOptions> options)
     {
         _logger = logger;
         _options = options.Value;
@@ -36,12 +36,12 @@ class QueueResponses : IQueueResponses
     }
 }
 
-static class ServiceCollectionQueueResponsesExtensions
+static class ServiceCollectionResponseQueueExtensions
 {
-    public static IServiceCollection AddQueueResponses(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddResponseQueue(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddTransient<IQueueResponses, QueueResponses>();
-        services.AddOptionsWithValidateOnStart<QueueResponsesOptions>()
+        services.AddTransient<IResponseQueue, ResponseQueue>();
+        services.AddOptionsWithValidateOnStart<ResponseQueueOptions>()
             .Bind(configuration.GetSection("Responses"))
             .ValidateDataAnnotations();
         return services;

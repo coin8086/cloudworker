@@ -9,8 +9,8 @@ public class Program
         var builder = Host.CreateApplicationBuilder(args);
         var config = builder.Configuration;
         builder.Services.AddUserService(config);
-        builder.Services.AddQueueRequests(config);
-        builder.Services.AddQueueResponses(config);
+        builder.Services.AddRequestQueue(config);
+        builder.Services.AddResponseQueue(config);
         builder.Services.AddWorkerService(config);
         var host = builder.Build();
         host.Run();
