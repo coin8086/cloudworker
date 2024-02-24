@@ -26,13 +26,13 @@ flowchart TD
     take[Take a message from request queue]
 
     beforeCall[Start a timer to renew
-        lease of the message]
+        lease of the message periodically]
 
     callit[Call InvokeAsync on the UDS instance]
 
     put[Put result in response queue]
 
-    afterCall[Remove the request from the queue
+    afterCall[Delete the request from the queue
     and stop the lease timer]
 
     init --> take
@@ -45,81 +45,38 @@ flowchart TD
 
 ## Client
 
-In the client side:
+**Create a session**
+
+Queues and cluster are created externally to a session.
 
 ```cs
-var storageAccount = ...;
-
-//The primary goal of a config is to specify a servie assembly file: where to get it and where to put it on a service host. A config also specifies data volumes and where to mount them on a service host.
-var config = new SimpleSoa.SessionConfig(...);
-
-//A session consists of a pair of request and response queues, and file shares in a storage account.
-//Each session has a unique ID, and optionally other fields like created_at, started_at, completed_at, etc..
-var session = await SimpleSoa.Session.CreateAsync(storageAccount, config);
-
-//Then you can get the queue and volume info of a session. You need to provide them to service hosts for your BYO cluster. For a HOBO cluster, do it like the following.
-
-//Create a cluster for a session with 100 nodes. The method returns when cluster provisioning begins.
-var cluster = await SimpleSoa.Cluster.CreateAsync(session, 100);
-
-//You can query the cluster status by
-//await cluster.GetStatusAsync();
-
-//While the cluster is creating, you can submit requests to the session now!
-for (var i = 1; i < 10000; i++) {
-    //Alternatively, you can collect all tasks into an array and wait for them all at once
-    //to get much more throughput.
-    await session.SendRequestAsync(jsonString);
-}
-
-//Completing a session means marking the end of a request queue, so that service hosts won't try to get
-//more tasks from the queue. Service hosts will shutdown themselves in the end.
-//After completing you can not add task the the job any more. You must call CompleteAsync when no more
-//request, otherwise the cluser will keep busy polling the queue.
-await session.CompleteAsync();
-
-//A session's status can be created, [started,] and completed. Optionally it can include numbers of pending requests and responses, and time stamps like created_at, [started_at] and completed_at.
-
-//You can query session status by
-//await session.GetStatusAsync();
-
-//Get responses in a session
-while (true) {
-    //Optioanlly, we can get a batch of responses by GetResponsesAsync
-    var response = await session.GetResponseAsync();
-    if (!response) {
-        var status = await session.GetStatusAsync();
-        if (status.Completed) {
-            break;
-        }
-        else {
-            //The requests are being processed and no new response for now.
-            //So wait for some time.
-            Sleep(2000);
-        }
-    }
-    else {
-        //Process the response...
-    }
-}
-
-//For BYO cluster, you stop/reset it when session is completed.
-//For a HOBO cluster of containers, you must destroy it when session is completed.
-await cluster.DestroyAsync()
-
-//For a session, file shares remain when it's completed, so that you can check log files or output data in them.
+var requestQueue = await Queue.CreateAsync(...);
+var responseQueue = await Queue.CreateAsync(...);
+var cluster = await Cluster.CreateAsync(...);
+var session = await Session.CreateAsync(requestQueue, responseQueue);
 ```
 
-Questions:
+Question: do we really need a session, since the request and response queues are enough for sending requests and receiving responses?
 
-1. Do we save session into a storage table? And what about requests and response?
+**Send requests by the session**
 
-   That depends. And also note the performance penalty for saving these records.
+```cs
+var tasks = new Task[1000];
+for (var i = 1; i < 1000; i++) {
+    tasks[i] = session.sendRequestAsync(...);
+}
+await Task.WhenAll(tasks);
+```
 
-2. How about logging, diagnosis and visibility? What do we provide for user for those?
+**Get responses by the session**
 
-   User can write their own log in files on volume. And ...?
+```cs
+for (var i = 1; i < 1000; i++) {
+    var result = await session.WaitResponseAsync()
 
-3. Last but not least, do we need to support multiple programming languages? And how to?
+    //Process the result...
 
-   We may need things like gRPC for multi-languages. And for C#, we support it natively.
+    //Delete the result message finally
+    await result.DeleteAsync();
+}
+```
