@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>Cloud.Soa</RootNamespace>
     <AssemblyName>Cloud.Soa.ServiceHost</AssemblyName>
+    <UserSecretsId>a5ef2237-9d2e-46e0-b605-16d879b36299</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
