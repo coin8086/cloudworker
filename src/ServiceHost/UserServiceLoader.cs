@@ -35,7 +35,7 @@ class UserServiceLoader : IUserServiceLoader
     {
         try
         {
-            var assembly = LoadAssembly(_options.AssemblyPath);
+            var assembly = LoadAssembly(_options.AssemblyPath!);
             var instance = CreateServiceInstance(assembly);
             return instance;
         }
@@ -58,8 +58,7 @@ class UserServiceLoader : IUserServiceLoader
         {
             if (typeof(IUserService).IsAssignableFrom(type))
             {
-                var result = Activator.CreateInstance(type) as IUserService;
-                return result;
+                return (Activator.CreateInstance(type) as IUserService)!;
             }
         }
 
@@ -77,7 +76,7 @@ static class ServiceCollectionUserServiceExtensions
             .Bind(configuration.GetSection("UserService"))
             .ValidateDataAnnotations();
 
-        services.AddTransient<IUserService>(provider => provider.GetService<IUserServiceLoader>().CreateServiceInstance());
+        services.AddTransient<IUserService>(provider => provider.GetService<IUserServiceLoader>()!.CreateServiceInstance());
         return services;
     }
 }
