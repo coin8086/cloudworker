@@ -23,11 +23,13 @@ class ServiceLoaderOptions
 class UserServiceLoader : IUserServiceLoader
 {
     private readonly ILogger _logger;
+    private readonly ILogger _userLogger;
     private readonly ServiceLoaderOptions _options;
 
-    public UserServiceLoader(ILogger<UserServiceLoader> logger, IOptions<ServiceLoaderOptions> options)
+    public UserServiceLoader(ILogger<UserServiceLoader> logger, ILogger<IUserService> userLogger, IOptions<ServiceLoaderOptions> options)
     {
         _logger = logger;
+        _userLogger = userLogger;
         _options = options.Value;
     }
 
@@ -36,7 +38,8 @@ class UserServiceLoader : IUserServiceLoader
         try
         {
             var assembly = LoadAssembly(_options.AssemblyPath!);
-            var instance = CreateServiceInstance(assembly);
+            var type = GetUserServiceType(assembly);
+            var instance = (Activator.CreateInstance(type, _userLogger) as IUserService)!;
             return instance;
         }
         catch (Exception ex)
@@ -52,13 +55,13 @@ class UserServiceLoader : IUserServiceLoader
         return loadContext.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(path)));
     }
 
-    static IUserService CreateServiceInstance(Assembly assembly)
+    static Type GetUserServiceType(Assembly assembly)
     {
         foreach (Type type in assembly.GetTypes())
         {
             if (typeof(IUserService).IsAssignableFrom(type))
             {
-                return (Activator.CreateInstance(type) as IUserService)!;
+                return type;
             }
         }
 

@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -32,19 +34,22 @@ public class CGICallResult
 
 public class CGIService : IUserService
 {
+    private readonly ILogger _logger;
     private readonly CGIServiceOptions _options;
 
-    public CGIService()
+    public CGIService(ILogger logger)
     {
+        _logger = logger;
         _options = LoadConfiguration();
     }
 
-    public CGIService(CGIServiceOptions options)
+    public CGIService(ILogger logger, CGIServiceOptions options)
     {
+        _logger = logger;
         _options = options;
     }
 
-    private static CGIServiceOptions LoadConfiguration()
+    private CGIServiceOptions LoadConfiguration()
     {
         var configFileBase = Path.GetDirectoryName(typeof(CGIService).Assembly.Location);
         if (string.IsNullOrWhiteSpace(configFileBase))
@@ -52,7 +57,7 @@ public class CGIService : IUserService
             configFileBase = Directory.GetCurrentDirectory();
         }
 
-        Console.WriteLine($"Look up configuration file in '{configFileBase}'.");
+        _logger.LogInformation("Look up configuration file in '{configFileBase}'.", configFileBase);
 
         var args0 = Environment.GetCommandLineArgs();
         var args = new string[args0.Length - 1];
@@ -77,14 +82,13 @@ public class CGIService : IUserService
             throw new ArgumentException("FileName is required but missing in configuration!");
         }
 
-        Console.WriteLine($"FileName={options.FileName}\nArguments={options.Arguments}");
+        _logger.LogInformation("FileName='{FileName}' Arguments='{Arguments}'", options.FileName, options.Arguments);
         return options;
     }
 
-    //TODO: Use a logger to write user log.
     public async Task<string> InvokeAsync(string input, CancellationToken cancel = default)
     {
-        Console.WriteLine($"InvokeAsync: input={input}");
+        _logger.LogTrace("InvokeAsync: input={input}", input);
 
         var startInfo = new ProcessStartInfo()
         {
@@ -143,6 +147,7 @@ public class CGIService : IUserService
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            _logger.LogError("InvokeAsync Error: {ex}", ex);
             var result = new CGICallResult()
             {
                 Stdout = stdout.ToString(),
