@@ -5,6 +5,6 @@ namespace Cloud.Soa
 {
     public interface IUserService
     {
-        Task<string> InvokeAsync(string json, CancellationToken cancel = default);
+        Task<string> InvokeAsync(string input, CancellationToken cancel = default);
     }
 }

@@ -64,7 +64,10 @@ class Worker : BackgroundService
                 string? result = null;
                 try
                 {
-                    //TODO: Catch exceptions other than OperationCanceledException?
+                    //InvokeAsync of a user service should catch all application exceptions and handle them properly.
+                    //This means it could return error message to client in the result, or throw an exception out,
+                    //which all depend on the user service. The only exception is the OperationCanceledException, which
+                    //should be thrown when stoppingToken is set to cancelled.
                     result = await _userService.InvokeAsync(request.Content, stoppingToken);
                 }
                 catch (OperationCanceledException)

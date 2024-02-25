@@ -5,8 +5,8 @@ namespace Cloud.Soa;
 
 public class EchoService : IUserService
 {
-    public Task<string> InvokeAsync(string json, CancellationToken cancel = default)
+    public Task<string> InvokeAsync(string input, CancellationToken cancel = default)
     {
-        return Task.FromResult(json);
+        return Task.FromResult(input);
     }
 }
