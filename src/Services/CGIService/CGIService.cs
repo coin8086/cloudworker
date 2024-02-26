@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -37,16 +36,12 @@ public class CGIService : IUserService
     private readonly ILogger _logger;
     private readonly CGIServiceOptions _options;
 
-    public CGIService(ILogger logger)
+    //NOTE: Users can leverage ILogger and IConfiguration from host, or build their own ones for
+    //customization.
+    public CGIService(ILogger logger, IConfiguration _)
     {
         _logger = logger;
         _options = LoadConfiguration();
-    }
-
-    public CGIService(ILogger logger, CGIServiceOptions options)
-    {
-        _logger = logger;
-        _options = options;
     }
 
     private CGIServiceOptions LoadConfiguration()

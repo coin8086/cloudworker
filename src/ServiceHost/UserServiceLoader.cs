@@ -24,12 +24,15 @@ class UserServiceLoader : IUserServiceLoader
 {
     private readonly ILogger _logger;
     private readonly ILogger _userLogger;
+    private readonly IConfiguration _configuration;
     private readonly ServiceLoaderOptions _options;
 
-    public UserServiceLoader(ILogger<UserServiceLoader> logger, ILogger<IUserService> userLogger, IOptions<ServiceLoaderOptions> options)
+    public UserServiceLoader(ILogger<UserServiceLoader> logger, ILogger<IUserService> userLogger,
+        IConfiguration configuration, IOptions<ServiceLoaderOptions> options)
     {
         _logger = logger;
         _userLogger = userLogger;
+        _configuration = configuration;
         _options = options.Value;
     }
 
@@ -39,7 +42,7 @@ class UserServiceLoader : IUserServiceLoader
         {
             var assembly = LoadAssembly(_options.AssemblyPath!);
             var type = GetUserServiceType(assembly);
-            var instance = (Activator.CreateInstance(type, _userLogger) as IUserService)!;
+            var instance = (Activator.CreateInstance(type, _userLogger, _configuration) as IUserService)!;
             return instance;
         }
         catch (Exception ex)
