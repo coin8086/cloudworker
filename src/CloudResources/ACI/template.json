@@ -1,0 +1,104 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "prefix": {
+            "type": "string",
+            "defaultValue": "servicehost"
+        },
+        "count": {
+            "type": "int",
+            "defaultValue": 1
+        },
+        "offset": {
+            "type": "int",
+            "defaultValue": 1
+        },
+        "location": {
+            "type": "String",
+            "defaultValue": "southeastasia"
+        },
+        "connectionString": {
+            "type": "string"
+        },
+        "serviceAssemblyPath": {
+            "type": "String",
+            "defaultValue": "/services/cgiservice/Cloud.Soa.CGIService.dll",
+            "allowedValues": [
+                "/services/echoservice/Cloud.Soa.EchoService.dll",
+                "/services/cgiservice/Cloud.Soa.CGIService.dll"
+            ]
+        },
+        "cgiFileName": {
+            "type": "string",
+            "defaultValue": "/bin/bash"
+        },
+        "cgiArguments": {
+            "type": "string",
+            "defaultValue": "-"
+        },
+        "cpu": {
+            "type": "int",
+            "defaultValue": 1
+        },
+        "memoryInGB": {
+            "type": "int",
+            "defaultValue": 1
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2023-05-01",
+            "name": "[format('{0}{1}', parameters('prefix'), copyIndex(parameters('offset')))]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "sku": "Standard",
+                "containers": [
+                    {
+                        "name": "servicehost",
+                        "properties": {
+                            "image": "leizacrdev.azurecr.io/soa/servicehost:1.0-ubuntu22",
+                            "environmentVariables": [
+                                {
+                                    "name": "Requests__ConnectionString",
+                                    "value": "[parameters('connectionString')]"
+                                },
+                                {
+                                    "name": "Responses__ConnectionString",
+                                    "value": "[parameters('connectionString')]"
+                                },
+                                {
+                                    "name": "Service__AssemblyPath",
+                                    "value": "[parameters('serviceAssemblyPath')]"
+                                },
+                                {
+                                    "name": "CGI_FileName",
+                                    "value": "[parameters('cgiFileName')]"
+                                },
+                                {
+                                    "name": "CGI_Arguments",
+                                    "value": "[parameters('cgiArguments')]"
+                                }
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "cpu": "[parameters('cpu')]",
+                                    "memoryInGB": "[parameters('memoryInGB')]"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "initContainers": [],
+                "restartPolicy": "Always",
+                "osType": "Linux"
+            },
+            "copy": {
+                "name": "servicehostCopy",
+                "count": "[parameters('count')]"
+            }
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "connectionString": {
+            "reference": {
+                "keyVault": {
+                    "id": "/subscriptions/a486e243-747b-42de-8c4c-379f8295a746/resourcegroups/leiz-cluster-1/providers/Microsoft.KeyVault/vaults/leizkvdev"
+                },
+                "secretName": "leizstoragedev-connection-string"
+            }
+        }
+    }
+}
