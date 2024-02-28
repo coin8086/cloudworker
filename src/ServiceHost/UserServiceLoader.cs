@@ -11,7 +11,7 @@ namespace Cloud.Soa;
 
 interface IUserServiceLoader
 {
-    IUserService CreateServiceInstance();
+    ISoaService CreateServiceInstance();
 }
 
 class ServiceLoaderOptions
@@ -27,7 +27,7 @@ class UserServiceLoader : IUserServiceLoader
     private readonly IConfiguration _configuration;
     private readonly ServiceLoaderOptions _options;
 
-    public UserServiceLoader(ILogger<UserServiceLoader> logger, ILogger<IUserService> userLogger,
+    public UserServiceLoader(ILogger<UserServiceLoader> logger, ILogger<ISoaService> userLogger,
         IConfiguration configuration, IOptions<ServiceLoaderOptions> options)
     {
         _logger = logger;
@@ -36,13 +36,13 @@ class UserServiceLoader : IUserServiceLoader
         _options = options.Value;
     }
 
-    public IUserService CreateServiceInstance()
+    public ISoaService CreateServiceInstance()
     {
         try
         {
             var assembly = LoadAssembly(_options.AssemblyPath!);
             var type = GetUserServiceType(assembly);
-            var instance = (Activator.CreateInstance(type, _userLogger, _configuration) as IUserService)!;
+            var instance = (Activator.CreateInstance(type, _userLogger, _configuration) as ISoaService)!;
             return instance;
         }
         catch (Exception ex)
@@ -62,13 +62,13 @@ class UserServiceLoader : IUserServiceLoader
     {
         foreach (Type type in assembly.GetTypes())
         {
-            if (typeof(IUserService).IsAssignableFrom(type))
+            if (typeof(ISoaService).IsAssignableFrom(type))
             {
                 return type;
             }
         }
 
-        throw new ApplicationException($"Can't find a type that implements IUserService in {assembly} from {assembly.Location}.");
+        throw new ApplicationException($"Can't find a type that implements ISoaService in {assembly} from {assembly.Location}.");
     }
 }
 
@@ -82,7 +82,7 @@ static class ServiceCollectionUserServiceExtensions
             .Bind(configuration.GetSection("UserService"))
             .ValidateDataAnnotations();
 
-        services.AddTransient<IUserService>(provider => provider.GetService<IUserServiceLoader>()!.CreateServiceInstance());
+        services.AddTransient<ISoaService>(provider => provider.GetService<IUserServiceLoader>()!.CreateServiceInstance());
         return services;
     }
 }

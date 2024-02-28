@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Cloud.Soa;
 
-public class EchoService : IUserService
+public class EchoService : ISoaService
 {
     //Neither ILogger nor IConfiguration is used in the service. So ignore them.
     public EchoService(object logger, object configuration) { }

@@ -7,7 +7,7 @@
 A UDS is an implementation of the following interface:
 
 ```cs
-interface IUserService
+interface ISoaService
 {
     Task<string> InvokeAsync(string json, CancellationToken token)
 }

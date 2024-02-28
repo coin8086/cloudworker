@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Cloud.Soa
 {
-    public interface IUserService
+    public interface ISoaService
     {
         Task<string> InvokeAsync(string input, CancellationToken cancel = default);
     }
