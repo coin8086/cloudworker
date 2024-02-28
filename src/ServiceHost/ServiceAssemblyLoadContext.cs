@@ -4,11 +4,11 @@ using System;
 
 namespace Cloud.Soa;
 
-class UserAssemblyLoadContext : AssemblyLoadContext
+class ServiceAssemblyLoadContext : AssemblyLoadContext
 {
     private AssemblyDependencyResolver _resolver;
 
-    public UserAssemblyLoadContext(string pluginPath)
+    public ServiceAssemblyLoadContext(string pluginPath)
     {
         _resolver = new AssemblyDependencyResolver(pluginPath);
     }

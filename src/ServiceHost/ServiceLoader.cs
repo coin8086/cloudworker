@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Cloud.Soa;
 
-interface IUserServiceLoader
+interface IServiceLoader
 {
     ISoaService CreateServiceInstance();
 }
@@ -20,14 +20,14 @@ class ServiceLoaderOptions
     public string? AssemblyPath { get; set; }
 }
 
-class UserServiceLoader : IUserServiceLoader
+class ServiceLoader : IServiceLoader
 {
     private readonly ILogger _logger;
     private readonly ILogger _userLogger;
     private readonly IConfiguration _configuration;
     private readonly ServiceLoaderOptions _options;
 
-    public UserServiceLoader(ILogger<UserServiceLoader> logger, ILogger<ISoaService> userLogger,
+    public ServiceLoader(ILogger<ServiceLoader> logger, ILogger<ISoaService> userLogger,
         IConfiguration configuration, IOptions<ServiceLoaderOptions> options)
     {
         _logger = logger;
@@ -54,7 +54,7 @@ class UserServiceLoader : IUserServiceLoader
 
     static Assembly LoadAssembly(string path)
     {
-        var loadContext = new UserAssemblyLoadContext(path);
+        var loadContext = new ServiceAssemblyLoadContext(path);
         return loadContext.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(path)));
     }
 
@@ -76,13 +76,13 @@ static class ServiceCollectionUserServiceExtensions
 {
     public static IServiceCollection AddUserService(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddTransient<IUserServiceLoader, UserServiceLoader>();
+        services.AddTransient<IServiceLoader, ServiceLoader>();
 
         services.AddOptionsWithValidateOnStart<ServiceLoaderOptions>()
-            .Bind(configuration.GetSection("UserService"))
+            .Bind(configuration.GetSection("Service"))
             .ValidateDataAnnotations();
 
-        services.AddTransient<ISoaService>(provider => provider.GetService<IUserServiceLoader>()!.CreateServiceInstance());
+        services.AddTransient<ISoaService>(provider => provider.GetService<IServiceLoader>()!.CreateServiceInstance());
         return services;
     }
 }
