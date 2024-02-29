@@ -9,11 +9,11 @@ class Program
     static void ShowUsage()
     {
         var usage = @"
-SendRequest -c {count} -m {message} -q {queue}
+SendRequest -n {queue name} -c {count} -m {message}
 
 or
 
-SendRequest -c {count} -q {queue} -
+SendRequest -n {queue name} -c {count} -
 
 A single ""-"" means the message is read from stdin.
 ";
@@ -47,12 +47,12 @@ A single ""-"" means the message is read from stdin.
                     using var reader = new StreamReader(stdin);
                     message = reader.ReadToEnd();
                 }
-                else if ("-q".Equals(args[i], StringComparison.Ordinal))
+                else if ("-n".Equals(args[i], StringComparison.Ordinal))
                 {
                     queueName = args[++i];
                     if (string.IsNullOrEmpty(queueName))
                     {
-                        throw new ArgumentException($"Parameter '-q <name>' must not be empty!");
+                        throw new ArgumentException("Queue name must be specified!");
                     }
                 }
                 else if ("-h".Equals(args[i], StringComparison.Ordinal))

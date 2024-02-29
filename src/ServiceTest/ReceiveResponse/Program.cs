@@ -10,7 +10,7 @@ class Program
     static void ShowUsage()
     {
         var usage = @"
-ReceiveResponse -q {queue} [-v]
+ReceiveResponse -n {queue name} [-v]
 ";
         Console.WriteLine(usage);
     }
@@ -23,12 +23,12 @@ ReceiveResponse -q {queue} [-v]
         {
             for (int i = 0; i < args.Length; i++)
             {
-                if ("-q".Equals(args[i], StringComparison.Ordinal))
+                if ("-n".Equals(args[i], StringComparison.Ordinal))
                 {
                     queueName = args[++i];
                     if (string.IsNullOrEmpty(queueName))
                     {
-                        throw new ArgumentException($"Parameter '-q <name>' must not be empty!");
+                        throw new ArgumentException("Queue name must be specified!");
                     }
                 }
                 else if ("-v".Equals(args[i], StringComparison.Ordinal))
