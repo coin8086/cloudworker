@@ -10,15 +10,16 @@ class Program
     static void ShowUsage()
     {
         var usage = @"
-ReceiveResponse -n {queue name} [-v]
+ReceiveResponse -n {queue name} [-v] [-q]
 ";
         Console.WriteLine(usage);
     }
 
-    static (string queue, bool verbose) ParseCommandLine(string[] args)
+    static (string queue, bool verbose, bool quiet) ParseCommandLine(string[] args)
     {
         string? queueName = null;
         bool verbose = false;
+        bool quiet = false;
         try
         {
             for (int i = 0; i < args.Length; i++)
@@ -34,6 +35,10 @@ ReceiveResponse -n {queue name} [-v]
                 else if ("-v".Equals(args[i], StringComparison.Ordinal))
                 {
                     verbose = true;
+                }
+                else if ("-q".Equals(args[i], StringComparison.Ordinal))
+                {
+                    quiet = true;
                 }
                 else if ("-h".Equals(args[i], StringComparison.Ordinal))
                 {
@@ -56,7 +61,7 @@ ReceiveResponse -n {queue name} [-v]
             ShowUsage();
             Environment.Exit(1);
         }
-        return (queueName, verbose);
+        return (queueName, verbose, quiet);
     }
 
     static int Main(string[] args)
@@ -68,13 +73,16 @@ ReceiveResponse -n {queue name} [-v]
             return 1;
         }
 
-        var (queueName, verbose) = ParseCommandLine(args);
+        var (queueName, verbose, quiet) = ParseCommandLine(args);
 
-        Console.WriteLine($"Create queue {queueName} if it doesn't exists.");
+        if (!quiet)
+        {
+            Console.WriteLine($"Create queue {queueName} if it doesn't exists.");
+        }
         var client = new QueueClient(connectionString, queueName);
         client.CreateIfNotExists();
 
-        Console.WriteLine($"Receive message from the queue.");
+        Console.WriteLine($"Receive message from queue {queueName}.");
 
         var cts = new CancellationTokenSource();
         var token = cts.Token;
@@ -90,7 +98,7 @@ ReceiveResponse -n {queue name} [-v]
             QueueMessage message = client.ReceiveMessage(cancellationToken: token);
             if (message == null)
             {
-                if (verbose)
+                if (!quiet && verbose)
                 {
                     Console.WriteLine("No message. Wait.");
                 }
@@ -103,13 +111,16 @@ ReceiveResponse -n {queue name} [-v]
             }
 
             ++count;
-            Console.WriteLine($"Received a message of length {message.MessageText.Length} at {DateTimeOffset.Now}.");
-            if (verbose)
-            {
-                Console.WriteLine(message.MessageText);
-            }
 
-            Console.WriteLine($"Delete message.");
+            if (!quiet)
+            {
+                Console.WriteLine($"Received a message of length {message.MessageText.Length} at {DateTimeOffset.Now}.");
+                if (verbose)
+                {
+                    Console.WriteLine(message.MessageText);
+                }
+                Console.WriteLine($"Delete message.");
+            }
             client.DeleteMessage(message.MessageId, message.PopReceipt);
         }
         Console.WriteLine($"Received {count} messages totally.");
