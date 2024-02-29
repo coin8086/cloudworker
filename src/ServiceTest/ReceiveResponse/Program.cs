@@ -10,14 +10,15 @@ class Program
     static void ShowUsage()
     {
         var usage = @"
-ReceiveResponse -n {queue name} [-v] [-q]
+ReceiveResponse -n {queue name} [-m {max number of messages to receive}] [-v] [-q]
 ";
         Console.WriteLine(usage);
     }
 
-    static (string queue, bool verbose, bool quiet) ParseCommandLine(string[] args)
+    static (string queue, int? maxMessages, bool verbose, bool quiet) ParseCommandLine(string[] args)
     {
         string? queueName = null;
+        int? maxMessages = null;
         bool verbose = false;
         bool quiet = false;
         try
@@ -30,6 +31,14 @@ ReceiveResponse -n {queue name} [-v] [-q]
                     if (string.IsNullOrEmpty(queueName))
                     {
                         throw new ArgumentException("Queue name must be specified!");
+                    }
+                }
+                else if ("-m".Equals(args[i], StringComparison.Ordinal))
+                {
+                    maxMessages = int.Parse(args[++i]);
+                    if (maxMessages < 0)
+                    {
+                        throw new ArgumentException("-m {number} must be greater than 0!");
                     }
                 }
                 else if ("-v".Equals(args[i], StringComparison.Ordinal))
@@ -61,7 +70,7 @@ ReceiveResponse -n {queue name} [-v] [-q]
             ShowUsage();
             Environment.Exit(1);
         }
-        return (queueName, verbose, quiet);
+        return (queueName, maxMessages, verbose, quiet);
     }
 
     static int Main(string[] args)
@@ -73,7 +82,7 @@ ReceiveResponse -n {queue name} [-v] [-q]
             return 1;
         }
 
-        var (queueName, verbose, quiet) = ParseCommandLine(args);
+        var (queueName, maxMessages, verbose, quiet) = ParseCommandLine(args);
 
         if (!quiet)
         {
@@ -92,7 +101,8 @@ ReceiveResponse -n {queue name} [-v] [-q]
             cts.Cancel();
         };
 
-        int count = 0;
+        int nReceived = 0;
+        Console.WriteLine($"Start receiving at {DateTimeOffset.Now}.");
         while (!token.IsCancellationRequested)
         {
             QueueMessage message = client.ReceiveMessage(cancellationToken: token);
@@ -110,8 +120,6 @@ ReceiveResponse -n {queue name} [-v] [-q]
                 continue;
             }
 
-            ++count;
-
             if (!quiet)
             {
                 Console.WriteLine($"Received a message of length {message.MessageText.Length} at {DateTimeOffset.Now}.");
@@ -122,8 +130,15 @@ ReceiveResponse -n {queue name} [-v] [-q]
                 Console.WriteLine($"Delete message.");
             }
             client.DeleteMessage(message.MessageId, message.PopReceipt);
+
+            ++nReceived;
+            if (nReceived == maxMessages)
+            {
+                break;
+            }
         }
-        Console.WriteLine($"Received {count} messages totally.");
+        Console.WriteLine($"End receiving at {DateTimeOffset.Now}.");
+        Console.WriteLine($"Received {nReceived} messages.");
         return 0;
     }
 }
