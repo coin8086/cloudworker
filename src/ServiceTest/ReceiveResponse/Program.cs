@@ -11,15 +11,16 @@ class Program
     static void ShowUsage()
     {
         var usage = @"
-ReceiveResponse -n {queue name} [-m {max number of messages to receive}] [-v] [-q]
+ReceiveResponse -n {queue name} [-m {max number of messages to receive}] [-i {query interval}] [-v] [-q]
 ";
         Console.WriteLine(usage);
     }
 
-    static (string queue, int? maxMessages, bool verbose, bool quiet) ParseCommandLine(string[] args)
+    static (string queue, int? maxMessages, int queryInterval, bool verbose, bool quiet) ParseCommandLine(string[] args)
     {
         string? queueName = null;
         int? maxMessages = null;
+        int queryInterval = 200;
         bool verbose = false;
         bool quiet = false;
         try
@@ -40,6 +41,14 @@ ReceiveResponse -n {queue name} [-m {max number of messages to receive}] [-v] [-
                     if (maxMessages < 0)
                     {
                         throw new ArgumentException("-m {number} must be greater than 0!");
+                    }
+                }
+                else if ("-i".Equals(args[i], StringComparison.Ordinal))
+                {
+                    queryInterval = int.Parse(args[++i]);
+                    if (queryInterval < 0)
+                    {
+                        throw new ArgumentException("-i {number} must be greater than 0!");
                     }
                 }
                 else if ("-v".Equals(args[i], StringComparison.Ordinal))
@@ -71,7 +80,7 @@ ReceiveResponse -n {queue name} [-m {max number of messages to receive}] [-v] [-
             ShowUsage();
             Environment.Exit(1);
         }
-        return (queueName, maxMessages, verbose, quiet);
+        return (queueName, maxMessages, queryInterval, verbose, quiet);
     }
 
     static int Main(string[] args)
@@ -83,7 +92,7 @@ ReceiveResponse -n {queue name} [-m {max number of messages to receive}] [-v] [-
             return 1;
         }
 
-        var (queueName, maxMessages, verbose, quiet) = ParseCommandLine(args);
+        var (queueName, maxMessages, queryInterval, verbose, quiet) = ParseCommandLine(args);
 
         if (!quiet)
         {
@@ -118,7 +127,7 @@ ReceiveResponse -n {queue name} [-m {max number of messages to receive}] [-v] [-
                 }
                 try
                 {
-                    Task.Delay(1000).Wait(token);
+                    Task.Delay(queryInterval).Wait(token);
                 }
                 catch (OperationCanceledException) {}
                 continue;
