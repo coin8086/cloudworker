@@ -53,9 +53,9 @@ public class MessageQueue : IMessageQueue
         _client = new QueueClient(_options.ConnectionString, _options.QueueName);
     }
 
-    public async Task<IMessage> ReceiveAsync(TimeSpan lease = default, CancellationToken cancel = default)
+    public async Task<IMessage> ReceiveAsync(TimeSpan? lease = default, CancellationToken? cancel = default)
     {
-        var message = await _client.ReceiveMessageAsync(lease, cancel);
+        var message = await _client.ReceiveMessageAsync(lease, cancel ?? CancellationToken.None);
         if (message.Value == null)
         {
             throw new IMessageQueue.NoMessage();
@@ -63,7 +63,7 @@ public class MessageQueue : IMessageQueue
         return new Message(_client, message);
     }
 
-    public async Task<IMessage> WaitAsync(TimeSpan lease = default, CancellationToken cancel = default)
+    public async Task<IMessage> WaitAsync(TimeSpan? lease = default, CancellationToken? cancel = default)
     {
         while (true)
         {
@@ -73,7 +73,7 @@ public class MessageQueue : IMessageQueue
             }
             catch (IMessageQueue.NoMessage)
             {
-                await Task.Delay(1000, cancel);
+                await Task.Delay(1000, cancel ?? CancellationToken.None);
                 continue;
             }
         }

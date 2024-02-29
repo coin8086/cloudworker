@@ -19,9 +19,9 @@ public interface IMessageQueue
 {
     public class NoMessage : ApplicationException { }
 
-    Task<IMessage> ReceiveAsync(TimeSpan lease = default, CancellationToken cancel = default);
+    Task<IMessage> ReceiveAsync(TimeSpan? lease = default, CancellationToken? cancel = default);
 
-    Task<IMessage> WaitAsync(TimeSpan lease = default, CancellationToken cancel = default);
+    Task<IMessage> WaitAsync(TimeSpan? lease = default, CancellationToken? cancel = default);
 
     Task SendAsync(string message);
 }
