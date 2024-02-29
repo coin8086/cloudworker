@@ -1,5 +1,6 @@
 ﻿using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
+using System.Diagnostics;
 
 namespace ReceiveResponse;
 
@@ -102,7 +103,10 @@ ReceiveResponse -n {queue name} [-m {max number of messages to receive}] [-v] [-
         };
 
         int nReceived = 0;
+        var stopWatch = new Stopwatch();
+
         Console.WriteLine($"Start receiving at {DateTimeOffset.Now}.");
+
         while (!token.IsCancellationRequested)
         {
             QueueMessage message = client.ReceiveMessage(cancellationToken: token);
@@ -132,13 +136,24 @@ ReceiveResponse -n {queue name} [-m {max number of messages to receive}] [-v] [-
             client.DeleteMessage(message.MessageId, message.PopReceipt);
 
             ++nReceived;
+            if (nReceived == 1)
+            {
+                stopWatch.Start();
+            }
             if (nReceived == maxMessages)
             {
                 break;
             }
         }
+        stopWatch.Stop();
+
         Console.WriteLine($"End receiving at {DateTimeOffset.Now}.");
         Console.WriteLine($"Received {nReceived} messages.");
+        if (nReceived > 1)
+        {
+            var throughput = (nReceived - 1) / stopWatch.Elapsed.TotalSeconds;
+            Console.WriteLine($"Receive throughput: {throughput:f3} messages/second");
+        }
         return 0;
     }
 }

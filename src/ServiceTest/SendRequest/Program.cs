@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Queues;
+using System.Diagnostics;
 
 namespace SendRequest;
 
@@ -90,19 +91,27 @@ A single ""-"" means the message is read from stdin.
 
         var (count, message, queueName) = ParseCommandLine(args);
 
-        Console.WriteLine($"Create queue {queueName} if it doesn't exists.");
         var client = new QueueClient(connectionString, queueName);
         client.CreateIfNotExists();
 
-        Console.WriteLine($"Send {count} messages, each of length {message.Length}, to the queue.");
         var tasks = new Task[count];
+        var stopWatch = new Stopwatch();
+
+        Console.WriteLine($"Send {count} messages, each of length {message.Length}, to queue {queueName}.");
         Console.WriteLine($"Start sending at {DateTimeOffset.Now}");
+
+        stopWatch.Start();
         for (int i = 0; i < count; i++)
         {
             tasks[i] = client.SendMessageAsync(message);
         }
         Task.WaitAll(tasks);
+        stopWatch.Stop();
+
         Console.WriteLine($"End sending at {DateTimeOffset.Now}");
+
+        var throughput = count / stopWatch.Elapsed.TotalSeconds;
+        Console.WriteLine($"Send throughput: {throughput:f3} messages/second");
         return 0;
     }
 }
