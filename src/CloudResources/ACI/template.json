@@ -12,7 +12,7 @@
         },
         "offset": {
             "type": "int",
-            "defaultValue": 1
+            "defaultValue": 0
         },
         "location": {
             "type": "String",
@@ -21,12 +21,12 @@
         "connectionString": {
             "type": "string"
         },
-        "serviceAssemblyPath": {
-            "type": "String",
-            "defaultValue": "/services/cgiservice/Cloud.Soa.CGIService.dll",
+        "service": {
+            "type": "string",
+            "defaultValue": "cgi",
             "allowedValues": [
-                "/services/echoservice/Cloud.Soa.EchoService.dll",
-                "/services/cgiservice/Cloud.Soa.CGIService.dll"
+                "cgi",
+                "echo"
             ]
         },
         "cgiFileName": {
@@ -46,7 +46,13 @@
             "defaultValue": 1
         }
     },
-    "variables": {},
+    "variables": {
+        "serviceMap": {
+            "echo": "/services/echoservice/Cloud.Soa.EchoService.dll",
+            "cgi": "/services/cgiservice/Cloud.Soa.CGIService.dll"
+        },
+        "assemblyPath": "[variables('serviceMap')[parameters('service')]]"
+    },
     "resources": [
         {
             "type": "Microsoft.ContainerInstance/containerGroups",
@@ -71,7 +77,7 @@
                                 },
                                 {
                                     "name": "Service__AssemblyPath",
-                                    "value": "[parameters('serviceAssemblyPath')]"
+                                    "value": "[variables('assemblyPath')]"
                                 },
                                 {
                                     "name": "CGI_FileName",
