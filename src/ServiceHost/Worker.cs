@@ -11,6 +11,7 @@ namespace Cloud.Soa;
 
 class WorkerOptions
 {
+    public int? QueryInterval { get; set; }
 }
 
 class Worker : BackgroundService
@@ -35,18 +36,23 @@ class Worker : BackgroundService
     {
         try
         {
+            var lease = TimeSpan.FromSeconds(48);
+            var interval = TimeSpan.FromMilliseconds(_workerOptions.QueryInterval ?? 200);
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 IMessage? request = null;
                 try
                 {
-                    request = await _requests.WaitAsync(cancel: stoppingToken, lease: TimeSpan.FromSeconds(48));
+                    request = await _requests.WaitAsync(cancel: stoppingToken, lease: lease, interval: interval);
                 }
                 catch (OperationCanceledException)
                 {
                     _logger.LogInformation("Waiting for request is cancelled.");
                     break;
                 }
+
+                _logger.LogTrace("Received request {id}", request.Id);
 
                 using var timer = new Timer(async _ => {
                     try

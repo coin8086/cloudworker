@@ -13,7 +13,8 @@ public class Program
 
         var switchMappings = new Dictionary<string, string>()
         {
-            { "-p", "UserService:AssemblyPath" },
+            { "-p", "Service:AssemblyPath" },
+            { "-i", "Worker:QueryInterval" },
         };
 
         config.AddCommandLine(args, switchMappings);

@@ -21,7 +21,7 @@ public interface IMessageQueue
 
     Task<IMessage> ReceiveAsync(TimeSpan? lease = default, CancellationToken? cancel = default);
 
-    Task<IMessage> WaitAsync(TimeSpan? lease = default, CancellationToken? cancel = default);
+    Task<IMessage> WaitAsync(TimeSpan? lease = default, TimeSpan? interval = default, CancellationToken? cancel = default);
 
     Task SendAsync(string message);
 }
