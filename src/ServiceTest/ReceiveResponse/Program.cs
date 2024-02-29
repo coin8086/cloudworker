@@ -15,14 +15,13 @@ ReceiveResponse -q {queue} [-v]
         Console.WriteLine(usage);
     }
 
-    static (string queue, bool verbose) ParseCommandLine()
+    static (string queue, bool verbose) ParseCommandLine(string[] args)
     {
-        var args = Environment.GetCommandLineArgs();
         string? queueName = null;
         bool verbose = false;
         try
         {
-            for (int i = 1; i < args.Length; i++)
+            for (int i = 0; i < args.Length; i++)
             {
                 if ("-q".Equals(args[i], StringComparison.Ordinal))
                 {
@@ -69,7 +68,7 @@ ReceiveResponse -q {queue} [-v]
             return 1;
         }
 
-        var (queueName, verbose) = ParseCommandLine();
+        var (queueName, verbose) = ParseCommandLine(args);
 
         Console.WriteLine($"Create queue {queueName} if it doesn't exists.");
         var client = new QueueClient(connectionString, queueName);

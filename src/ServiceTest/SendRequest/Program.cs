@@ -20,15 +20,14 @@ A single ""-"" means the message is read from stdin.
         Console.WriteLine(usage);
     }
 
-    static (int count, string message, string queue) ParseCommandLine()
+    static (int count, string message, string queue) ParseCommandLine(string[] args)
     {
-        var args = Environment.GetCommandLineArgs();
         int count = 0;
         string? message = null;
         string? queueName = null;
         try
         {
-            for (int i = 1; i < args.Length; i++)
+            for (int i = 0; i < args.Length; i++)
             {
                 if ("-c".Equals(args[i], StringComparison.Ordinal))
                 {
@@ -89,7 +88,7 @@ A single ""-"" means the message is read from stdin.
             return 1;
         }
 
-        var (count, message, queueName) = ParseCommandLine();
+        var (count, message, queueName) = ParseCommandLine(args);
 
         Console.WriteLine($"Create queue {queueName} if it doesn't exists.");
         var client = new QueueClient(connectionString, queueName);
