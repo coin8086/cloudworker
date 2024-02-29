@@ -21,6 +21,10 @@
         "connectionString": {
             "type": "string"
         },
+        "queryInterval": {
+            "type": "int",
+            "defaultValue": 200
+        },
         "service": {
             "type": "string",
             "defaultValue": "cgi",
@@ -74,6 +78,10 @@
                                 {
                                     "name": "Responses__ConnectionString",
                                     "value": "[parameters('connectionString')]"
+                                },
+                                {
+                                    "name": "Worker__QueryInterval",
+                                    "value": "[parameters('queryInterval')]"
                                 },
                                 {
                                     "name": "Service__AssemblyPath",
