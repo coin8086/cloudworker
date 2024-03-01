@@ -10,7 +10,10 @@ public interface IMessage
 
     string Content { get; }
 
-    Task RenewLeaseAsync(TimeSpan lease);
+    //Renew with the default lease on IMessageQueue
+    Task RenewLeaseAsync();
+
+    Task ReturnAsync();
 
     Task DeleteAsync();
 }
@@ -19,9 +22,12 @@ public interface IMessageQueue
 {
     public class NoMessage : ApplicationException { }
 
-    Task<IMessage> ReceiveAsync(TimeSpan? lease = default, CancellationToken? cancel = default);
+    //Default lease for the whole queue
+    TimeSpan MessageLease { get; }
 
-    Task<IMessage> WaitAsync(TimeSpan? lease = default, CancellationToken? cancel = default);
+    Task<IMessage> ReceiveAsync(CancellationToken? cancel = default);
+
+    Task<IMessage> WaitAsync(CancellationToken? cancel = default);
 
     Task SendAsync(string message);
 }

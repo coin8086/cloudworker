@@ -11,20 +11,27 @@ public class Message : IMessage
 {
     private readonly QueueClient _client;
     private readonly QueueMessage _message;
+    private readonly TimeSpan _lease;
 
-    public Message(QueueClient client, QueueMessage message)
+    public Message(QueueClient client, QueueMessage message, TimeSpan lease)
     {
         _client = client;
         _message = message;
+        _lease = lease;
     }
 
     public string Id => _message.MessageId;
 
     public string Content => _message.MessageText;
 
-    public Task RenewLeaseAsync(TimeSpan lease)
+    public Task RenewLeaseAsync()
     {
-        return _client.UpdateMessageAsync(_message.MessageId, _message.PopReceipt, visibilityTimeout: lease);
+        return _client.UpdateMessageAsync(_message.MessageId, _message.PopReceipt, visibilityTimeout: _lease);
+    }
+
+    public Task ReturnAsync()
+    {
+        return _client.UpdateMessageAsync(_message.MessageId, _message.PopReceipt, visibilityTimeout: TimeSpan.Zero);
     }
 
     public Task DeleteAsync()
@@ -41,6 +48,11 @@ public class QueueOptions
     [Required]
     public string? ConnectionString { get; set; }
 
+    [Required]
+    //Here no default value in code because some queue (like SBQ) can not set lease by code!
+    //So this value MUST be provided by configuration!
+    public int? MessageLease {  get; set; } //In seconds
+
     public int? QueryInterval { get; set; } = 200;  //In milliseconds
 
     public static QueueOptions Default { get; } = new QueueOptions();
@@ -49,32 +61,40 @@ public class QueueOptions
 public class MessageQueue : IMessageQueue
 {
     private readonly QueueOptions _options;
+    private readonly TimeSpan _messageLease;
     private QueueClient _client;
 
     public MessageQueue(QueueOptions options)
     {
         _options = options;
+        if (_options.MessageLease is null)
+        {
+            throw new ArgumentException();
+        }
+        _messageLease = TimeSpan.FromSeconds((double)_options.MessageLease);
         _client = new QueueClient(_options.ConnectionString, _options.QueueName);
     }
 
-    public async Task<IMessage> ReceiveAsync(TimeSpan? lease = default, CancellationToken? cancel = default)
+    public TimeSpan MessageLease => _messageLease;
+
+    public async Task<IMessage> ReceiveAsync(CancellationToken? cancel = default)
     {
-        var message = await _client.ReceiveMessageAsync(lease, cancel ?? CancellationToken.None);
+        var message = await _client.ReceiveMessageAsync(MessageLease, cancel ?? CancellationToken.None);
         if (message.Value == null)
         {
             throw new IMessageQueue.NoMessage();
         }
-        return new Message(_client, message);
+        return new Message(_client, message, MessageLease);
     }
 
-    public async Task<IMessage> WaitAsync(TimeSpan? lease = default, CancellationToken? cancel = default)
+    public async Task<IMessage> WaitAsync(CancellationToken? cancel = default)
     {
         var delay = _options.QueryInterval ?? QueueOptions.Default.QueryInterval;
         while (true)
         {
             try
             {
-                return await ReceiveAsync(lease, cancel);
+                return await ReceiveAsync(cancel);
             }
             catch (IMessageQueue.NoMessage)
             {

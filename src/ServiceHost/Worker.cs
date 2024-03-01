@@ -35,13 +35,14 @@ class Worker : BackgroundService
     {
         try
         {
-            var lease = TimeSpan.FromSeconds(48);
+            var lease = _requests.MessageLease.TotalMilliseconds;
+            var interval = (int)(lease * 3 / 4);
             while (!stoppingToken.IsCancellationRequested)
             {
                 IMessage? request = null;
                 try
                 {
-                    request = await _requests.WaitAsync(cancel: stoppingToken, lease: lease);
+                    request = await _requests.WaitAsync(cancel: stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -54,14 +55,14 @@ class Worker : BackgroundService
                 using var timer = new Timer(async _ => {
                     try
                     {
-                        await request.RenewLeaseAsync(TimeSpan.FromSeconds(48));
+                        await request.RenewLeaseAsync();
                     }
                     catch (Exception ex)
                     {
-                        //TODO: Retry when failed?
+                        //TODO: Retry when failed
                         _logger.LogWarning("Failed renewing lease for request {id}. Error: {error}", request.Id, ex);
                     }
-                }, null, 15 * 1000, 15 * 1000);
+                }, null, interval, interval);
 
 
                 string? result = null;
@@ -77,7 +78,7 @@ class Worker : BackgroundService
                 {
                     _logger.LogInformation("User service call is cancelled. Return current request back to the queue.");
                     timer.Change(Timeout.Infinite, Timeout.Infinite);
-                    await request.RenewLeaseAsync(TimeSpan.Zero);
+                    await request.ReturnAsync();
                     break;
                 }
 
