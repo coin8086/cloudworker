@@ -40,6 +40,10 @@ public class QueueOptions
 
     [Required]
     public string? ConnectionString { get; set; }
+
+    public int? QueryInterval { get; set; } = 200;  //In milliseconds
+
+    public static QueueOptions Default { get; } = new QueueOptions();
 }
 
 public class MessageQueue : IMessageQueue
@@ -63,9 +67,9 @@ public class MessageQueue : IMessageQueue
         return new Message(_client, message);
     }
 
-    public async Task<IMessage> WaitAsync(TimeSpan? lease = default, TimeSpan? interval = default, CancellationToken? cancel = default)
+    public async Task<IMessage> WaitAsync(TimeSpan? lease = default, CancellationToken? cancel = default)
     {
-        var delay = interval?.Microseconds ?? 200;
+        var delay = _options.QueryInterval ?? QueueOptions.Default.QueryInterval;
         while (true)
         {
             try
@@ -74,7 +78,7 @@ public class MessageQueue : IMessageQueue
             }
             catch (IMessageQueue.NoMessage)
             {
-                await Task.Delay(delay, cancel ?? CancellationToken.None);
+                await Task.Delay(delay!.Value, cancel ?? CancellationToken.None);
                 continue;
             }
         }

@@ -80,7 +80,7 @@
                                     "value": "[parameters('connectionString')]"
                                 },
                                 {
-                                    "name": "Worker__QueryInterval",
+                                    "name": "Requests__QueryInterval",
                                     "value": "[parameters('queryInterval')]"
                                 },
                                 {

@@ -11,7 +11,6 @@ namespace Cloud.Soa;
 
 class WorkerOptions
 {
-    public int? QueryInterval { get; set; }
 }
 
 class Worker : BackgroundService
@@ -37,14 +36,12 @@ class Worker : BackgroundService
         try
         {
             var lease = TimeSpan.FromSeconds(48);
-            var interval = TimeSpan.FromMilliseconds(_workerOptions.QueryInterval ?? 200);
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 IMessage? request = null;
                 try
                 {
-                    request = await _requests.WaitAsync(cancel: stoppingToken, lease: lease, interval: interval);
+                    request = await _requests.WaitAsync(cancel: stoppingToken, lease: lease);
                 }
                 catch (OperationCanceledException)
                 {
