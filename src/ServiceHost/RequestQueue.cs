@@ -8,7 +8,7 @@ interface IRequestQueue : IMessageQueue
 {
 }
 
-class RequestQueue : MessageQueue, IRequestQueue
+class RequestQueue : StorageQueue, IRequestQueue
 {
     public RequestQueue(IOptionsMonitor<QueueOptions> options) : base(options.Get("Requests")) {}
 }

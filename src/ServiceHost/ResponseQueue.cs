@@ -8,7 +8,7 @@ interface IResponseQueue : IMessageQueue
 {
 }
 
-class ResponseQueue : MessageQueue, IResponseQueue
+class ResponseQueue : StorageQueue, IResponseQueue
 {
     public ResponseQueue(IOptionsMonitor<QueueOptions> options) : base(options.Get("Responses")) {}
 }

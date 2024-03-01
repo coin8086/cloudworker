@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace Cloud.Soa;
 
-public class Message : IMessage
+public class StorageQueueMessage : IMessage
 {
     private readonly QueueClient _client;
     private readonly QueueMessage _message;
     private readonly TimeSpan _lease;
 
-    public Message(QueueClient client, QueueMessage message, TimeSpan lease)
+    public StorageQueueMessage(QueueClient client, QueueMessage message, TimeSpan lease)
     {
         _client = client;
         _message = message;
@@ -58,13 +58,13 @@ public class QueueOptions
     public static QueueOptions Default { get; } = new QueueOptions();
 }
 
-public class MessageQueue : IMessageQueue
+public class StorageQueue : IMessageQueue
 {
     private readonly QueueOptions _options;
     private readonly TimeSpan _messageLease;
     private QueueClient _client;
 
-    public MessageQueue(QueueOptions options)
+    public StorageQueue(QueueOptions options)
     {
         _options = options;
         if (_options.MessageLease is null)
@@ -84,7 +84,7 @@ public class MessageQueue : IMessageQueue
         {
             throw new IMessageQueue.NoMessage();
         }
-        return new Message(_client, message, MessageLease);
+        return new StorageQueueMessage(_client, message, MessageLease);
     }
 
     public async Task<IMessage> WaitAsync(CancellationToken? cancel = default)
