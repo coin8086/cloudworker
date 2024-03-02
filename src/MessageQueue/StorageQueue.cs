@@ -77,29 +77,19 @@ public class StorageQueue : IMessageQueue
 
     public TimeSpan MessageLease => _messageLease;
 
-    public async Task<IMessage> ReceiveAsync(CancellationToken? cancel = default)
-    {
-        var message = await _client.ReceiveMessageAsync(MessageLease, cancel ?? CancellationToken.None);
-        if (message.Value == null)
-        {
-            throw new IMessageQueue.NoMessage();
-        }
-        return new StorageQueueMessage(_client, message, MessageLease);
-    }
-
     public async Task<IMessage> WaitAsync(CancellationToken? cancel = default)
     {
         var delay = _options.QueryInterval ?? QueueOptions.Default.QueryInterval;
         while (true)
         {
-            try
-            {
-                return await ReceiveAsync(cancel);
-            }
-            catch (IMessageQueue.NoMessage)
+            var message = await _client.ReceiveMessageAsync(MessageLease, cancel ?? CancellationToken.None);
+            if (message.Value == null)
             {
                 await Task.Delay(delay!.Value, cancel ?? CancellationToken.None);
-                continue;
+            }
+            else
+            {
+                return new StorageQueueMessage(_client, message, MessageLease);
             }
         }
     }

@@ -20,13 +20,10 @@ public interface IMessage
 
 public interface IMessageQueue
 {
-    public class NoMessage : ApplicationException { }
-
-    //Default lease for the whole queue
+    //Default message lease for the queue
     TimeSpan MessageLease { get; }
 
-    Task<IMessage> ReceiveAsync(CancellationToken? cancel = default);
-
+    //Wait for a message, until one is received or the operation is cancelled.
     Task<IMessage> WaitAsync(CancellationToken? cancel = default);
 
     Task SendAsync(string message);
