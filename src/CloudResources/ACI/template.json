@@ -18,8 +18,17 @@
             "type": "String",
             "defaultValue": "southeastasia"
         },
+        "queueType": {
+            "type": "string",
+            "defaultValue": "servicebus",
+            "allowedValues": ["servicebus", "storage"]
+        },
         "connectionString": {
             "type": "string"
+        },
+        "messageLease": {
+            "type": "int",
+            "defaultValue": 60
         },
         "queryInterval": {
             "type": "int",
@@ -27,7 +36,7 @@
         },
         "service": {
             "type": "string",
-            "defaultValue": "cgi",
+            "defaultValue": "echo",
             "allowedValues": [
                 "cgi",
                 "echo"
@@ -72,16 +81,28 @@
                             "image": "leizacrdev.azurecr.io/soa/servicehost:1.0-ubuntu22",
                             "environmentVariables": [
                                 {
+                                    "name": "Requests__QueueType",
+                                    "value": "[parameters('queueType')]"
+                                },
+                                {
                                     "name": "Requests__ConnectionString",
                                     "value": "[parameters('connectionString')]"
                                 },
                                 {
-                                    "name": "Responses__ConnectionString",
-                                    "value": "[parameters('connectionString')]"
+                                    "name": "Requests__MessageLease",
+                                    "value": "[parameters('messageLease')]"
                                 },
                                 {
                                     "name": "Requests__QueryInterval",
                                     "value": "[parameters('queryInterval')]"
+                                },
+                                {
+                                    "name": "Responses__QueueType",
+                                    "value": "[parameters('queueType')]"
+                                },
+                                {
+                                    "name": "Responses__ConnectionString",
+                                    "value": "[parameters('connectionString')]"
                                 },
                                 {
                                     "name": "Service__AssemblyPath",
