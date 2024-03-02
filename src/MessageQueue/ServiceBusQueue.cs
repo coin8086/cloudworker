@@ -43,6 +43,7 @@ public class ServiceBusQueue : IMessageQueue
     public const string QueueType = "servicebus";
 
     private readonly QueueOptions _options;
+    private readonly TimeSpan _messageLease;
     private ServiceBusClient _client;
     private ServiceBusReceiver _receiver;
     private ServiceBusSender _sender;
@@ -50,13 +51,19 @@ public class ServiceBusQueue : IMessageQueue
     public ServiceBusQueue(QueueOptions options)
     {
         _options = options;
+        if (_options.MessageLease is null)
+        {
+            throw new ArgumentNullException(nameof(options.MessageLease));
+        }
+        _messageLease = TimeSpan.FromSeconds((double)_options.MessageLease);
+
         _client = new ServiceBusClient(_options.ConnectionString);
         //TODO: Shall we have either receiver or sender, but not both, for an instance of this class?
         _receiver = _client.CreateReceiver(_options.QueueName);
         _sender = _client.CreateSender(_options.QueueName);
     }
 
-    public TimeSpan MessageLease => throw new NotImplementedException();
+    public TimeSpan MessageLease => _messageLease;
 
     public async Task<IMessage> WaitAsync(CancellationToken? cancel = null)
     {
