@@ -40,6 +40,8 @@ public class ServiceBusQueueMessage : IMessage
 //TODO: Implement IAsyncDisposable since ServiceBusClient has it.
 public class ServiceBusQueue : IMessageQueue
 {
+    public const string QueueType = "servicebus";
+
     private readonly QueueOptions _options;
     private ServiceBusClient _client;
     private ServiceBusReceiver _receiver;

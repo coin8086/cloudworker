@@ -42,6 +42,8 @@ public class StorageQueueMessage : IMessage
 
 public class StorageQueue : IMessageQueue
 {
+    public const string QueueType = "storage";
+
     private readonly QueueOptions _options;
     private readonly TimeSpan _messageLease;
     private QueueClient _client;
