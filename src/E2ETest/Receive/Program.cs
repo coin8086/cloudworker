@@ -2,7 +2,7 @@
 using Azure.Storage.Queues.Models;
 using System.Diagnostics;
 
-namespace ReceiveResponse;
+namespace Receive;
 
 class Program
 {
@@ -11,7 +11,7 @@ class Program
     static void ShowUsage()
     {
         var usage = @"
-ReceiveResponse -n {queue name} [-m {max number of messages to receive}] [-i {query interval}] [-v] [-q]
+Receive -n {queue name} [-m {max number of messages to receive}] [-i {query interval}] [-v] [-q]
 ";
         Console.WriteLine(usage);
     }

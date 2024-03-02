@@ -1,7 +1,7 @@
 ﻿using Azure.Storage.Queues;
 using System.Diagnostics;
 
-namespace SendRequest;
+namespace Send;
 
 class Program
 {
@@ -10,11 +10,11 @@ class Program
     static void ShowUsage()
     {
         var usage = @"
-SendRequest -n {queue name} -c {count} -m {message}
+Send -n {queue name} -c {count} -m {message}
 
 or
 
-SendRequest -n {queue name} -c {count} -
+Send -n {queue name} -c {count} -
 
 A single ""-"" means the message is read from stdin.
 ";

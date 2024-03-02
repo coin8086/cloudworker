@@ -7,11 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceInterface", "Service
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceHost", "ServiceHost\ServiceHost.csproj", "{9C76940C-DAB1-4763-A21B-B5ECDE36B60F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServiceTest", "ServiceTest", "{1811B994-A9AC-42FC-9CE3-03D5157D1CB6}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "E2ETest", "E2ETest", "{1811B994-A9AC-42FC-9CE3-03D5157D1CB6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SendRequest", "ServiceTest\SendRequest\SendRequest.csproj", "{7E7A0A39-58FC-46E9-91A4-465FBF6E07B8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Send", "E2ETest\Send\Send.csproj", "{7E7A0A39-58FC-46E9-91A4-465FBF6E07B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReceiveResponse", "ServiceTest\ReceiveResponse\ReceiveResponse.csproj", "{8632C9A1-9145-4982-97E8-15D8BFB2C7F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Receive", "E2ETest\Receive\Receive.csproj", "{8632C9A1-9145-4982-97E8-15D8BFB2C7F3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue", "MessageQueue\MessageQueue.csproj", "{BE06C458-443A-4471-A076-0AB1C797B9BB}"
 EndProject
