@@ -118,7 +118,13 @@ ReceiveResponse -n {queue name} [-m {max number of messages to receive}] [-i {qu
 
         while (!token.IsCancellationRequested)
         {
-            QueueMessage message = client.ReceiveMessage(cancellationToken: token);
+            QueueMessage? message = null;
+            try
+            {
+                message = client.ReceiveMessage(cancellationToken: token);
+            }
+            catch (OperationCanceledException) {}
+
             if (message == null)
             {
                 if (!quiet && verbose)
