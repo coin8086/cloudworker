@@ -1,31 +1,32 @@
-﻿using Azure.Storage.Queues;
+﻿using Cloud.Soa;
 using System.Diagnostics;
 
 namespace Send;
 
 class Program
 {
-    const string ENV_CONNECTION_STRING = "STORAGE_CONNECTION_STRING";
+    const string ENV_CONNECTION_STRING = "QUEUE_CONNECTION_STRING";
 
     static void ShowUsage()
     {
         var usage = @"
-Send -n {queue name} -c {count} -m {message}
+Send [-t {storage|servicebus}] -n {queue name} -c {count} -m {message}
 
 or
 
-Send -n {queue name} -c {count} -
+Send [-t {storage|servicebus}] -n {queue name} -c {count} -
 
 A single ""-"" means the message is read from stdin.
 ";
         Console.WriteLine(usage);
     }
 
-    static (int count, string message, string queue) ParseCommandLine(string[] args)
+    static (string? queueType, string queue, int count, string message) ParseCommandLine(string[] args)
     {
         int count = 0;
         string? message = null;
         string? queueName = null;
+        string? queueType = null;
         try
         {
             for (int i = 0; i < args.Length; i++)
@@ -56,6 +57,15 @@ A single ""-"" means the message is read from stdin.
                         throw new ArgumentException("Queue name must be specified!");
                     }
                 }
+                else if ("-t".Equals(args[i], StringComparison.Ordinal))
+                {
+                    queueType = args[++i];
+                    if (!"storage".Equals(queueType, StringComparison.OrdinalIgnoreCase) && 
+                        !"servicebus".Equals(queueType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new ArgumentException("Unrecognized queue type!");
+                    }
+                }
                 else if ("-h".Equals(args[i], StringComparison.Ordinal))
                 {
                     ShowUsage();
@@ -77,7 +87,20 @@ A single ""-"" means the message is read from stdin.
             ShowUsage();
             Environment.Exit(1);
         }
-        return (count, message, queueName);
+        return (queueType, queueName, count, message);
+    }
+
+    static IMessageQueue CreateQueueClient(QueueOptions options)
+    {
+        if (string.IsNullOrEmpty(options.QueueType) ||
+            string.Equals(options.QueueType, "servicebus", StringComparison.OrdinalIgnoreCase))
+        {
+            return new ServiceBusQueue(options);
+        }
+        else
+        {
+            return new StorageQueue(options);
+        }
     }
 
     static int Main(string[] args)
@@ -89,10 +112,16 @@ A single ""-"" means the message is read from stdin.
             return 1;
         }
 
-        var (count, message, queueName) = ParseCommandLine(args);
+        var (queueType, queueName, count, message) = ParseCommandLine(args);
 
-        var client = new QueueClient(connectionString, queueName);
-        client.CreateIfNotExists();
+        var queueOptions = new QueueOptions()
+        {
+            QueueType = queueType,
+            ConnectionString = connectionString,
+            QueueName = queueName,
+            MessageLease = 60
+        };
+        var client = CreateQueueClient(queueOptions);
 
         var tasks = new Task[count];
         var stopWatch = new Stopwatch();
@@ -103,7 +132,7 @@ A single ""-"" means the message is read from stdin.
         stopWatch.Start();
         for (int i = 0; i < count; i++)
         {
-            tasks[i] = client.SendMessageAsync(message);
+            tasks[i] = client.SendAsync(message);
         }
         Task.WaitAll(tasks);
         stopWatch.Stop();

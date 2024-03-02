@@ -1,23 +1,26 @@
 ﻿using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
+using Cloud.Soa;
 using System.Diagnostics;
 
 namespace Receive;
 
 class Program
 {
-    const string ENV_CONNECTION_STRING = "STORAGE_CONNECTION_STRING";
+    const string ENV_CONNECTION_STRING = "QUEUE_CONNECTION_STRING";
 
     static void ShowUsage()
     {
         var usage = @"
-Receive -n {queue name} [-m {max number of messages to receive}] [-i {query interval}] [-v] [-q]
+Receive [-t {storage|servicebus}] -n {queue name} [-m {max number of messages to receive}] [-i {query interval}] [-v] [-q]
 ";
         Console.WriteLine(usage);
     }
 
-    static (string queue, int? maxMessages, int queryInterval, bool verbose, bool quiet) ParseCommandLine(string[] args)
+    static (string? queueType, string queue, int? maxMessages, int queryInterval, bool verbose, bool quiet)
+        ParseCommandLine(string[] args)
     {
+        string? queueType = null;
         string? queueName = null;
         int? maxMessages = null;
         int queryInterval = 200;
@@ -27,7 +30,16 @@ Receive -n {queue name} [-m {max number of messages to receive}] [-i {query inte
         {
             for (int i = 0; i < args.Length; i++)
             {
-                if ("-n".Equals(args[i], StringComparison.Ordinal))
+                if ("-t".Equals(args[i], StringComparison.Ordinal))
+                {
+                    queueType = args[++i];
+                    if (!"storage".Equals(queueType, StringComparison.OrdinalIgnoreCase) &&
+                        !"servicebus".Equals(queueType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new ArgumentException("Unrecognized queue type!");
+                    }
+                }
+                else if ("-n".Equals(args[i], StringComparison.Ordinal))
                 {
                     queueName = args[++i];
                     if (string.IsNullOrEmpty(queueName))
@@ -80,10 +92,23 @@ Receive -n {queue name} [-m {max number of messages to receive}] [-i {query inte
             ShowUsage();
             Environment.Exit(1);
         }
-        return (queueName, maxMessages, queryInterval, verbose, quiet);
+        return (queueType, queueName, maxMessages, queryInterval, verbose, quiet);
     }
 
-    static int Main(string[] args)
+    static IMessageQueue CreateQueueClient(QueueOptions options)
+    {
+        if (string.IsNullOrEmpty(options.QueueType) ||
+            string.Equals(options.QueueType, "servicebus", StringComparison.OrdinalIgnoreCase))
+        {
+            return new ServiceBusQueue(options);
+        }
+        else
+        {
+            return new StorageQueue(options);
+        }
+    }
+
+    static async Task<int> Main(string[] args)
     {
         var connectionString = Environment.GetEnvironmentVariable(ENV_CONNECTION_STRING);
         if (string.IsNullOrEmpty(connectionString))
@@ -92,14 +117,17 @@ Receive -n {queue name} [-m {max number of messages to receive}] [-i {query inte
             return 1;
         }
 
-        var (queueName, maxMessages, queryInterval, verbose, quiet) = ParseCommandLine(args);
+        var (queueType, queueName, maxMessages, queryInterval, verbose, quiet) = ParseCommandLine(args);
 
-        if (!quiet)
+        var queueOptions = new QueueOptions()
         {
-            Console.WriteLine($"Create queue {queueName} if it doesn't exists.");
-        }
-        var client = new QueueClient(connectionString, queueName);
-        client.CreateIfNotExists();
+            QueueType = queueType,
+            ConnectionString = connectionString,
+            QueueName = queueName,
+            MessageLease = 60,
+            QueryInterval = queryInterval,
+        };
+        var client = CreateQueueClient(queueOptions);
 
         Console.WriteLine($"Receive message from queue {queueName}.");
 
@@ -118,37 +146,26 @@ Receive -n {queue name} [-m {max number of messages to receive}] [-i {query inte
 
         while (!token.IsCancellationRequested)
         {
-            QueueMessage? message = null;
+            IMessage? message = null;
             try
             {
-                message = client.ReceiveMessage(cancellationToken: token);
+                message = await client.WaitAsync(token);
             }
-            catch (OperationCanceledException) {}
-
-            if (message == null)
+            catch (OperationCanceledException)
             {
-                if (!quiet && verbose)
-                {
-                    Console.WriteLine("No message. Wait.");
-                }
-                try
-                {
-                    Task.Delay(queryInterval).Wait(token);
-                }
-                catch (OperationCanceledException) {}
-                continue;
+                break;
             }
 
             if (!quiet)
             {
-                Console.WriteLine($"Received a message of length {message.MessageText.Length} at {DateTimeOffset.Now}.");
+                Console.WriteLine($"Received a message of length {message.Content.Length} at {DateTimeOffset.Now}.");
                 if (verbose)
                 {
-                    Console.WriteLine(message.MessageText);
+                    Console.WriteLine(message.Content);
                 }
                 Console.WriteLine($"Delete message.");
             }
-            client.DeleteMessage(message.MessageId, message.PopReceipt);
+            await message.DeleteAsync();
 
             ++nReceived;
             if (nReceived == 1)
