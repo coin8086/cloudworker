@@ -65,9 +65,9 @@ public class ServiceBusQueue : IMessageQueue
 
     public TimeSpan MessageLease => _messageLease;
 
-    public async Task<IMessage> WaitAsync(CancellationToken? cancel = null)
+    public async Task<IMessage> WaitAsync(CancellationToken cancel = default)
     {
-        var message = await _receiver.ReceiveMessageAsync(TimeSpan.MaxValue, cancel ?? CancellationToken.None);
+        var message = await _receiver.ReceiveMessageAsync(TimeSpan.MaxValue, cancel);
         return new ServiceBusQueueMessage(message, _receiver);
     }
 
