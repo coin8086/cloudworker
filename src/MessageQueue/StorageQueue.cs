@@ -40,15 +40,22 @@ public class StorageQueueMessage : IMessage
     }
 }
 
+public class StorageQueueOptions : QueueOptions
+{
+    public int? QueryInterval { get; set; } = 200;  //In milliseconds.
+
+    public static StorageQueueOptions Default { get; } = new StorageQueueOptions();
+}
+
 public class StorageQueue : IMessageQueue
 {
     public const string QueueType = "storage";
 
-    private readonly QueueOptions _options;
+    private readonly StorageQueueOptions _options;
     private readonly TimeSpan _messageLease;
     private QueueClient _client;
 
-    public StorageQueue(QueueOptions options)
+    public StorageQueue(StorageQueueOptions options)
     {
         _options = options;
         if (_options.MessageLease is null)
@@ -63,7 +70,7 @@ public class StorageQueue : IMessageQueue
 
     public async Task<IMessage> WaitAsync(CancellationToken cancel = default)
     {
-        var delay = _options.QueryInterval ?? QueueOptions.Default.QueryInterval;
+        var delay = _options.QueryInterval ?? StorageQueueOptions.Default.QueryInterval;
         while (true)
         {
             var message = await _client.ReceiveMessageAsync(MessageLease, cancel);

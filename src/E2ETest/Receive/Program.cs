@@ -95,7 +95,7 @@ Receive [-t {storage|servicebus}] -n {queue name} [-m {max number of messages to
         return (queueType, queueName, maxMessages, queryInterval, verbose, quiet);
     }
 
-    static IMessageQueue CreateQueueClient(QueueOptions options)
+    static IMessageQueue CreateQueueClient(StorageQueueOptions options)
     {
         if (string.IsNullOrEmpty(options.QueueType) ||
             string.Equals(options.QueueType, "servicebus", StringComparison.OrdinalIgnoreCase))
@@ -119,7 +119,7 @@ Receive [-t {storage|servicebus}] -n {queue name} [-m {max number of messages to
 
         var (queueType, queueName, maxMessages, queryInterval, verbose, quiet) = ParseCommandLine(args);
 
-        var queueOptions = new QueueOptions()
+        var queueOptions = new StorageQueueOptions()
         {
             QueueType = queueType,
             ConnectionString = connectionString,

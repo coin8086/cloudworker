@@ -90,7 +90,7 @@ A single ""-"" means the message is read from stdin.
         return (queueType, queueName, count, message);
     }
 
-    static IMessageQueue CreateQueueClient(QueueOptions options)
+    static IMessageQueue CreateQueueClient(StorageQueueOptions options)
     {
         if (string.IsNullOrEmpty(options.QueueType) ||
             string.Equals(options.QueueType, "servicebus", StringComparison.OrdinalIgnoreCase))
@@ -114,7 +114,7 @@ A single ""-"" means the message is read from stdin.
 
         var (queueType, queueName, count, message) = ParseCommandLine(args);
 
-        var queueOptions = new QueueOptions()
+        var queueOptions = new StorageQueueOptions()
         {
             QueueType = queueType,
             ConnectionString = connectionString,

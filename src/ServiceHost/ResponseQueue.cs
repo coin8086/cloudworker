@@ -12,7 +12,7 @@ interface IResponseQueue : IMessageQueue
 
 class ResponseStorageQueue : StorageQueue, IResponseQueue
 {
-    public ResponseStorageQueue(IOptionsMonitor<QueueOptions> options) : base(options.Get(IResponseQueue.ConfigName)) {}
+    public ResponseStorageQueue(IOptionsMonitor<StorageQueueOptions> options) : base(options.Get(IResponseQueue.ConfigName)) {}
 }
 
 class ResponseServiceBusQueue: ServiceBusQueue, IResponseQueue
@@ -27,28 +27,34 @@ static class ServiceCollectionResponseQueueExtensions
         var config = configuration.GetSection(IResponseQueue.ConfigName);
         var queueType = config["QueueType"];
 
-        services.AddTransient<IResponseQueue>(provider =>
+        if (string.IsNullOrEmpty(queueType) ||
+            ServiceBusQueue.QueueType.Equals(queueType, StringComparison.OrdinalIgnoreCase))
         {
-            if (string.IsNullOrEmpty(queueType) ||
-                ServiceBusQueue.QueueType.Equals(queueType, StringComparison.OrdinalIgnoreCase))
+            services.AddTransient<IResponseQueue>(provider =>
             {
                 var option = provider.GetRequiredService<IOptionsMonitor<QueueOptions>>();
                 return new ResponseServiceBusQueue(option);
-            }
-            else if (StorageQueue.QueueType.Equals(queueType, StringComparison.OrdinalIgnoreCase))
+            });
+            services.AddOptionsWithValidateOnStart<QueueOptions>(IResponseQueue.ConfigName)
+                .Bind(configuration.GetSection(IResponseQueue.ConfigName))
+                .ValidateDataAnnotations();
+        }
+        else if (StorageQueue.QueueType.Equals(queueType, StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddTransient<IResponseQueue>(provider =>
             {
-                var option = provider.GetRequiredService<IOptionsMonitor<QueueOptions>>();
+                var option = provider.GetRequiredService<IOptionsMonitor<StorageQueueOptions>>();
                 return new ResponseStorageQueue(option);
-            }
-            else
-            {
-                throw new ArgumentException($"Invalid queue type '{queueType}'!");
-            }
-        });
+            });
+            services.AddOptionsWithValidateOnStart<StorageQueueOptions>(IResponseQueue.ConfigName)
+                .Bind(configuration.GetSection(IResponseQueue.ConfigName))
+                .ValidateDataAnnotations();
+        }
+        else
+        {
+            throw new ArgumentException($"Invalid queue type '{queueType}'!");
+        }
 
-        services.AddOptionsWithValidateOnStart<QueueOptions>(IResponseQueue.ConfigName)
-            .Bind(configuration.GetSection(IResponseQueue.ConfigName))
-            .ValidateDataAnnotations();
         return services;
     }
 }
