@@ -94,7 +94,7 @@
                                 },
                                 {
                                     "name": "Requests__ConnectionString",
-                                    "value": "[parameters('connectionString')]"
+                                    "secureValue": "[parameters('connectionString')]"
                                 },
                                 {
                                     "name": "Requests__MessageLease",
@@ -110,7 +110,7 @@
                                 },
                                 {
                                     "name": "Responses__ConnectionString",
-                                    "value": "[parameters('connectionString')]"
+                                    "secureValue": "[parameters('connectionString')]"
                                 },
                                 {
                                     "name": "Service__AssemblyPath",
