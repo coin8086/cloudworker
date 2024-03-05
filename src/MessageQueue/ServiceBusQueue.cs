@@ -37,8 +37,7 @@ public class ServiceBusQueueMessage : IMessage
     }
 }
 
-//TODO: Implement IAsyncDisposable since ServiceBusClient has it.
-public class ServiceBusQueue : IMessageQueue
+public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
 {
     public const string QueueType = "servicebus";
 
@@ -74,5 +73,10 @@ public class ServiceBusQueue : IMessageQueue
     public Task SendAsync(string message)
     {
         return _sender.SendMessageAsync(new ServiceBusMessage(message));
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        return _client.DisposeAsync();
     }
 }
