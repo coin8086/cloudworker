@@ -18,6 +18,10 @@
             "type": "String",
             "defaultValue": "southeastasia"
         },
+        "concurrency": {
+            "type": "int",
+            "defaultValue": 5
+        },
         "queueType": {
             "type": "string",
             "defaultValue": "servicebus",
@@ -80,6 +84,10 @@
                         "properties": {
                             "image": "leizacrdev.azurecr.io/soa/servicehost:1.0-ubuntu22",
                             "environmentVariables": [
+                                {
+                                    "name": "Worker__Concurrency",
+                                    "value": "[parameters('concurrency')]"
+                                },
                                 {
                                     "name": "Requests__QueueType",
                                     "value": "[parameters('queueType')]"
