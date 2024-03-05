@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using System.Collections.Generic;
 
 namespace Cloud.Soa;
 
@@ -10,14 +8,6 @@ public class Program
     {
         var builder = Host.CreateApplicationBuilder();
         var config = builder.Configuration;
-
-        var switchMappings = new Dictionary<string, string>()
-        {
-            { "-p", "Service:AssemblyPath" },
-            { "-i", "Worker:QueryInterval" },
-        };
-
-        config.AddCommandLine(args, switchMappings);
 
         builder.Services.AddUserService(config);
         builder.Services.AddRequestQueue(config);
