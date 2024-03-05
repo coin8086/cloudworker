@@ -11,6 +11,9 @@ namespace Cloud.Soa;
 
 class WorkerOptions
 {
+    public int? Concurrency { get; set; } = 1;
+
+    public static WorkerOptions Default = new WorkerOptions();
 }
 
 class Worker : BackgroundService
@@ -31,7 +34,7 @@ class Worker : BackgroundService
         _workerOptions = options.Value;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    private async Task WorkAsync(CancellationToken stoppingToken)
     {
         try
         {
@@ -95,9 +98,27 @@ class Worker : BackgroundService
         }
         catch (Exception ex)
         {
-            _logger.LogError("Error in ExecuteAsync: {error}", ex);
+            _logger.LogError("Error in WorkAsync: {error}", ex);
             throw;
         }
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        int concurrency = _workerOptions.Concurrency ?? 1;
+        if (concurrency <= 0)
+        {
+            concurrency = 1;
+        }
+
+        _logger.LogInformation("Concurrency = {concurrency}", concurrency);
+
+        var tasks = new Task[concurrency];
+        for (int i = 0; i < concurrency; i++)
+        {
+            tasks[i] = WorkAsync(stoppingToken);
+        }
+        await Task.WhenAll(tasks);
     }
 }
 
