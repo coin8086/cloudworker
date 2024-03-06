@@ -1,6 +1,4 @@
-﻿using Azure.Storage.Queues;
-using Azure.Storage.Queues.Models;
-using Cloud.Soa;
+﻿using Cloud.Soa;
 using System.Diagnostics;
 
 namespace Receive;
