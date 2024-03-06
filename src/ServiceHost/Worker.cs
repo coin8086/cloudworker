@@ -34,7 +34,7 @@ class Worker : BackgroundService
         _workerOptions = options.Value;
     }
 
-    private async Task WorkAsync(CancellationToken stoppingToken)
+    private async Task ProcessMessageAsync(CancellationToken stoppingToken)
     {
         try
         {
@@ -49,11 +49,11 @@ class Worker : BackgroundService
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.LogInformation("Waiting for request is cancelled.");
+                    _logger.LogInformation("ProcessMessageAsync: Waiting for request is cancelled.");
                     break;
                 }
 
-                _logger.LogTrace("Received request {id}", request.Id);
+                _logger.LogTrace("ProcessMessageAsync: Received request {id}", request.Id);
 
                 using var timer = new Timer(async _ => {
                     try
@@ -63,7 +63,7 @@ class Worker : BackgroundService
                     catch (Exception ex)
                     {
                         //TODO: Retry when failed
-                        _logger.LogWarning("Failed renewing lease for request {id}. Error: {error}", request.Id, ex);
+                        _logger.LogWarning("ProcessMessageAsync: Failed renewing lease for request {id}. Error: {error}", request.Id, ex);
                     }
                 }, null, interval, interval);
 
@@ -79,12 +79,13 @@ class Worker : BackgroundService
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.LogInformation("User service call is cancelled. Return current request back to the queue.");
+                    _logger.LogInformation("ProcessMessageAsync: User service call is cancelled. Return current request back to the queue.");
                     timer.Change(Timeout.Infinite, Timeout.Infinite);
                     await request.ReturnAsync();
                     break;
                 }
 
+                //TODO: Retry when throttled
                 await _responses.SendAsync(result);
 
                 //Until result is succesfully sent, then request can be removed from queue.
@@ -93,12 +94,12 @@ class Worker : BackgroundService
 
             if (stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Cancellation is requested. Quit.");
+                _logger.LogInformation("ProcessMessageAsync: Cancellation is requested. Quit.");
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError("Error in WorkAsync: {error}", ex);
+            _logger.LogError("ProcessMessageAsync: Error: {error}", ex);
             throw;
         }
     }
@@ -111,14 +112,28 @@ class Worker : BackgroundService
             concurrency = 1;
         }
 
-        _logger.LogInformation("Concurrency = {concurrency}", concurrency);
+        _logger.LogInformation("ExecuteAsync: Concurrency = {concurrency}", concurrency);
 
-        var tasks = new Task[concurrency];
-        for (int i = 0; i < concurrency; i++)
+        using var semaphore = new SemaphoreSlim(concurrency);
+        while (!stoppingToken.IsCancellationRequested)
         {
-            tasks[i] = WorkAsync(stoppingToken);
+            try
+            {
+                await semaphore.WaitAsync();
+                _ = Task.Run(() => ProcessMessageAsync(stoppingToken), stoppingToken).ContinueWith(_ => semaphore.Release());
+            }
+            catch (Exception ex)
+            {
+                //Log error and continue...
+                _logger.LogError("ExecuteAsync: Error: {error}", ex);
+            }
         }
-        await Task.WhenAll(tasks);
+        _logger.LogInformation("ExecuteAsync: Stopping...");
+
+        //TODO: Wait for all running tasks to finish or timeout in a specified time.
+        await Task.Delay(3000);
+
+        _logger.LogInformation("ExecuteAsync: Stopped.");
     }
 }
 
