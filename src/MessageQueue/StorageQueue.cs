@@ -73,10 +73,10 @@ public class StorageQueue : IMessageQueue
         var delay = _options.QueryInterval ?? StorageQueueOptions.Default.QueryInterval;
         while (true)
         {
-            var message = await _client.ReceiveMessageAsync(MessageLease, cancel);
+            var message = await _client.ReceiveMessageAsync(MessageLease, cancel).ConfigureAwait(false);
             if (message.Value == null)
             {
-                await Task.Delay(delay!.Value, cancel);
+                await Task.Delay(delay!.Value, cancel).ConfigureAwait(false);
             }
             else
             {

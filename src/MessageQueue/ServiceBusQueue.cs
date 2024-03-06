@@ -66,7 +66,7 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
 
     public async Task<IMessage> WaitAsync(CancellationToken cancel = default)
     {
-        var message = await _receiver.ReceiveMessageAsync(TimeSpan.MaxValue, cancel);
+        var message = await _receiver.ReceiveMessageAsync(TimeSpan.MaxValue, cancel).ConfigureAwait(false);
         return new ServiceBusQueueMessage(message, _receiver);
     }
 
