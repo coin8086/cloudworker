@@ -130,8 +130,13 @@ class Worker : BackgroundService
         }
         _logger.LogInformation("ExecuteAsync: Stopping...");
 
-        //TODO: Wait for all running tasks to finish or timeout in a specified time.
-        await Task.Delay(3000);
+        //Wait for all running tasks to finish or timeout.
+        var tasks = new Task[concurrency];
+        for (int i = 0; i < concurrency; i++)
+        {
+            tasks[i] = semaphore.WaitAsync(3000);
+        }
+        await Task.WhenAll(tasks);
 
         _logger.LogInformation("ExecuteAsync: Stopped.");
     }
