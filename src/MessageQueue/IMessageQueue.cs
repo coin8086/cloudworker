@@ -13,8 +13,10 @@ public interface IMessage
     //Renew with the default lease on IMessageQueue
     Task RenewLeaseAsync();
 
+    //Return to queue
     Task ReturnAsync();
 
+    //Delete from queue
     Task DeleteAsync();
 }
 
@@ -26,5 +28,6 @@ public interface IMessageQueue
     //Wait for a message, until one is received or the operation is cancelled.
     Task<IMessage> WaitAsync(CancellationToken cancel = default);
 
+    //Send a message to queue
     Task SendAsync(string message, CancellationToken cancel = default);
 }
