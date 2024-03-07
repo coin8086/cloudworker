@@ -20,7 +20,7 @@
         },
         "concurrency": {
             "type": "int",
-            "defaultValue": 5
+            "defaultValue": 10
         },
         "queueType": {
             "type": "string",
