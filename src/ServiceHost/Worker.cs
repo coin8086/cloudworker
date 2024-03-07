@@ -99,7 +99,7 @@ class Worker : BackgroundService
         }
         catch (Exception ex)
         {
-            _logger.LogError("ProcessMessageAsync: Error: {error}", ex);
+            _logger.LogError(ex, "ProcessMessageAsync: Error");
             throw;
         }
     }
@@ -125,7 +125,7 @@ class Worker : BackgroundService
             catch (Exception ex)
             {
                 //Log error and continue...
-                _logger.LogError("ExecuteAsync: Error: {error}", ex);
+                _logger.LogError(ex, "ExecuteAsync: Error");
             }
         }
         _logger.LogInformation("ExecuteAsync: Stopping...");

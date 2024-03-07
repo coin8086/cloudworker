@@ -130,7 +130,7 @@ public class CGIService : ISoaService
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogError("InvokeAsync Error: {ex}", ex);
+            _logger.LogError(ex, "InvokeAsync: Error when running '{file}'", _options.FileName);
             var result = new CGICallResult()
             {
                 Stdout = stdout.ToString(),

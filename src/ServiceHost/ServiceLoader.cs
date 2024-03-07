@@ -47,7 +47,7 @@ class ServiceLoader : IServiceLoader
         }
         catch (Exception ex)
         {
-            _logger.LogError("Error when creating user service instance: {ex}", ex);
+            _logger.LogError(ex, "Error when creating user service instance");
             throw;
         }
     }
