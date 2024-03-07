@@ -70,9 +70,9 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
         return new ServiceBusQueueMessage(message, _receiver);
     }
 
-    public Task SendAsync(string message)
+    public Task SendAsync(string message, CancellationToken cancel = default)
     {
-        return _sender.SendMessageAsync(new ServiceBusMessage(message));
+        return _sender.SendMessageAsync(new ServiceBusMessage(message), cancel);
     }
 
     public ValueTask DisposeAsync()

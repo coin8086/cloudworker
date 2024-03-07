@@ -85,8 +85,8 @@ public class StorageQueue : IMessageQueue
         }
     }
 
-    public Task SendAsync(string message)
+    public Task SendAsync(string message, CancellationToken cancel = default)
     {
-        return _client.SendMessageAsync(message);
+        return _client.SendMessageAsync(message, MessageLease, cancellationToken: cancel);
     }
 }
