@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
@@ -54,21 +53,10 @@ public class CGIService : ISoaService
 
         _logger.LogInformation("Look up configuration file in '{configFileBase}'.", configFileBase);
 
-        var args0 = Environment.GetCommandLineArgs();
-        var args = new string[args0.Length - 1];
-        Array.Copy(args0, 1, args, 0, args.Length);
-
-        var switchMappings = new Dictionary<string, string>()
-        {
-            { "-f", "FileName" },
-            { "-a", "Arguments" },
-        };
-
         var builder = new ConfigurationBuilder()
             .SetBasePath(configFileBase)
             .AddJsonFile("cgisettings.json", true)
-            .AddEnvironmentVariables("CGI_")
-            .AddCommandLine(args, switchMappings);
+            .AddEnvironmentVariables("CGI_");
 
         var configuration = builder.Build();
         var options = configuration.Get<CGIServiceOptions>();
