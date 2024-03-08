@@ -1,102 +1,62 @@
 ﻿using Cloud.Soa;
+using CommandLine;
 using System.Diagnostics;
 
 namespace Receive;
 
 class Program
 {
-    const string ENV_CONNECTION_STRING = "QUEUE_CONNECTION_STRING";
-
-    static void ShowUsage()
+    class Options
     {
-        var usage = @"
-Receive [-t {storage|servicebus}] -n {queue name} [-m {max number of messages to receive}] [-i {query interval}] [-v] [-q]
-";
-        Console.WriteLine(usage);
-    }
+        const string ENV_CONNECTION_STRING = "QUEUE_CONNECTION_STRING";
 
-    static (string? queueType, string queue, int? maxMessages, int queryInterval, bool verbose, bool quiet)
-        ParseCommandLine(string[] args)
-    {
-        string? queueType = null;
-        string? queueName = null;
-        int? maxMessages = null;
-        int queryInterval = 200;
-        bool verbose = false;
-        bool quiet = false;
-        try
+        [Option('C', "connection-string", HelpText = $"Can also be set by env var '{ENV_CONNECTION_STRING}'")]
+        public string? ConnectionString { get; set; }
+
+        [Option('t', "queue-type", HelpText = $"Can be '{ServiceBusQueue.QueueType}' or '{StorageQueue.QueueType}'.", Default = (string)ServiceBusQueue.QueueType)]
+        public string? QueueType { get; set; }
+
+        [Option('n', "queue-name", Required = true)]
+        public string? QueueName { get; set; }
+
+        [Option('m', "max-messages", HelpText = "Max number of messages to receive before exit")]
+        public int? MaxMessages { get; set; }
+
+        [Option('i', "query-interval", Default = (int)500, HelpText = "For storage queue only")]
+        public int QueryInterval { get; set; }
+
+        [Option('v', "verbose")]
+        public bool Verbose { get; set; }
+
+        [Option('q', "quiet")]
+        public bool Quiet { get; set; }
+
+        public void Validate()
         {
-            for (int i = 0; i < args.Length; i++)
+            if (string.IsNullOrWhiteSpace(ConnectionString))
             {
-                if ("-t".Equals(args[i], StringComparison.Ordinal))
+                var connectionString = Environment.GetEnvironmentVariable(ENV_CONNECTION_STRING);
+                if (string.IsNullOrWhiteSpace(connectionString))
                 {
-                    queueType = args[++i];
-                    if (!"storage".Equals(queueType, StringComparison.OrdinalIgnoreCase) &&
-                        !"servicebus".Equals(queueType, StringComparison.OrdinalIgnoreCase))
-                    {
-                        throw new ArgumentException("Unrecognized queue type!");
-                    }
+                    throw new ArgumentException($"Connection string is missing! Set it either in command line or in environment variable {ENV_CONNECTION_STRING}!");
                 }
-                else if ("-n".Equals(args[i], StringComparison.Ordinal))
+                ConnectionString = connectionString;
+            }
+            if (!string.IsNullOrEmpty(QueueType))
+            {
+                if (!QueueType.Equals(StorageQueue.QueueType, StringComparison.OrdinalIgnoreCase) &&
+                    !QueueType.Equals(ServiceBusQueue.QueueType, StringComparison.OrdinalIgnoreCase))
                 {
-                    queueName = args[++i];
-                    if (string.IsNullOrEmpty(queueName))
-                    {
-                        throw new ArgumentException("Queue name must be specified!");
-                    }
-                }
-                else if ("-m".Equals(args[i], StringComparison.Ordinal))
-                {
-                    maxMessages = int.Parse(args[++i]);
-                    if (maxMessages < 0)
-                    {
-                        throw new ArgumentException("-m {number} must be greater than 0!");
-                    }
-                }
-                else if ("-i".Equals(args[i], StringComparison.Ordinal))
-                {
-                    queryInterval = int.Parse(args[++i]);
-                    if (queryInterval < 0)
-                    {
-                        throw new ArgumentException("-i {number} must be greater than 0!");
-                    }
-                }
-                else if ("-v".Equals(args[i], StringComparison.Ordinal))
-                {
-                    verbose = true;
-                }
-                else if ("-q".Equals(args[i], StringComparison.Ordinal))
-                {
-                    quiet = true;
-                }
-                else if ("-h".Equals(args[i], StringComparison.Ordinal))
-                {
-                    ShowUsage();
-                    Environment.Exit(0);
-                }
-                else
-                {
-                    throw new ArgumentException($"Unrecognized parameter '{args[i]}'!");
+                    throw new ArgumentException($"Invalid queue type '{QueueType}'!");
                 }
             }
-            if (queueName == null)
-            {
-                throw new ArgumentException($"At least a required parameter is missing!");
-            }
         }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error when parsing arguments: {ex}");
-            ShowUsage();
-            Environment.Exit(1);
-        }
-        return (queueType, queueName, maxMessages, queryInterval, verbose, quiet);
     }
 
     static IMessageQueue CreateQueueClient(StorageQueueOptions options)
     {
         if (string.IsNullOrEmpty(options.QueueType) ||
-            string.Equals(options.QueueType, "servicebus", StringComparison.OrdinalIgnoreCase))
+            string.Equals(options.QueueType, ServiceBusQueue.QueueType, StringComparison.OrdinalIgnoreCase))
         {
             return new ServiceBusQueue(options);
         }
@@ -108,26 +68,25 @@ Receive [-t {storage|servicebus}] -n {queue name} [-m {max number of messages to
 
     static async Task<int> Main(string[] args)
     {
-        var connectionString = Environment.GetEnvironmentVariable(ENV_CONNECTION_STRING);
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            Console.Error.WriteLine($"Environment variable {ENV_CONNECTION_STRING} is required but missing!");
-            return 1;
-        }
+        return await Parser.Default.ParseArguments<Options>(args)
+            .MapResult(RunAsync, _ => Task.FromResult(1));
+    }
 
-        var (queueType, queueName, maxMessages, queryInterval, verbose, quiet) = ParseCommandLine(args);
+    static async Task<int> RunAsync(Options options)
+    {
+        options.Validate();
 
         var queueOptions = new StorageQueueOptions()
         {
-            QueueType = queueType,
-            ConnectionString = connectionString,
-            QueueName = queueName,
+            QueueType = options.QueueType,
+            ConnectionString = options.ConnectionString,
+            QueueName = options.QueueName,
             MessageLease = 60,
-            QueryInterval = queryInterval,
+            QueryInterval = options.QueryInterval,
         };
         var client = CreateQueueClient(queueOptions);
 
-        Console.WriteLine($"Receive message from queue {queueName}.");
+        Console.WriteLine($"Receive message from queue {options.QueueName}.");
 
         var cts = new CancellationTokenSource();
         var token = cts.Token;
@@ -154,10 +113,10 @@ Receive [-t {storage|servicebus}] -n {queue name} [-m {max number of messages to
                 break;
             }
 
-            if (!quiet)
+            if (!options.Quiet)
             {
                 Console.WriteLine($"Received a message of length {message.Content.Length} at {DateTimeOffset.Now}.");
-                if (verbose)
+                if (options.Verbose)
                 {
                     Console.WriteLine(message.Content);
                 }
@@ -170,7 +129,7 @@ Receive [-t {storage|servicebus}] -n {queue name} [-m {max number of messages to
             {
                 stopWatch.Start();
             }
-            if (nReceived == maxMessages)
+            if (nReceived == options.MaxMessages)
             {
                 break;
             }
