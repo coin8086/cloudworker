@@ -1,99 +1,62 @@
 ﻿using Cloud.Soa;
+using CommandLine;
 using System.Diagnostics;
 
 namespace Send;
 
 class Program
 {
-    const string ENV_CONNECTION_STRING = "QUEUE_CONNECTION_STRING";
-
-    static void ShowUsage()
+    class Options
     {
-        var usage = @"
-Send [-t {storage|servicebus}] -n {queue name} -c {count} -m {message}
+        const string ENV_CONNECTION_STRING = "QUEUE_CONNECTION_STRING";
 
-or
+        [Option('C', "connection-string", HelpText = $"Can also be set by env var '{ENV_CONNECTION_STRING}'")]
+        public string? ConnectionString { get; set; }
 
-Send [-t {storage|servicebus}] -n {queue name} -c {count} -
+        [Option('t', "queue-type", HelpText = $"Can be '{ServiceBusQueue.QueueType}' or '{StorageQueue.QueueType}'.", Default = (string)ServiceBusQueue.QueueType)]
+        public string? QueueType { get; set; }
 
-A single ""-"" means the message is read from stdin.
-";
-        Console.WriteLine(usage);
-    }
+        [Option('n', "queue-name", Required = true)]
+        public string? QueueName { get; set; }
 
-    static (string? queueType, string queue, int count, string message) ParseCommandLine(string[] args)
-    {
-        int count = 0;
-        string? message = null;
-        string? queueName = null;
-        string? queueType = null;
-        try
+        [Option('c', "count", Default = (int)1, HelpText = "Number of repeat sendings (for the same message)")]
+        public int Count { get; set; }
+
+        [Option('m', "message", HelpText = "Message to send. Stdin is read as message content if this option is not specified.")]
+        public string? Message { get; set; }
+
+        public void Validate()
         {
-            for (int i = 0; i < args.Length; i++)
+            if (string.IsNullOrWhiteSpace(ConnectionString))
             {
-                if ("-c".Equals(args[i], StringComparison.Ordinal))
+                var connectionString = Environment.GetEnvironmentVariable(ENV_CONNECTION_STRING);
+                if (string.IsNullOrWhiteSpace(connectionString))
                 {
-                    count = int.Parse(args[++i]);
-                    if (count <= 0)
-                    {
-                        throw new ArgumentException($"Parameter '-c <count>' must be greater than 0!");
-                    }
+                    throw new ArgumentException($"Connection string is missing! Set it either in command line or in environment variable {ENV_CONNECTION_STRING}!");
                 }
-                else if ("-m".Equals(args[i], StringComparison.Ordinal))
+                ConnectionString = connectionString;
+            }
+            if (!string.IsNullOrEmpty(QueueType))
+            {
+                if (!QueueType.Equals(StorageQueue.QueueType, StringComparison.OrdinalIgnoreCase) &&
+                    !QueueType.Equals(ServiceBusQueue.QueueType, StringComparison.OrdinalIgnoreCase))
                 {
-                    message = args[++i];
-                }
-                else if ("-".Equals(args[i], StringComparison.Ordinal))
-                {
-                    using var stdin = Console.OpenStandardInput();
-                    using var reader = new StreamReader(stdin);
-                    message = reader.ReadToEnd();
-                }
-                else if ("-n".Equals(args[i], StringComparison.Ordinal))
-                {
-                    queueName = args[++i];
-                    if (string.IsNullOrEmpty(queueName))
-                    {
-                        throw new ArgumentException("Queue name must be specified!");
-                    }
-                }
-                else if ("-t".Equals(args[i], StringComparison.Ordinal))
-                {
-                    queueType = args[++i];
-                    if (!"storage".Equals(queueType, StringComparison.OrdinalIgnoreCase) && 
-                        !"servicebus".Equals(queueType, StringComparison.OrdinalIgnoreCase))
-                    {
-                        throw new ArgumentException("Unrecognized queue type!");
-                    }
-                }
-                else if ("-h".Equals(args[i], StringComparison.Ordinal))
-                {
-                    ShowUsage();
-                    Environment.Exit(0);
-                }
-                else
-                {
-                    throw new ArgumentException($"Unrecognized parameter '{args[i]}'!");
+                    throw new ArgumentException($"Invalid queue type '{QueueType}'!");
                 }
             }
-            if (count == 0 || message == null || queueName == null)
+            if (Message == null)
             {
-                throw new ArgumentException($"At least a required parameter is missing!");
+                using var stdin = Console.OpenStandardInput();
+                using var reader = new StreamReader(stdin);
+                Message = reader.ReadToEnd();
             }
         }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error when parsing arguments: {ex}");
-            ShowUsage();
-            Environment.Exit(1);
-        }
-        return (queueType, queueName, count, message);
     }
 
     static IMessageQueue CreateQueueClient(StorageQueueOptions options)
     {
         if (string.IsNullOrEmpty(options.QueueType) ||
-            string.Equals(options.QueueType, "servicebus", StringComparison.OrdinalIgnoreCase))
+            string.Equals(options.QueueType, ServiceBusQueue.QueueType, StringComparison.OrdinalIgnoreCase))
         {
             return new ServiceBusQueue(options);
         }
@@ -105,41 +68,39 @@ A single ""-"" means the message is read from stdin.
 
     static int Main(string[] args)
     {
-        var connectionString = Environment.GetEnvironmentVariable(ENV_CONNECTION_STRING);
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            Console.Error.WriteLine($"Environment variable {ENV_CONNECTION_STRING} is required but missing!");
-            return 1;
-        }
+        return Parser.Default.ParseArguments<Options>(args).MapResult(Run, _ => 1);
+    }
 
-        var (queueType, queueName, count, message) = ParseCommandLine(args);
+    static int Run(Options options)
+    {
+        options.Validate();
 
         var queueOptions = new StorageQueueOptions()
         {
-            QueueType = queueType,
-            ConnectionString = connectionString,
-            QueueName = queueName,
+            QueueType = options.QueueType,
+            ConnectionString = options.ConnectionString,
+            QueueName = options.QueueName,
             MessageLease = 60
         };
         var client = CreateQueueClient(queueOptions);
 
-        var tasks = new Task[count];
+        var tasks = new Task[options.Count];
         var stopWatch = new Stopwatch();
 
-        Console.WriteLine($"Send {count} messages, each of length {message.Length}, to queue {queueName}.");
+        Console.WriteLine($"Send {options.Count} messages, each of length {options.Message!.Length}, to queue {options.QueueName}.");
         Console.WriteLine($"Start sending at {DateTimeOffset.Now}");
 
         stopWatch.Start();
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < options.Count; i++)
         {
-            tasks[i] = client.SendAsync(message);
+            tasks[i] = client.SendAsync(options.Message!);
         }
         Task.WaitAll(tasks);
         stopWatch.Stop();
 
         Console.WriteLine($"End sending at {DateTimeOffset.Now}");
 
-        var throughput = count / stopWatch.Elapsed.TotalSeconds;
+        var throughput = options.Count / stopWatch.Elapsed.TotalSeconds;
         Console.WriteLine($"Send throughput: {throughput:f3} messages/second");
         return 0;
     }
