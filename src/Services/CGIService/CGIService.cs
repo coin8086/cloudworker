@@ -73,6 +73,7 @@ public class CGIService : ISoaService
     {
         _logger.LogTrace("InvokeAsync: input={input}", input);
 
+        //TODO: Set/modify/restrict environment variables?
         var startInfo = new ProcessStartInfo()
         {
             UseShellExecute = false,
