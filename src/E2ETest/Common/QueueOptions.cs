@@ -4,6 +4,15 @@ namespace Cloud.Soa.Client;
 
 public class QueueOptions
 {
+    public QueueOptions() { }
+
+    public QueueOptions(QueueOptions options)
+    {
+        ConnectionString = options.ConnectionString;
+        QueueType = options.QueueType;
+        QueueName = options.QueueName;
+    }
+
     const string ENV_CONNECTION_STRING = "QUEUE_CONNECTION_STRING";
 
     [Option('C', "connection-string", HelpText = $"Can also be set by env var '{ENV_CONNECTION_STRING}'")]
@@ -41,4 +50,11 @@ public class StorageQueueOptions : QueueOptions
 {
     [Option('i', "query-interval", Default = (int)500, HelpText = "For storage queue only")]
     public int QueryInterval { get; set; }
+
+    public StorageQueueOptions() { }
+
+    public StorageQueueOptions(StorageQueueOptions options) : base(options)
+    {
+        QueryInterval = options.QueryInterval;
+    }
 }
