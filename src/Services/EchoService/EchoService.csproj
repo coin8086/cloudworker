@@ -4,8 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>Cloud.Soa</RootNamespace>
-    <EnableDynamicLoading>true</EnableDynamicLoading>
     <AssemblyName>Cloud.Soa.EchoService</AssemblyName>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
 
   <ItemGroup>
