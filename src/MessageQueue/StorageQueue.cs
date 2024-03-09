@@ -85,7 +85,8 @@ public class StorageQueue : IMessageQueue
         }
     }
 
-    public Task SendAsync(string message, CancellationToken cancel = default)
+    //TODO: Implement retryOnThrottled
+    public Task SendAsync(string message, bool retryOnThrottled = false, CancellationToken cancel = default)
     {
         return _client.SendMessageAsync(message, MessageLease, cancellationToken: cancel);
     }

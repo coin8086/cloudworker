@@ -85,8 +85,7 @@ class Worker : BackgroundService
                     break;
                 }
 
-                //TODO: Retry when throttled
-                await _responses.SendAsync(result);
+                await _responses.SendAsync(result, true);
 
                 //Until result is succesfully sent, then request can be removed from queue.
                 await request.DeleteAsync();

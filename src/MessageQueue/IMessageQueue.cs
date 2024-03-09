@@ -29,5 +29,5 @@ public interface IMessageQueue
     Task<IMessage> WaitAsync(CancellationToken cancel = default);
 
     //Send a message to queue
-    Task SendAsync(string message, CancellationToken cancel = default);
+    Task SendAsync(string message, bool retryOnThrottled = false, CancellationToken cancel = default);
 }

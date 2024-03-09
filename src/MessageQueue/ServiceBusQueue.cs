@@ -70,7 +70,8 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
         return new ServiceBusQueueMessage(message, _receiver);
     }
 
-    public Task SendAsync(string message, CancellationToken cancel = default)
+    //TODO: Implement retryOnThrottled
+    public Task SendAsync(string message, bool retryOnThrottled = false, CancellationToken cancel = default)
     {
         return _sender.SendMessageAsync(new ServiceBusMessage(message), cancel);
     }
