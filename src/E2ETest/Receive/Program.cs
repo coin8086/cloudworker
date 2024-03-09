@@ -1,4 +1,5 @@
 ﻿using Cloud.Soa;
+using Cloud.Soa.Client;
 using CommandLine;
 using System.Diagnostics;
 
@@ -6,64 +7,16 @@ namespace Receive;
 
 class Program
 {
-    class Options
+    class Options : Cloud.Soa.Client.StorageQueueOptions
     {
-        const string ENV_CONNECTION_STRING = "QUEUE_CONNECTION_STRING";
-
-        [Option('C', "connection-string", HelpText = $"Can also be set by env var '{ENV_CONNECTION_STRING}'")]
-        public string? ConnectionString { get; set; }
-
-        [Option('t', "queue-type", HelpText = $"Can be '{ServiceBusQueue.QueueType}' or '{StorageQueue.QueueType}'.", Default = (string)ServiceBusQueue.QueueType)]
-        public string? QueueType { get; set; }
-
-        [Option('n', "queue-name", Required = true)]
-        public string? QueueName { get; set; }
-
         [Option('m', "max-messages", HelpText = "Max number of messages to receive before exit")]
         public int? MaxMessages { get; set; }
-
-        [Option('i', "query-interval", Default = (int)500, HelpText = "For storage queue only")]
-        public int QueryInterval { get; set; }
 
         [Option('v', "verbose")]
         public bool Verbose { get; set; }
 
         [Option('q', "quiet")]
         public bool Quiet { get; set; }
-
-        public void Validate()
-        {
-            if (string.IsNullOrWhiteSpace(ConnectionString))
-            {
-                var connectionString = Environment.GetEnvironmentVariable(ENV_CONNECTION_STRING);
-                if (string.IsNullOrWhiteSpace(connectionString))
-                {
-                    throw new ArgumentException($"Connection string is missing! Set it either in command line or in environment variable {ENV_CONNECTION_STRING}!");
-                }
-                ConnectionString = connectionString;
-            }
-            if (!string.IsNullOrEmpty(QueueType))
-            {
-                if (!QueueType.Equals(StorageQueue.QueueType, StringComparison.OrdinalIgnoreCase) &&
-                    !QueueType.Equals(ServiceBusQueue.QueueType, StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new ArgumentException($"Invalid queue type '{QueueType}'!");
-                }
-            }
-        }
-    }
-
-    static IMessageQueue CreateQueueClient(StorageQueueOptions options)
-    {
-        if (string.IsNullOrEmpty(options.QueueType) ||
-            string.Equals(options.QueueType, ServiceBusQueue.QueueType, StringComparison.OrdinalIgnoreCase))
-        {
-            return new ServiceBusQueue(options);
-        }
-        else
-        {
-            return new StorageQueue(options);
-        }
     }
 
     static async Task<int> Main(string[] args)
@@ -75,18 +28,8 @@ class Program
     static async Task<int> RunAsync(Options options)
     {
         options.Validate();
-
-        var queueOptions = new StorageQueueOptions()
-        {
-            QueueType = options.QueueType,
-            ConnectionString = options.ConnectionString,
-            QueueName = options.QueueName,
-            MessageLease = 60,
-            QueryInterval = options.QueryInterval,
-        };
-        var client = CreateQueueClient(queueOptions);
-
         Console.WriteLine($"Receive message from queue {options.QueueName}.");
+        var client = QueueClient.Create(options);
 
         var cts = new CancellationTokenSource();
         var token = cts.Token;
