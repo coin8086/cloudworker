@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 namespace Cloud.Soa;
@@ -8,6 +9,7 @@ public class Program
     {
         var builder = Host.CreateApplicationBuilder();
         var config = builder.Configuration;
+        config.AddCommandLine(args);
 
         builder.Services.AddUserService(config);
         builder.Services.AddRequestQueue(config);
