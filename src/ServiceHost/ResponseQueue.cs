@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 
@@ -17,7 +18,8 @@ class ResponseStorageQueue : StorageQueue, IResponseQueue
 
 class ResponseServiceBusQueue: ServiceBusQueue, IResponseQueue
 {
-    public ResponseServiceBusQueue(IOptionsMonitor<QueueOptions> options) : base(options.Get(IResponseQueue.ConfigName)) { }
+    public ResponseServiceBusQueue(IOptionsMonitor<QueueOptions> options, ILogger<ResponseServiceBusQueue> logger)
+        : base(options.Get(IResponseQueue.ConfigName), logger) { }
 }
 
 static class ServiceCollectionResponseQueueExtensions
@@ -33,7 +35,8 @@ static class ServiceCollectionResponseQueueExtensions
             services.AddTransient<IResponseQueue>(provider =>
             {
                 var option = provider.GetRequiredService<IOptionsMonitor<QueueOptions>>();
-                return new ResponseServiceBusQueue(option);
+                var logger = provider.GetRequiredService<ILogger<ResponseServiceBusQueue>>();
+                return new ResponseServiceBusQueue(option, logger);
             });
             services.AddOptionsWithValidateOnStart<QueueOptions>(IResponseQueue.ConfigName)
                 .Bind(configuration.GetSection(IResponseQueue.ConfigName))

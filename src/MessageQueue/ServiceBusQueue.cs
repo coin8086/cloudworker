@@ -1,4 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,8 +47,9 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
     private ServiceBusClient _client;
     private ServiceBusReceiver _receiver;
     private ServiceBusSender _sender;
+    private ILogger? _logger;
 
-    public ServiceBusQueue(QueueOptions options)
+    public ServiceBusQueue(QueueOptions options, ILogger? logger = null)
     {
         _options = options;
         if (_options.MessageLease is null)
@@ -60,6 +62,8 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
         //TODO: Shall we have either receiver or sender, but not both, for an instance of this class?
         _receiver = _client.CreateReceiver(_options.QueueName);
         _sender = _client.CreateSender(_options.QueueName);
+
+        _logger = logger;
     }
 
     public TimeSpan MessageLease => _messageLease;
@@ -70,10 +74,28 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
         return new ServiceBusQueueMessage(message, _receiver);
     }
 
-    //TODO: Implement retryOnThrottled
-    public Task SendAsync(string message, bool retryOnThrottled = false, CancellationToken cancel = default)
+    public async Task SendAsync(string message, bool retryOnThrottled = false, CancellationToken cancel = default)
     {
-        return _sender.SendMessageAsync(new ServiceBusMessage(message), cancel);
+        while (!cancel.IsCancellationRequested)
+        {
+            try
+            {
+                await _sender.SendMessageAsync(new ServiceBusMessage(message), cancel);
+                break;
+            }
+            catch (ServiceBusException ex)
+            {
+                if (retryOnThrottled && ex.Reason == ServiceBusFailureReason.ServiceBusy)
+                {
+                    _logger?.LogWarning(ex, "ServiceBusQueue: Being throttled. Sleep 2 seconds before retry.");
+                    await Task.Delay(TimeSpan.FromSeconds(2), cancel);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
     }
 
     public ValueTask DisposeAsync()

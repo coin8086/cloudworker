@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 
@@ -17,7 +18,8 @@ class RequestStorageQueue : StorageQueue, IRequestQueue
 
 class RequestServiceBusQueue : ServiceBusQueue, IRequestQueue
 {
-    public RequestServiceBusQueue(IOptionsMonitor<QueueOptions> options) : base(options.Get(IRequestQueue.ConfigName)) {}
+    public RequestServiceBusQueue(IOptionsMonitor<QueueOptions> options, ILogger<RequestServiceBusQueue> logger)
+        : base(options.Get(IRequestQueue.ConfigName), logger) {}
 }
 
 static class ServiceCollectionRequestQueueExtensions
@@ -33,7 +35,8 @@ static class ServiceCollectionRequestQueueExtensions
             services.AddTransient<IRequestQueue>(provider =>
             {
                 var option = provider.GetRequiredService<IOptionsMonitor<QueueOptions>>();
-                return new RequestServiceBusQueue(option);
+                var logger = provider.GetRequiredService<ILogger<RequestServiceBusQueue>>();
+                return new RequestServiceBusQueue(option, logger);
             });
             services.AddOptionsWithValidateOnStart<QueueOptions>(IRequestQueue.ConfigName)
                 .Bind(configuration.GetSection(IRequestQueue.ConfigName))
