@@ -11,6 +11,7 @@ public class Program
         var config = builder.Configuration;
         config.AddCommandLine(args);
 
+        builder.Services.AddApplicationInsights(config);
         builder.Services.AddUserService(config);
         builder.Services.AddRequestQueue(config);
         builder.Services.AddResponseQueue(config);

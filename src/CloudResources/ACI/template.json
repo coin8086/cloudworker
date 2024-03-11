@@ -61,6 +61,10 @@
         "memoryInGB": {
             "type": "int",
             "defaultValue": 1
+        },
+        "appInsights": {
+            "type": "string",
+            "defaultValue": ""
         }
     },
     "variables": {
@@ -123,6 +127,10 @@
                                 {
                                     "name": "CGI_Arguments",
                                     "value": "[parameters('cgiArguments')]"
+                                },
+                                {
+                                    "name": "ApplicationInsights__ConnectionString",
+                                    "secureValue": "[parameters('appInsights')]"
                                 }
                             ],
                             "resources": {
