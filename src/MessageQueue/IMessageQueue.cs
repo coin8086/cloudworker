@@ -26,7 +26,7 @@ public interface IMessageQueue
     TimeSpan MessageLease { get; }
 
     //Wait for a message, until one is received or the operation is cancelled.
-    Task<IMessage> WaitAsync(CancellationToken cancel = default);
+    Task<IMessage> WaitAsync(bool retryOnThrottled = false, CancellationToken cancel = default);
 
     //Send a message to queue
     Task SendAsync(string message, bool retryOnThrottled = false, CancellationToken cancel = default);

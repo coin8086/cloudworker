@@ -45,7 +45,7 @@ class Worker : BackgroundService
                 IMessage? request = null;
                 try
                 {
-                    request = await _requests.WaitAsync(cancel: stoppingToken);
+                    request = await _requests.WaitAsync(true, stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {

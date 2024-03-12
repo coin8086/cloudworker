@@ -49,7 +49,7 @@ class Program
             IMessage? message = null;
             try
             {
-                message = await client.WaitAsync(token);
+                message = await client.WaitAsync(cancel: token);
             }
             catch (OperationCanceledException)
             {

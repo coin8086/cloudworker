@@ -183,7 +183,7 @@ class Program
     {
         while (Interlocked.Decrement(ref MessagesToReceive) >= 0)
         {
-            var msg = await receiver.WaitAsync();
+            var msg = await receiver.WaitAsync(true);
             await msg.DeleteAsync();
             Interlocked.Increment(ref MessagesReceived);
         }

@@ -68,7 +68,8 @@ public class StorageQueue : IMessageQueue
 
     public TimeSpan MessageLease => _messageLease;
 
-    public async Task<IMessage> WaitAsync(CancellationToken cancel = default)
+    //TODO: Implement retryOnThrottled
+    public async Task<IMessage> WaitAsync(bool retryOnThrottled = false, CancellationToken cancel = default)
     {
         var delay = _options.QueryInterval ?? StorageQueueOptions.Default.QueryInterval;
         while (true)

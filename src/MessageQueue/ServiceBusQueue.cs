@@ -68,19 +68,31 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
 
     public TimeSpan MessageLease => _messageLease;
 
-    public async Task<IMessage> WaitAsync(CancellationToken cancel = default)
+    public async Task<IMessage> WaitAsync(bool retryOnThrottled = false, CancellationToken cancel = default)
     {
-        var message = await _receiver.ReceiveMessageAsync(TimeSpan.MaxValue, cancel).ConfigureAwait(false);
-        return new ServiceBusQueueMessage(message, _receiver);
+        ServiceBusReceivedMessage? message = null;
+        await RetryWhenThrottled(async () =>
+        {
+            message = await _receiver.ReceiveMessageAsync(TimeSpan.MaxValue, cancel).ConfigureAwait(false);
+        }, retryOnThrottled, cancel).ConfigureAwait(false);
+        return new ServiceBusQueueMessage(message!, _receiver);
     }
 
     public async Task SendAsync(string message, bool retryOnThrottled = false, CancellationToken cancel = default)
+    {
+        await RetryWhenThrottled(async () =>
+        {
+            await _sender.SendMessageAsync(new ServiceBusMessage(message), cancel).ConfigureAwait(false);
+        }, retryOnThrottled, cancel).ConfigureAwait(false);
+    }
+
+    private async Task RetryWhenThrottled(Func<Task> task, bool retryOnThrottled = false, CancellationToken cancel = default)
     {
         while (!cancel.IsCancellationRequested)
         {
             try
             {
-                await _sender.SendMessageAsync(new ServiceBusMessage(message), cancel);
+                await task().ConfigureAwait(false);
                 break;
             }
             catch (ServiceBusException ex)
@@ -88,7 +100,7 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
                 if (retryOnThrottled && ex.Reason == ServiceBusFailureReason.ServiceBusy)
                 {
                     _logger?.LogWarning(ex, "ServiceBusQueue: Being throttled. Sleep 2 seconds before retry.");
-                    await Task.Delay(TimeSpan.FromSeconds(2), cancel);
+                    await Task.Delay(TimeSpan.FromSeconds(2), cancel).ConfigureAwait(false);
                 }
                 else
                 {
