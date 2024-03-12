@@ -69,7 +69,7 @@ class Program
     static async Task<int> Main(string[] args)
     {
         return await Parser.Default.ParseArguments<Options>(args)
-            .MapResult(RunAsync, _ => Task.FromResult(1));
+            .MapResult(RunAsync, _ => Task.FromResult(1)).ConfigureAwait(false);
     }
 
     static async Task<int> RunAsync(Options options)
@@ -108,7 +108,7 @@ class Program
         }
         if (tasks.Count > 0)
         {
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
         sw.Stop();
 
@@ -157,7 +157,7 @@ class Program
             {
                 try
                 {
-                    await sender.SendAsync(message, true);
+                    await sender.SendAsync(message, true).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -186,7 +186,7 @@ class Program
     {
         while (Interlocked.Decrement(ref MessagesToReceive) >= 0)
         {
-            var messages = await receiver.WaitBatchAsync(batchSize, true);
+            var messages = await receiver.WaitBatchAsync(batchSize, true).ConfigureAwait(false);
             var tasks = new Task[messages.Count];
             for (var i = 0; i <  messages.Count; i++)
             {
@@ -195,7 +195,7 @@ class Program
                 {
                     try
                     {
-                        await message.DeleteAsync();
+                        await message.DeleteAsync().ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -205,7 +205,7 @@ class Program
                     Interlocked.Increment(ref MessagesReceived);
                 });
             }
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
     }
 }
