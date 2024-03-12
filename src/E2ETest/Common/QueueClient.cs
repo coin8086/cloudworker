@@ -20,6 +20,7 @@ public static class QueueClient
         if (string.IsNullOrEmpty(options.QueueType) ||
             string.Equals(options.QueueType, ServiceBusQueue.QueueType, StringComparison.OrdinalIgnoreCase))
         {
+            //TODO: Provide a console logger for ServiceBusQueue
             return new ServiceBusQueue(queueOptions);
         }
         else

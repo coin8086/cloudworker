@@ -1,6 +1,10 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -76,6 +80,17 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
             message = await _receiver.ReceiveMessageAsync(TimeSpan.MaxValue, cancel).ConfigureAwait(false);
         }, retryOnThrottled, cancel).ConfigureAwait(false);
         return new ServiceBusQueueMessage(message!, _receiver);
+    }
+
+    public async Task<IReadOnlyList<IMessage>> WaitBatchAsync(int batchSize, bool retryOnThrottled = false, CancellationToken cancel = default)
+    {
+        IReadOnlyList<ServiceBusReceivedMessage>? messages = null;
+        await RetryWhenThrottled(async () =>
+        {
+            messages = await _receiver.ReceiveMessagesAsync(batchSize, TimeSpan.MaxValue, cancel).ConfigureAwait(false);
+        }, retryOnThrottled, cancel).ConfigureAwait(false);
+        Trace.Assert(messages != null && messages.Count > 0, "Service Bus ReceiveMessagesAsync returns empty result!");
+        return messages!.Select(msg => new ServiceBusQueueMessage(msg, _receiver)).ToImmutableList();
     }
 
     public async Task SendAsync(string message, bool retryOnThrottled = false, CancellationToken cancel = default)

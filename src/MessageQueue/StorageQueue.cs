@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
@@ -84,6 +85,12 @@ public class StorageQueue : IMessageQueue
                 return new StorageQueueMessage(_client, message, MessageLease);
             }
         }
+    }
+
+    //TODO: Implement WaitBatchAsync
+    public Task<IReadOnlyList<IMessage>> WaitBatchAsync(int batchSize, bool retryOnThrottled = false, CancellationToken cancel = default)
+    {
+        throw new NotImplementedException();
     }
 
     //TODO: Implement retryOnThrottled
