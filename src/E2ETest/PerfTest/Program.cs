@@ -33,6 +33,9 @@ class Program
         [Option('R', "response-queue")]
         public string? ResponseQueueName { get; set; }
 
+        [Option('b', "batch-size", Default = (int)1, HelpText = "Max number of messages to receive in one receive call")]
+        public int BatchSize { get; set; }
+
         public override void Validate()
         {
             base.Validate();
@@ -174,18 +177,35 @@ class Program
         for (var i = 0; i < options.ReceiverCount; i++)
         {
             var receiver = QueueClient.Create(queueOpts);
-            tasks[i] = StartReceiver(receiver);
+            tasks[i] = StartReceiver(receiver, options.BatchSize);
         }
         return Task.WhenAll(tasks);
     }
 
-    static async Task StartReceiver(IMessageQueue receiver)
+    static async Task StartReceiver(IMessageQueue receiver, int batchSize)
     {
         while (Interlocked.Decrement(ref MessagesToReceive) >= 0)
         {
-            var msg = await receiver.WaitAsync(true);
-            await msg.DeleteAsync();
-            Interlocked.Increment(ref MessagesReceived);
+            var messages = await receiver.WaitBatchAsync(batchSize, true);
+            var tasks = new Task[messages.Count];
+            for (var i = 0; i <  messages.Count; i++)
+            {
+                var message = messages[i];
+                tasks[i] = Task.Run(async() =>
+                {
+                    try
+                    {
+                        await message.DeleteAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error in deleting a message: {ex}");
+                        return;
+                    }
+                    Interlocked.Increment(ref MessagesReceived);
+                });
+            }
+            await Task.WhenAll(tasks);
         }
     }
 }
