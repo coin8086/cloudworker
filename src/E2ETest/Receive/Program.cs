@@ -7,7 +7,7 @@ namespace Receive;
 
 class Program
 {
-    class Options : Cloud.Soa.Client.StorageQueueOptions
+    class Options : Cloud.Soa.Client.QueueOptions
     {
         [Option('m', "max-messages", HelpText = "Max number of messages to receive before exit")]
         public int? MaxMessages { get; set; }

@@ -7,14 +7,8 @@ namespace PerfTest;
 
 class Program
 {
-    class Options : Cloud.Soa.Client.StorageQueueOptions
+    class Options : Cloud.Soa.Client.QueueOptions
     {
-        public Options() { }
-
-        public Options(Cloud.Soa.Client.StorageQueueOptions options) : base(options)
-        {
-        }
-
         [Option('l', "length", Default = (int)1024, HelpText = "Message length")]
         public int MessageLength { get; set; }
 
@@ -139,7 +133,7 @@ class Program
     {
         var message = new String('a', options.MessageLength);
         var batch = options.Count / options.SenderCount;
-        var queueOpts = new Cloud.Soa.Client.StorageQueueOptions(options) { QueueName = options.RequestQueueName };
+        var queueOpts = new Cloud.Soa.Client.QueueOptions(options) { QueueName = options.RequestQueueName };
         var tasks = new Task[options.SenderCount];
         for (var i = 0; i < options.SenderCount; i++)
         {
@@ -158,7 +152,7 @@ class Program
             {
                 try
                 {
-                    await sender.SendAsync(message, true).ConfigureAwait(false);
+                    await sender.SendAsync(message).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -173,7 +167,7 @@ class Program
 
     static Task StartReceiving(Options options)
     {
-        var queueOpts = new Cloud.Soa.Client.StorageQueueOptions(options) { QueueName = options.ResponseQueueName };
+        var queueOpts = new Cloud.Soa.Client.QueueOptions(options) { QueueName = options.ResponseQueueName };
         var tasks = new Task[options.ReceiverCount];
         for (var i = 0; i < options.ReceiverCount; i++)
         {
@@ -187,7 +181,7 @@ class Program
     {
         while (Interlocked.Decrement(ref MessagesToReceive) >= 0)
         {
-            var messages = await receiver.WaitBatchAsync(batchSize, true).ConfigureAwait(false);
+            var messages = await receiver.WaitBatchAsync(batchSize).ConfigureAwait(false);
             var tasks = new Task[messages.Count];
             for (var i = 0; i <  messages.Count; i++)
             {

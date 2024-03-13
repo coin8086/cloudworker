@@ -42,18 +42,25 @@ public class ServiceBusQueueMessage : IMessage
     }
 }
 
+public class ServiceBusQueueOptions : QueueOptions
+{
+    public bool? RetryOnThrottled { get; set; } = true;
+
+    public static ServiceBusQueueOptions Default { get; } = new ServiceBusQueueOptions();
+}
+
 public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
 {
     public const string QueueType = "servicebus";
 
-    private readonly QueueOptions _options;
+    private readonly ServiceBusQueueOptions _options;
     private readonly TimeSpan _messageLease;
     private ServiceBusClient _client;
     private ServiceBusReceiver _receiver;
     private ServiceBusSender _sender;
     private ILogger? _logger;
 
-    public ServiceBusQueue(QueueOptions options, ILogger? logger = null)
+    public ServiceBusQueue(ServiceBusQueueOptions options, ILogger? logger = null)
     {
         _options = options;
         if (_options.MessageLease is null)
@@ -62,7 +69,10 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
         }
         _messageLease = TimeSpan.FromSeconds((double)_options.MessageLease);
 
+        _options.RetryOnThrottled ??= ServiceBusQueueOptions.Default.RetryOnThrottled;
+
         _client = new ServiceBusClient(_options.ConnectionString);
+
         //TODO: Shall we have either receiver or sender, but not both, for an instance of this class?
         _receiver = _client.CreateReceiver(_options.QueueName);
         _sender = _client.CreateSender(_options.QueueName);
@@ -72,32 +82,32 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
 
     public TimeSpan MessageLease => _messageLease;
 
-    public async Task<IMessage> WaitAsync(bool retryOnThrottled = false, CancellationToken cancel = default)
+    public async Task<IMessage> WaitAsync(CancellationToken cancel = default)
     {
-        var messages = await WaitBatchAsync(1, retryOnThrottled, cancel).ConfigureAwait(false);
+        var messages = await WaitBatchAsync(1, cancel).ConfigureAwait(false);
         return messages[0];
     }
 
-    public async Task<IReadOnlyList<IMessage>> WaitBatchAsync(int batchSize, bool retryOnThrottled = false, CancellationToken cancel = default)
+    public async Task<IReadOnlyList<IMessage>> WaitBatchAsync(int batchSize, CancellationToken cancel = default)
     {
         IReadOnlyList<ServiceBusReceivedMessage>? messages = null;
         await RetryWhenThrottled(async () =>
         {
             messages = await _receiver.ReceiveMessagesAsync(batchSize, TimeSpan.MaxValue, cancel).ConfigureAwait(false);
-        }, retryOnThrottled, cancel).ConfigureAwait(false);
+        }, cancel).ConfigureAwait(false);
         Trace.Assert(messages != null && messages.Count > 0, "Service Bus ReceiveMessagesAsync returns empty result!");
         return messages!.Select(msg => new ServiceBusQueueMessage(msg, _receiver)).ToImmutableList();
     }
 
-    public async Task SendAsync(string message, bool retryOnThrottled = false, CancellationToken cancel = default)
+    public async Task SendAsync(string message, CancellationToken cancel = default)
     {
         await RetryWhenThrottled(async () =>
         {
             await _sender.SendMessageAsync(new ServiceBusMessage(message), cancel).ConfigureAwait(false);
-        }, retryOnThrottled, cancel).ConfigureAwait(false);
+        }, cancel).ConfigureAwait(false);
     }
 
-    private async Task RetryWhenThrottled(Func<Task> task, bool retryOnThrottled = false, CancellationToken cancel = default)
+    private async Task RetryWhenThrottled(Func<Task> task, CancellationToken cancel = default)
     {
         while (!cancel.IsCancellationRequested)
         {
@@ -108,7 +118,7 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
             }
             catch (ServiceBusException ex)
             {
-                if (retryOnThrottled && ex.Reason == ServiceBusFailureReason.ServiceBusy)
+                if (_options.RetryOnThrottled!.Value && ex.Reason == ServiceBusFailureReason.ServiceBusy)
                 {
                     _logger?.LogWarning(ex, "ServiceBusQueue: Being throttled. Sleep 2 seconds before retry.");
                     await Task.Delay(TimeSpan.FromSeconds(2), cancel).ConfigureAwait(false);

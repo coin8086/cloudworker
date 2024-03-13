@@ -1,10 +1,11 @@
 ﻿using CommandLine;
 
+//TODO: Rename it to Cloud.Soa.E2E, since this is only intended for use by E2E tests.
 namespace Cloud.Soa.Client;
 
 public class QueueOptions
 {
-    public QueueOptions() { }
+    public QueueOptions() {}
 
     public QueueOptions(QueueOptions options)
     {
@@ -23,6 +24,9 @@ public class QueueOptions
 
     [Option('n', "queue-name", Required = true)]
     public string? QueueName { get; set; }
+
+    [Option('i', "query-interval", Default = (int)500, HelpText = "For storage queue only")]
+    public int QueryInterval { get; set; }
 
     public virtual void Validate()
     {
@@ -43,18 +47,5 @@ public class QueueOptions
                 throw new ArgumentException($"Invalid queue type '{QueueType}'!");
             }
         }
-    }
-}
-
-public class StorageQueueOptions : QueueOptions
-{
-    [Option('i', "query-interval", Default = (int)500, HelpText = "For storage queue only")]
-    public int QueryInterval { get; set; }
-
-    public StorageQueueOptions() { }
-
-    public StorageQueueOptions(StorageQueueOptions options) : base(options)
-    {
-        QueryInterval = options.QueryInterval;
     }
 }

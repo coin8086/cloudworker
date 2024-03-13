@@ -45,7 +45,7 @@ class Worker : BackgroundService
                 IMessage? request = null;
                 try
                 {
-                    request = await _requests.WaitAsync(true, stoppingToken);
+                    request = await _requests.WaitAsync(stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -85,7 +85,7 @@ class Worker : BackgroundService
                     break;
                 }
 
-                await _responses.SendAsync(result, true);
+                await _responses.SendAsync(result);
 
                 //Until result is succesfully sent, then request can be removed from queue.
                 await request.DeleteAsync();

@@ -18,7 +18,7 @@ class RequestStorageQueue : StorageQueue, IRequestQueue
 
 class RequestServiceBusQueue : ServiceBusQueue, IRequestQueue
 {
-    public RequestServiceBusQueue(IOptionsMonitor<QueueOptions> options, ILogger<RequestServiceBusQueue> logger)
+    public RequestServiceBusQueue(IOptionsMonitor<ServiceBusQueueOptions> options, ILogger<RequestServiceBusQueue> logger)
         : base(options.Get(IRequestQueue.ConfigName), logger) {}
 }
 
@@ -34,7 +34,7 @@ static class ServiceCollectionRequestQueueExtensions
         {
             services.AddTransient<IRequestQueue>(provider =>
             {
-                var option = provider.GetRequiredService<IOptionsMonitor<QueueOptions>>();
+                var option = provider.GetRequiredService<IOptionsMonitor<ServiceBusQueueOptions>>();
                 var logger = provider.GetRequiredService<ILogger<RequestServiceBusQueue>>();
                 return new RequestServiceBusQueue(option, logger);
             });

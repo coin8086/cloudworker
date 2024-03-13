@@ -42,6 +42,8 @@ public class StorageQueueMessage : IMessage
     }
 }
 
+//NOTE: Storage Queue client has built-in retry policies by QueueClientOptions' properties Retry and RetryPolicy.
+//See https://learn.microsoft.com/en-us/dotnet/api/azure.storage.queues.queueclientoptions?view=azure-dotnet
 public class StorageQueueOptions : QueueOptions
 {
     public int? QueryInterval { get; set; } = 200;  //In milliseconds.
@@ -70,13 +72,13 @@ public class StorageQueue : IMessageQueue
 
     public TimeSpan MessageLease => _messageLease;
 
-    public async Task<IMessage> WaitAsync(bool retryOnThrottled = false, CancellationToken cancel = default)
+    public async Task<IMessage> WaitAsync(CancellationToken cancel = default)
     {
-        var messages = await WaitBatchAsync(1, retryOnThrottled, cancel).ConfigureAwait(false);
+        var messages = await WaitBatchAsync(1, cancel).ConfigureAwait(false);
         return messages[0];
     }
 
-    public async Task<IReadOnlyList<IMessage>> WaitBatchAsync(int batchSize, bool retryOnThrottled = false, CancellationToken cancel = default)
+    public async Task<IReadOnlyList<IMessage>> WaitBatchAsync(int batchSize, CancellationToken cancel = default)
     {
         var delay = _options.QueryInterval ?? StorageQueueOptions.Default.QueryInterval;
         while (true)
@@ -93,7 +95,7 @@ public class StorageQueue : IMessageQueue
         }
     }
 
-    public Task SendAsync(string message, bool retryOnThrottled = false, CancellationToken cancel = default)
+    public Task SendAsync(string message, CancellationToken cancel = default)
     {
         return _client.SendMessageAsync(message, MessageLease, cancellationToken: cancel);
     }
