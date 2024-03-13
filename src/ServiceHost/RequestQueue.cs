@@ -38,7 +38,7 @@ static class ServiceCollectionRequestQueueExtensions
                 var logger = provider.GetRequiredService<ILogger<RequestServiceBusQueue>>();
                 return new RequestServiceBusQueue(option, logger);
             });
-            services.AddOptionsWithValidateOnStart<QueueOptions>(IRequestQueue.ConfigName)
+            services.AddOptionsWithValidateOnStart<ServiceBusQueueOptions>(IRequestQueue.ConfigName)
                 .Bind(configuration.GetSection(IRequestQueue.ConfigName))
                 .ValidateDataAnnotations();
         }
