@@ -2,7 +2,8 @@
 using Azure.Storage.Queues.Models;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -69,31 +70,29 @@ public class StorageQueue : IMessageQueue
 
     public TimeSpan MessageLease => _messageLease;
 
-    //TODO: Implement retryOnThrottled
     public async Task<IMessage> WaitAsync(bool retryOnThrottled = false, CancellationToken cancel = default)
+    {
+        var messages = await WaitBatchAsync(1, retryOnThrottled, cancel).ConfigureAwait(false);
+        return messages[0];
+    }
+
+    public async Task<IReadOnlyList<IMessage>> WaitBatchAsync(int batchSize, bool retryOnThrottled = false, CancellationToken cancel = default)
     {
         var delay = _options.QueryInterval ?? StorageQueueOptions.Default.QueryInterval;
         while (true)
         {
-            var message = await _client.ReceiveMessageAsync(MessageLease, cancel).ConfigureAwait(false);
-            if (message.Value == null)
+            var message = await _client.ReceiveMessagesAsync(batchSize, MessageLease, cancel).ConfigureAwait(false);
+            if (message.Value == null || message.Value.Length == 0)
             {
                 await Task.Delay(delay!.Value, cancel).ConfigureAwait(false);
             }
             else
             {
-                return new StorageQueueMessage(_client, message, MessageLease);
+                return message.Value.Select(msg => new StorageQueueMessage(_client, msg, MessageLease)).ToImmutableList();
             }
         }
     }
 
-    //TODO: Implement WaitBatchAsync
-    public Task<IReadOnlyList<IMessage>> WaitBatchAsync(int batchSize, bool retryOnThrottled = false, CancellationToken cancel = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    //TODO: Implement retryOnThrottled
     public Task SendAsync(string message, bool retryOnThrottled = false, CancellationToken cancel = default)
     {
         return _client.SendMessageAsync(message, MessageLease, cancellationToken: cancel);

@@ -74,12 +74,8 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
 
     public async Task<IMessage> WaitAsync(bool retryOnThrottled = false, CancellationToken cancel = default)
     {
-        ServiceBusReceivedMessage? message = null;
-        await RetryWhenThrottled(async () =>
-        {
-            message = await _receiver.ReceiveMessageAsync(TimeSpan.MaxValue, cancel).ConfigureAwait(false);
-        }, retryOnThrottled, cancel).ConfigureAwait(false);
-        return new ServiceBusQueueMessage(message!, _receiver);
+        var messages = await WaitBatchAsync(1, retryOnThrottled, cancel).ConfigureAwait(false);
+        return messages[0];
     }
 
     public async Task<IReadOnlyList<IMessage>> WaitBatchAsync(int batchSize, bool retryOnThrottled = false, CancellationToken cancel = default)
