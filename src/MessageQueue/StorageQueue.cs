@@ -46,7 +46,7 @@ public class StorageQueueMessage : IMessage
 //See https://learn.microsoft.com/en-us/dotnet/api/azure.storage.queues.queueclientoptions?view=azure-dotnet
 public class StorageQueueOptions : QueueOptions
 {
-    public int? QueryInterval { get; set; } = 200;  //In milliseconds.
+    public int? QueryInterval { get; set; } = 500;  //In milliseconds.
 
     public static StorageQueueOptions Default { get; } = new StorageQueueOptions();
 }

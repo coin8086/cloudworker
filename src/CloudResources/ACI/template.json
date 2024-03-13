@@ -36,7 +36,7 @@
         },
         "queryInterval": {
             "type": "int",
-            "defaultValue": 200
+            "defaultValue": 500
         },
         "service": {
             "type": "string",
