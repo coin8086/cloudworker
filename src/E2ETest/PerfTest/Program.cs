@@ -90,9 +90,10 @@ class Program
         Console.WriteLine($"Messages to send and/or receive: {options.Count}");
         Console.WriteLine($"Message length: {options.MessageLength}");
         Console.WriteLine($"Message queue type: {options.QueueType}");
-        Console.WriteLine($"Sender Count: {options.SenderCount}");
+        Console.WriteLine($"Sender count: {options.SenderCount}");
         Console.WriteLine($"Send to: {options.RequestQueueName}");
-        Console.WriteLine($"Receiver Count: {options.ReceiverCount}");
+        Console.WriteLine($"Receiver count: {options.ReceiverCount}");
+        Console.WriteLine($"Receive batch size: {options.BatchSize}");
         Console.WriteLine($"Receive from: {options.ResponseQueueName}");
 
         var tasks = new List<Task>(2);
