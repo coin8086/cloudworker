@@ -12,7 +12,7 @@ class Program
         [Option(Hidden = true, Required = false)]
         public new string? QueueName { get; set; }
 
-        [Option('l', "length", Default = (int)1024, HelpText = "Message length")]
+        [Option('l', "length", Default = (int)4, HelpText = "Message length")]
         public int MessageLength { get; set; }
 
         [Option('c', "count", Default = (int)10000, HelpText = "Number of messages to send and/or receive")]
@@ -62,7 +62,7 @@ class Program
     static int MessagesToReceive = 0;
     static int MessagesReceived = 0;
     static int MessagesFailedSending = 0;
-    static CancellationTokenSource StopReceiving = new CancellationTokenSource();
+    static CancellationTokenSource Stop = new CancellationTokenSource();
 
     static async Task<int> Main(string[] args)
     {
@@ -107,6 +107,12 @@ class Program
         }
         if (tasks.Count > 0)
         {
+            Console.WriteLine("Press any key to exit early...");
+            _ = Task.Run(() =>
+            {
+                Console.ReadKey(true);
+                Stop.Cancel();
+            });
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
         sw.Stop();
@@ -125,7 +131,7 @@ class Program
 
             Console.WriteLine($"Message length: {options.MessageLength}");
             Console.WriteLine($"Number of messages to send and/or receive: {options.Count}");
-            Console.WriteLine($"Number of messages that are failed being sent: {MessagesFailedSending}");
+            Console.WriteLine($"Number of messages failed being sent: {MessagesFailedSending}");
             Console.WriteLine($"Adjusted number of messages to receive: {MessagesToReceive}");
             Console.WriteLine($"Actual number of messages received: {MessagesReceived}");
             Console.WriteLine($"Time elapsed: {sw.Elapsed}");
@@ -166,7 +172,7 @@ class Program
                     Interlocked.Decrement(ref MessagesToReceive);
                     if (MessagesReceived >= MessagesToReceive)
                     {
-                        StopReceiving.Cancel();
+                        Stop.Cancel();
                     }
                 }
             });
@@ -188,12 +194,12 @@ class Program
 
     static async Task StartReceiver(IMessageQueue receiver, int batchSize)
     {
-        while (!StopReceiving.IsCancellationRequested)
+        while (!Stop.IsCancellationRequested)
         {
             IReadOnlyList<IMessage>? messages = null;
             try
             {
-                messages = await receiver.WaitBatchAsync(batchSize, StopReceiving.Token).ConfigureAwait(false);
+                messages = await receiver.WaitBatchAsync(batchSize, Stop.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -218,7 +224,7 @@ class Program
                     //then more messages than MessagesToReceive may be received.
                     if (MessagesReceived >= MessagesToReceive)
                     {
-                        StopReceiving.Cancel();
+                        Stop.Cancel();
                     }
                 });
             }
