@@ -83,14 +83,14 @@ public class StorageQueue : IMessageQueue
         var delay = _options.QueryInterval ?? StorageQueueOptions.Default.QueryInterval;
         while (true)
         {
-            var message = await _client.ReceiveMessagesAsync(batchSize, MessageLease, cancel).ConfigureAwait(false);
-            if (message.Value == null || message.Value.Length == 0)
+            var messages = await _client.ReceiveMessagesAsync(batchSize, MessageLease, cancel).ConfigureAwait(false);
+            if (messages.Value == null || messages.Value.Length == 0)
             {
                 await Task.Delay(delay!.Value, cancel).ConfigureAwait(false);
             }
             else
             {
-                return message.Value.Select(msg => new StorageQueueMessage(_client, msg, MessageLease)).ToImmutableList();
+                return messages.Value.Select(msg => new StorageQueueMessage(_client, msg, MessageLease)).ToImmutableList();
             }
         }
     }
