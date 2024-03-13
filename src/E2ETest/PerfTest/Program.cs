@@ -9,6 +9,9 @@ class Program
 {
     class Options : Cloud.Soa.Client.QueueOptions
     {
+        [Option(Hidden = true, Required = false)]
+        public new string? QueueName { get; set; }
+
         [Option('l', "length", Default = (int)1024, HelpText = "Message length")]
         public int MessageLength { get; set; }
 
@@ -21,10 +24,10 @@ class Program
         [Option('r', "receivers", Default = (int)100)]
         public int ReceiverCount {  get; set; }
 
-        [Option('S', "request-queue")]
+        [Option('S', "request-queue", Default = (string)"requests")]
         public string? RequestQueueName { get; set; }
 
-        [Option('R', "response-queue")]
+        [Option('R', "response-queue", Default = (string)"responses")]
         public string? ResponseQueueName { get; set; }
 
         [Option('b', "batch-size", Default = (int)1, HelpText = "Max number of messages to receive in one receive call")]
