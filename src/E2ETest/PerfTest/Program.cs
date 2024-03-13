@@ -126,7 +126,8 @@ class Program
             Console.WriteLine($"Message length: {options.MessageLength}");
             Console.WriteLine($"Number of messages to send and/or receive: {options.Count}");
             Console.WriteLine($"Number of messages that are failed being sent: {MessagesFailedSending}");
-            Console.WriteLine($"Number of messages received: {MessagesReceived}");
+            Console.WriteLine($"Adjusted number of messages to receive: {MessagesToReceive}");
+            Console.WriteLine($"Actual number of messages received: {MessagesReceived}");
             Console.WriteLine($"Time elapsed: {sw.Elapsed}");
             Console.WriteLine($"End-to-end effective throughput: {throughput:f3} messages/second");
         }
@@ -163,7 +164,7 @@ class Program
                     Console.WriteLine($"Error in sending: {ex}");
                     Interlocked.Increment(ref MessagesFailedSending);
                     Interlocked.Decrement(ref MessagesToReceive);
-                    if (MessagesReceived == MessagesToReceive)
+                    if (MessagesReceived >= MessagesToReceive)
                     {
                         StopReceiving.Cancel();
                     }
@@ -213,7 +214,9 @@ class Program
                         Console.WriteLine($"Error in deleting a message: {ex}");
                     }
                     Interlocked.Increment(ref MessagesReceived);
-                    if (MessagesReceived == MessagesToReceive)
+                    //NOTE: When the initial request and/or response queues are not empty and batchSize is greater than one,
+                    //then more messages than MessagesToReceive may be received.
+                    if (MessagesReceived >= MessagesToReceive)
                     {
                         StopReceiving.Cancel();
                     }
