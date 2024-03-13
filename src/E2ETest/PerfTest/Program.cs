@@ -59,6 +59,7 @@ class Program
     static int MessagesToReceive = 0;
     static int MessagesReceived = 0;
     static int MessagesFailedSending = 0;
+    static CancellationTokenSource StopReceiving = new CancellationTokenSource();
 
     static async Task<int> Main(string[] args)
     {
@@ -157,8 +158,12 @@ class Program
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error in sending: {ex}");
-                    Interlocked.Decrement(ref MessagesToReceive);
                     Interlocked.Increment(ref MessagesFailedSending);
+                    Interlocked.Decrement(ref MessagesToReceive);
+                    if (MessagesReceived == MessagesToReceive)
+                    {
+                        StopReceiving.Cancel();
+                    }
                 }
             });
         }
@@ -179,9 +184,17 @@ class Program
 
     static async Task StartReceiver(IMessageQueue receiver, int batchSize)
     {
-        while (Interlocked.Decrement(ref MessagesToReceive) >= 0)
+        while (!StopReceiving.IsCancellationRequested)
         {
-            var messages = await receiver.WaitBatchAsync(batchSize).ConfigureAwait(false);
+            IReadOnlyList<IMessage>? messages = null;
+            try
+            {
+                messages = await receiver.WaitBatchAsync(batchSize, StopReceiving.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
             var tasks = new Task[messages.Count];
             for (var i = 0; i <  messages.Count; i++)
             {
@@ -195,9 +208,12 @@ class Program
                     catch (Exception ex)
                     {
                         Console.WriteLine($"Error in deleting a message: {ex}");
-                        return;
                     }
                     Interlocked.Increment(ref MessagesReceived);
+                    if (MessagesReceived == MessagesToReceive)
+                    {
+                        StopReceiving.Cancel();
+                    }
                 });
             }
             await Task.WhenAll(tasks).ConfigureAwait(false);
