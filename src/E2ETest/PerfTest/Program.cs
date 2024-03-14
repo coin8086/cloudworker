@@ -1,6 +1,7 @@
 ﻿using Cloud.Soa;
 using Cloud.Soa.Client;
 using CommandLine;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
 namespace PerfTest;
@@ -33,6 +34,9 @@ class Program
         [Option('b', "batch-size", Default = (int)1, HelpText = "Max number of messages to receive in one receive call")]
         public int BatchSize { get; set; }
 
+        [Option('L', "log-level", Default = (LogLevel)LogLevel.Information, HelpText = "From trace(0) to none(6)")]
+        public LogLevel LogLevel {  get; set; }
+
         public override void Validate()
         {
             base.Validate();
@@ -59,10 +63,13 @@ class Program
         }
     }
 
+    //TODO: Refactor the following names
     static int MessagesToReceive = 0;
     static int MessagesReceived = 0;
     static int MessagesFailedSending = 0;
     static CancellationTokenSource Stop = new CancellationTokenSource();
+    static ILoggerFactory? _LoggerFactory;
+    static ILogger? _Logger;
 
     static async Task<int> Main(string[] args)
     {
@@ -73,6 +80,16 @@ class Program
     static async Task<int> RunAsync(Options options)
     {
         options.Validate();
+
+        _LoggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.AddFilter("Default", options.LogLevel);
+            builder.AddSimpleConsole(options =>
+            {
+                options.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff ";
+            });
+        });
+        _Logger = _LoggerFactory.CreateLogger<Program>();
 
         if (options.SenderCount > 0)
         {
@@ -85,6 +102,7 @@ class Program
             MessagesToReceive = options.Count;
         }
 
+        Console.WriteLine($"Log level: {options.LogLevel}");
         Console.WriteLine($"Messages to send and/or receive: {options.Count}");
         Console.WriteLine($"Message length: {options.MessageLength}");
         Console.WriteLine($"Message queue type: {options.QueueType}");
@@ -145,10 +163,11 @@ class Program
         var message = new String('a', options.MessageLength);
         var batch = options.Count / options.SenderCount;
         var queueOpts = new Cloud.Soa.Client.QueueOptions(options) { QueueName = options.RequestQueueName };
+        var logger = _LoggerFactory!.CreateLogger("Sender");
         var tasks = new Task[options.SenderCount];
         for (var i = 0; i < options.SenderCount; i++)
         {
-            var sender = QueueClient.Create(queueOpts);
+            var sender = QueueClient.Create(queueOpts, logger);
             tasks[i] = StartSender(sender, message, batch);
         }
         return Task.WhenAll(tasks);
@@ -167,7 +186,7 @@ class Program
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error in sending: {ex}");
+                    _Logger!.LogWarning(ex, "Error in sending a message");
                     Interlocked.Increment(ref MessagesFailedSending);
                     Interlocked.Decrement(ref MessagesToReceive);
                     if (MessagesReceived >= MessagesToReceive)
@@ -183,10 +202,11 @@ class Program
     static Task StartReceiving(Options options)
     {
         var queueOpts = new Cloud.Soa.Client.QueueOptions(options) { QueueName = options.ResponseQueueName };
+        var logger = _LoggerFactory!.CreateLogger("Receiver");
         var tasks = new Task[options.ReceiverCount];
         for (var i = 0; i < options.ReceiverCount; i++)
         {
-            var receiver = QueueClient.Create(queueOpts);
+            var receiver = QueueClient.Create(queueOpts, logger);
             tasks[i] = StartReceiver(receiver, options.BatchSize);
         }
         return Task.WhenAll(tasks);
@@ -217,7 +237,7 @@ class Program
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error in deleting a message: {ex}");
+                        _Logger!.LogWarning(ex, "Error in deleting a message");
                     }
                     Interlocked.Increment(ref MessagesReceived);
                     //NOTE: When the initial request and/or response queues are not empty and batchSize is greater than one,

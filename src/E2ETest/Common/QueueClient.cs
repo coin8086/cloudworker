@@ -1,8 +1,10 @@
-﻿namespace Cloud.Soa.Client;
+﻿using Microsoft.Extensions.Logging;
+
+namespace Cloud.Soa.Client;
 
 public static class QueueClient
 {
-    public static IMessageQueue Create(QueueOptions options)
+    public static IMessageQueue Create(QueueOptions options, ILogger? logger = null)
     {
         if (string.IsNullOrEmpty(options.QueueType) ||
             string.Equals(options.QueueType, ServiceBusQueue.QueueType, StringComparison.OrdinalIgnoreCase))
@@ -16,7 +18,7 @@ public static class QueueClient
             };
 
             //TODO: Provide a console logger for ServiceBusQueue
-            return new ServiceBusQueue(queueOptions);
+            return new ServiceBusQueue(queueOptions, logger);
         }
         else
         {
