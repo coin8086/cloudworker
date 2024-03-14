@@ -47,6 +47,18 @@ public class ServiceBusQueueOptions : QueueOptions
     public bool? RetryOnThrottled { get; set; } = true;
 
     public static ServiceBusQueueOptions Default { get; } = new ServiceBusQueueOptions();
+
+    public override void Merge(QueueOptions? other)
+    {
+        base.Merge(other);
+        if (other is ServiceBusQueueOptions opts)
+        {
+            if (opts.RetryOnThrottled != null)
+            {
+                RetryOnThrottled = opts.RetryOnThrottled;
+            }
+        }
+    }
 }
 
 public class ServiceBusQueue : IMessageQueue, IAsyncDisposable

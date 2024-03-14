@@ -49,6 +49,23 @@ public class StorageQueueOptions : QueueOptions
     public int? QueryInterval { get; set; } = 500;  //In milliseconds.
 
     public static StorageQueueOptions Default { get; } = new StorageQueueOptions();
+
+    public override void Merge(QueueOptions? other)
+    {
+        base.Merge(other);
+        if (other is StorageQueueOptions opts)
+        {
+            if (opts.QueryInterval != null)
+            {
+                QueryInterval = opts.QueryInterval;
+            }
+        }
+    }
+
+    public override bool Validate()
+    {
+        return base.Validate() && (QueryInterval is null || QueryInterval >= 0);
+    }
 }
 
 public class StorageQueue : IMessageQueue

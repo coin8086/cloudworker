@@ -26,8 +26,7 @@ static class ServiceCollectionRequestQueueExtensions
 {
     public static IServiceCollection AddRequestQueue(this IServiceCollection services, IConfiguration configuration)
     {
-        var config = configuration.GetSection(IRequestQueue.ConfigName);
-        var queueType = config["QueueType"];
+        var queueType = configuration["Queues:QueueType"];
 
         if (string.IsNullOrEmpty(queueType) ||
             ServiceBusQueue.QueueType.Equals(queueType, StringComparison.OrdinalIgnoreCase))
@@ -38,9 +37,7 @@ static class ServiceCollectionRequestQueueExtensions
                 var logger = provider.GetRequiredService<ILogger<RequestServiceBusQueue>>();
                 return new RequestServiceBusQueue(option, logger);
             });
-            services.AddOptionsWithValidateOnStart<ServiceBusQueueOptions>(IRequestQueue.ConfigName)
-                .Bind(configuration.GetSection(IRequestQueue.ConfigName))
-                .ValidateDataAnnotations();
+            services.AddQueueOptions<ServiceBusQueueOptions>(configuration, IRequestQueue.ConfigName);
         }
         else if (StorageQueue.QueueType.Equals(queueType, StringComparison.OrdinalIgnoreCase))
         {
@@ -49,9 +46,7 @@ static class ServiceCollectionRequestQueueExtensions
                 var option = provider.GetRequiredService<IOptionsMonitor<StorageQueueOptions>>();
                 return new RequestStorageQueue(option);
             });
-            services.AddOptionsWithValidateOnStart<StorageQueueOptions>(IRequestQueue.ConfigName)
-                .Bind(configuration.GetSection(IRequestQueue.ConfigName))
-                .ValidateDataAnnotations();
+            services.AddQueueOptions<StorageQueueOptions>(configuration, IRequestQueue.ConfigName);
         }
         else
         {
