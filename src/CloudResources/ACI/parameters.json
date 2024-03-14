@@ -9,6 +9,14 @@
                 },
                 "secretName": "leizsbqdev-connection-string"
             }
+        },
+        "appInsights": {
+            "reference": {
+                "keyVault": {
+                    "id": "/subscriptions/a486e243-747b-42de-8c4c-379f8295a746/resourcegroups/leiz-cluster-1/providers/Microsoft.KeyVault/vaults/leizkvdev"
+                },
+                "secretName": "leiz-app-insights-dev-connection-string"
+            }
         }
     }
 }

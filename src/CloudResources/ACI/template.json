@@ -93,28 +93,20 @@
                                     "value": "[parameters('concurrency')]"
                                 },
                                 {
-                                    "name": "Requests__QueueType",
+                                    "name": "Queues__QueueType",
                                     "value": "[parameters('queueType')]"
                                 },
                                 {
-                                    "name": "Requests__ConnectionString",
+                                    "name": "Queues__ConnectionString",
                                     "secureValue": "[parameters('connectionString')]"
                                 },
                                 {
-                                    "name": "Requests__MessageLease",
+                                    "name": "Queues__MessageLease",
                                     "value": "[parameters('messageLease')]"
                                 },
                                 {
-                                    "name": "Requests__QueryInterval",
+                                    "name": "Queues__QueryInterval",
                                     "value": "[parameters('queryInterval')]"
-                                },
-                                {
-                                    "name": "Responses__QueueType",
-                                    "value": "[parameters('queueType')]"
-                                },
-                                {
-                                    "name": "Responses__ConnectionString",
-                                    "secureValue": "[parameters('connectionString')]"
                                 },
                                 {
                                     "name": "Service__AssemblyPath",
