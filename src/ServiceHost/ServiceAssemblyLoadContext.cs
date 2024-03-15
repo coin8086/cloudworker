@@ -2,7 +2,7 @@
 using System.Runtime.Loader;
 using System;
 
-namespace Cloud.Soa;
+namespace Cloud.Soa.ServiceHost;
 
 class ServiceAssemblyLoadContext : AssemblyLoadContext
 {

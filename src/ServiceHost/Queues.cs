@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 
-namespace Cloud.Soa;
+namespace Cloud.Soa.ServiceHost;
 
 static class Queues
 {

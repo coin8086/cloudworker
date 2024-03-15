@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace Cloud.Soa;
+namespace Cloud.Soa.ServiceHost;
 
 public class Program
 {

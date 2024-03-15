@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Reflection;
 
-namespace Cloud.Soa;
+namespace Cloud.Soa.ServiceHost;
 
 interface IServiceLoader
 {

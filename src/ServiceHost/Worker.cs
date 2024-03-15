@@ -7,7 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Cloud.Soa;
+namespace Cloud.Soa.ServiceHost;
 
 class WorkerOptions
 {

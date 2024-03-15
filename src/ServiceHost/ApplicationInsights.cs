@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Cloud.Soa;
+namespace Cloud.Soa.ServiceHost;
 
 static class ApplicationInsightsExtensions
 {
