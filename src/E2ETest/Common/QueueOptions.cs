@@ -1,7 +1,6 @@
 ﻿using CommandLine;
 
-//TODO: Rename it to Cloud.Soa.E2E, since this is only intended for use by E2E tests.
-namespace Cloud.Soa.Client;
+namespace Cloud.Soa.E2E;
 
 public class QueueOptions
 {

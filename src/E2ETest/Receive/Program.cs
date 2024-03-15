@@ -1,5 +1,5 @@
 ﻿using Cloud.Soa;
-using Cloud.Soa.Client;
+using Cloud.Soa.E2E;
 using CommandLine;
 using System.Diagnostics;
 
@@ -7,7 +7,7 @@ namespace Receive;
 
 class Program
 {
-    class Options : Cloud.Soa.Client.QueueOptions
+    class Options : Cloud.Soa.E2E.QueueOptions
     {
         [Option('m', "max-messages", HelpText = "Max number of messages to receive before exit")]
         public int? MaxMessages { get; set; }

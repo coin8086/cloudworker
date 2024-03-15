@@ -4,8 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>Cloud.Soa.Client</RootNamespace>
-    <AssemblyName>Cloud.Soa.Client</AssemblyName>
+    <RootNamespace>Cloud.Soa.E2E</RootNamespace>
+    <AssemblyName>Cloud.Soa.E2E.Common</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

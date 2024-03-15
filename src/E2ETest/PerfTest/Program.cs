@@ -1,5 +1,5 @@
 ﻿using Cloud.Soa;
-using Cloud.Soa.Client;
+using Cloud.Soa.E2E;
 using CommandLine;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
@@ -8,7 +8,7 @@ namespace PerfTest;
 
 class Program
 {
-    class Options : Cloud.Soa.Client.QueueOptions
+    class Options : Cloud.Soa.E2E.QueueOptions
     {
         [Option(Hidden = true, Required = false)]
         public new string? QueueName { get; set; }
@@ -162,7 +162,7 @@ class Program
     {
         var message = new String('a', options.MessageLength);
         var batch = options.Count / options.SenderCount;
-        var queueOpts = new Cloud.Soa.Client.QueueOptions(options) { QueueName = options.RequestQueueName };
+        var queueOpts = new Cloud.Soa.E2E.QueueOptions(options) { QueueName = options.RequestQueueName };
         var logger = _LoggerFactory!.CreateLogger("Sender");
         var tasks = new Task[options.SenderCount];
         for (var i = 0; i < options.SenderCount; i++)
@@ -201,7 +201,7 @@ class Program
 
     static Task StartReceiving(Options options)
     {
-        var queueOpts = new Cloud.Soa.Client.QueueOptions(options) { QueueName = options.ResponseQueueName };
+        var queueOpts = new Cloud.Soa.E2E.QueueOptions(options) { QueueName = options.ResponseQueueName };
         var logger = _LoggerFactory!.CreateLogger("Receiver");
         var tasks = new Task[options.ReceiverCount];
         for (var i = 0; i < options.ReceiverCount; i++)

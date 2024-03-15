@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Cloud.Soa.Client;
+namespace Cloud.Soa.E2E;
 
 public static class QueueClient
 {

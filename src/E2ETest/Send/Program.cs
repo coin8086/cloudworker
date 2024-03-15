@@ -1,5 +1,5 @@
 ﻿using Cloud.Soa;
-using Cloud.Soa.Client;
+using Cloud.Soa.E2E;
 using CommandLine;
 using System.Diagnostics;
 
@@ -7,7 +7,7 @@ namespace Send;
 
 class Program
 {
-    class Options : Cloud.Soa.Client.QueueOptions
+    class Options : Cloud.Soa.E2E.QueueOptions
     {
         [Option('c', "count", Default = (int)1, HelpText = "Number of repeat sendings (for the same message)")]
         public int Count { get; set; }
