@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Cloud.Soa;
 
@@ -14,15 +13,11 @@ static class ServiceCollectionQueueOptions
             .Configure(options =>
             {
                 var opts = section.GetSection(name).Get<T>();
-                if (opts is null)
-                {
-                    throw new ArgumentException($"Configuration Queues:{name} is expected but missing!");
-                }
                 options.Merge(opts);
             })
             .Validate(options =>
             {
-                //TODO: To give message of validation error, implement IValidateOptions
+                //TODO: To give user-friendly message of validation error, implement IValidateOptions
                 return options.Validate();
             });
         return services;
