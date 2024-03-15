@@ -1,4 +1,5 @@
-﻿using CommandLine;
+﻿using Cloud.Soa.MessageQueue;
+using CommandLine;
 
 namespace Cloud.Soa.E2E;
 

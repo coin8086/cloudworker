@@ -1,4 +1,4 @@
-﻿namespace Cloud.Soa;
+﻿namespace Cloud.Soa.MessageQueue;
 
 public class QueueOptions
 {

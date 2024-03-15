@@ -1,5 +1,4 @@
-﻿using Cloud.Soa;
-using Cloud.Soa.E2E;
+﻿using Cloud.Soa.E2E;
 using CommandLine;
 using System.Diagnostics;
 

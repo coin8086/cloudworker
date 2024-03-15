@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Collections.Generic;
 
-namespace Cloud.Soa;
+namespace Cloud.Soa.MessageQueue;
 
 public interface IMessage
 {

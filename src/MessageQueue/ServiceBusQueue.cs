@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Cloud.Soa;
+namespace Cloud.Soa.MessageQueue;
 
 public class ServiceBusQueueMessage : IMessage
 {

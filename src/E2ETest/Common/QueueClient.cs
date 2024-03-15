@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Cloud.Soa.MessageQueue;
+using Microsoft.Extensions.Logging;
 
 namespace Cloud.Soa.E2E;
 

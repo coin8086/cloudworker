@@ -1,5 +1,5 @@
-﻿using Cloud.Soa;
-using Cloud.Soa.E2E;
+﻿using Cloud.Soa.E2E;
+using Cloud.Soa.MessageQueue;
 using CommandLine;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
