@@ -20,12 +20,14 @@ class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
     private readonly ISoaService _userService;
-    private readonly IRequestQueue _requests;
-    private readonly IResponseQueue _responses;
+    private readonly IMessageQueue _requests;
+    private readonly IMessageQueue _responses;
     private readonly WorkerOptions _workerOptions;
 
-    public Worker(ILogger<Worker> logger, ISoaService userService, IRequestQueue requests, IResponseQueue responses,
-        IOptions<WorkerOptions> options)
+    public Worker(
+        IOptions<WorkerOptions> options, ILogger<Worker> logger, ISoaService userService,
+        [FromKeyedServices(Queues.RequestQueue)] IMessageQueue requests,
+        [FromKeyedServices(Queues.ResponseQueue)] IMessageQueue responses)
     {
         _logger = logger;
         _userService = userService;

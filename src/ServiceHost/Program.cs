@@ -13,8 +13,8 @@ public class Program
 
         builder.Services.AddApplicationInsights(config);
         builder.Services.AddUserService(config);
-        builder.Services.AddRequestQueue(config);
-        builder.Services.AddResponseQueue(config);
+        builder.Services.AddQueue(config, Queues.RequestQueue);
+        builder.Services.AddQueue(config, Queues.ResponseQueue);
         builder.Services.AddWorkerService(config);
         var host = builder.Build();
         host.Run();
