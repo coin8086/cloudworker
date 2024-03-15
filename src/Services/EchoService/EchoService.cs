@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Cloud.Soa;
+namespace Cloud.Soa.EchoService;
 
 public class EchoService : ISoaService
 {
