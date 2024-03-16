@@ -1,4 +1,6 @@
 using Cloud.Soa.MessageQueue;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,85 +26,107 @@ class Worker : BackgroundService
     private readonly IMessageQueue _requests;
     private readonly IMessageQueue _responses;
     private readonly WorkerOptions _workerOptions;
+    private readonly TelemetryClient _telemetryClient;
 
     public Worker(
         IOptions<WorkerOptions> options, ILogger<Worker> logger, ISoaService userService,
         [FromKeyedServices(Queues.RequestQueue)] IMessageQueue requests,
-        [FromKeyedServices(Queues.ResponseQueue)] IMessageQueue responses)
+        [FromKeyedServices(Queues.ResponseQueue)] IMessageQueue responses,
+        TelemetryClient telemetryClient)
     {
         _logger = logger;
         _userService = userService;
         _requests = requests;
         _responses = responses;
         _workerOptions = options.Value;
+        _telemetryClient = telemetryClient;
     }
 
     private async Task ProcessMessageAsync(CancellationToken stoppingToken)
     {
-        try
+        var lease = _requests.MessageLease.TotalMilliseconds;
+        var interval = (int)(lease * 3 / 4);
+        while (!stoppingToken.IsCancellationRequested)
         {
-            var lease = _requests.MessageLease.TotalMilliseconds;
-            var interval = (int)(lease * 3 / 4);
-            while (!stoppingToken.IsCancellationRequested)
+            IMessage? request = null;
+            try
             {
-                IMessage? request = null;
-                try
-                {
-                    request = await _requests.WaitAsync(stoppingToken);
-                }
-                catch (OperationCanceledException)
-                {
-                    _logger.LogInformation("ProcessMessageAsync: Waiting for request is cancelled.");
-                    break;
-                }
-
-                _logger.LogTrace("ProcessMessageAsync: Received request {id}", request.Id);
-
-                using var timer = new Timer(async _ => {
-                    try
-                    {
-                        await request.RenewLeaseAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        //TODO: Retry when failed
-                        _logger.LogWarning("ProcessMessageAsync: Failed renewing lease for request {id}. Error: {error}", request.Id, ex);
-                    }
-                }, null, interval, interval);
-
-
-                string? result = null;
-                try
-                {
-                    //InvokeAsync of a user service should catch all application exceptions and handle them properly.
-                    //This means it could return error message to client in the result, or throw an exception out,
-                    //which all depend on the user service. The only exception is the OperationCanceledException, which
-                    //should be thrown when stoppingToken is set to cancelled.
-                    result = await _userService.InvokeAsync(request.Content, stoppingToken);
-                }
-                catch (OperationCanceledException)
-                {
-                    _logger.LogInformation("ProcessMessageAsync: User service call is cancelled. Return current request back to the queue.");
-                    timer.Change(Timeout.Infinite, Timeout.Infinite);
-                    await request.ReturnAsync();
-                    break;
-                }
-
-                await _responses.SendAsync(result);
-
-                //Until result is succesfully sent, then request can be removed from queue.
-                await request.DeleteAsync();
+                request = await _requests.WaitAsync(stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Waiting for request is cancelled.");
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error when waiting for request");
+                throw;
             }
 
-            if (stoppingToken.IsCancellationRequested)
+            using (_telemetryClient.StartOperation<RequestTelemetry>("ProcessMessage"))
             {
-                _logger.LogInformation("ProcessMessageAsync: Cancellation is requested. Quit.");
+                _logger.LogTrace("Received request {id}", request.Id);
+
+                try
+                {
+                    using var timer = new Timer(async _ => {
+                        try
+                        {
+                            await request.RenewLeaseAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            //TODO: Is the exception correlated by the operation in app insights? If not, how to?
+                            //TODO: Retry when failed
+                            _logger.LogWarning("Failed renewing lease for request {id}. Error: {error}", request.Id, ex);
+                        }
+                    }, null, interval, interval);
+
+                    string? result = null;
+
+                    using (_telemetryClient.StartOperation<DependencyTelemetry>("InvokeService"))
+                    {
+                        try
+                        {
+                            //InvokeAsync of a soa service should catch all application exceptions and handle them properly.
+                            //This means it could return error message to client in the result, or throw an exception out,
+                            //which all depend on the soa service. The only exception is the OperationCanceledException, which
+                            //should be thrown when stoppingToken is set to cancelled.
+                            result = await _userService.InvokeAsync(request.Content, stoppingToken);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            _logger.LogInformation("Invoking SOA service is cancelled. Return current request back to the queue.");
+                            timer.Change(Timeout.Infinite, Timeout.Infinite);
+                            await request.ReturnAsync();
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error when invoking SOA service");
+                            timer.Change(Timeout.Infinite, Timeout.Infinite);
+                            await request.ReturnAsync();
+                            throw;
+                        }
+                    }
+
+                    await _responses.SendAsync(result);
+
+                    //Until result is succesfully sent, then request can be removed from queue.
+                    await request.DeleteAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "ProcessMessage Error");
+                    throw;
+                }
             }
         }
-        catch (Exception ex)
+
+        if (stoppingToken.IsCancellationRequested)
         {
-            _logger.LogError(ex, "ProcessMessageAsync: Error");
-            throw;
+            _logger.LogInformation("Cancellation is requested. Quit.");
         }
     }
 
