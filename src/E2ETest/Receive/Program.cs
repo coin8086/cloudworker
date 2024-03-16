@@ -17,9 +17,6 @@ class Program
 
         [Option('v', "verbose")]
         public bool Verbose { get; set; }
-
-        [Option('q', "quiet")]
-        public bool Quiet { get; set; }
     }
 
     static async Task<int> Main(string[] args)
@@ -43,8 +40,6 @@ class Program
         };
 
         int nReceived = 0;
-        var stopWatch = new Stopwatch();
-
         Console.WriteLine($"Start receiving at {DateTimeOffset.Now}.");
 
         while (!token.IsCancellationRequested)
@@ -59,36 +54,24 @@ class Program
                 break;
             }
 
-            if (!options.Quiet)
+            Console.WriteLine($"Received a message of length {message.Content.Length} at {DateTimeOffset.Now}.");
+            if (options.Verbose)
             {
-                Console.WriteLine($"Received a message of length {message.Content.Length} at {DateTimeOffset.Now}.");
-                if (options.Verbose)
-                {
-                    Console.WriteLine(message.Content);
-                }
-                Console.WriteLine($"Delete message.");
+                Console.WriteLine(message.Content);
             }
+
+            Console.WriteLine($"Delete message.");
             await message.DeleteAsync();
 
             ++nReceived;
-            if (nReceived == 1)
-            {
-                stopWatch.Start();
-            }
             if (nReceived == options.MaxMessages)
             {
                 break;
             }
         }
-        stopWatch.Stop();
 
         Console.WriteLine($"End receiving at {DateTimeOffset.Now}.");
         Console.WriteLine($"Received {nReceived} messages.");
-        if (nReceived > 1)
-        {
-            var throughput = (nReceived - 1) / stopWatch.Elapsed.TotalSeconds;
-            Console.WriteLine($"Receive throughput: {throughput:f3} messages/second");
-        }
         return 0;
     }
 }

@@ -40,23 +40,17 @@ class Program
         var client = QueueClient.Create(options);
 
         var tasks = new Task[options.Count];
-        var stopWatch = new Stopwatch();
 
         Console.WriteLine($"Send {options.Count} messages, each of length {options.Message!.Length}, to queue {options.QueueName}.");
         Console.WriteLine($"Start sending at {DateTimeOffset.Now}");
 
-        stopWatch.Start();
         for (int i = 0; i < options.Count; i++)
         {
             tasks[i] = client.SendAsync(options.Message!);
         }
         Task.WaitAll(tasks);
-        stopWatch.Stop();
 
         Console.WriteLine($"End sending at {DateTimeOffset.Now}");
-
-        var throughput = options.Count / stopWatch.Elapsed.TotalSeconds;
-        Console.WriteLine($"Send throughput: {throughput:f3} messages/second");
         return 0;
     }
 }
