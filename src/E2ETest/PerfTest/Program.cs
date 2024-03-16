@@ -11,7 +11,7 @@ class Program
     class Options : Cloud.Soa.E2E.QueueOptions
     {
         [Option(Hidden = true, Required = false)]
-        public new string? QueueName { get; set; }
+        public override string? QueueName { get; set; }
 
         [Option('l', "length", Default = (int)4, HelpText = "Message length")]
         public int MessageLength { get; set; }
