@@ -8,6 +8,9 @@ class Program
 {
     class Options : Cloud.Soa.E2E.QueueOptions
     {
+        [Option('n', "queue-name", Default = "requests")]
+        public new string? QueueName { get; set; }
+
         [Option('c', "count", Default = (int)1, HelpText = "Number of repeat sendings (for the same message)")]
         public int Count { get; set; }
 

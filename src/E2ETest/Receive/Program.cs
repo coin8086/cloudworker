@@ -9,6 +9,9 @@ class Program
 {
     class Options : Cloud.Soa.E2E.QueueOptions
     {
+        [Option('n', "queue-name", Default = "responses")]
+        public new string? QueueName { get; set; }
+
         [Option('m', "max-messages", HelpText = "Max number of messages to receive before exit")]
         public int? MaxMessages { get; set; }
 

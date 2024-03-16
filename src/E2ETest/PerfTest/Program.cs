@@ -16,7 +16,7 @@ class Program
         [Option('l', "length", Default = (int)4, HelpText = "Message length")]
         public int MessageLength { get; set; }
 
-        [Option('c', "count", Default = (int)10000, HelpText = "Number of messages to send and/or receive")]
+        [Option('c', "count", Default = (int)2000, HelpText = "Number of messages to send and/or receive")]
         public int Count { get; set; }
 
         [Option('s', "senders", Default = (int)10)]
