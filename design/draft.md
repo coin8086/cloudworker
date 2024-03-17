@@ -26,12 +26,12 @@ flowchart
 
 ### Used Defined Service (UDS)
 
-A UDS is an implementation of the following interface:
+In the system, a SOA service is a Used Defined Service (UDS) that implements the following interface:
 
 ```cs
 interface ISoaService
 {
-    Task<string> InvokeAsync(string json, CancellationToken token)
+    Task<string> InvokeAsync(string input, CancellationToken token)
 }
 ```
 
