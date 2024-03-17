@@ -163,8 +163,10 @@ class Worker : BackgroundService
             tasks[i] = semaphore.WaitAsync(3000);
         }
         await Task.WhenAll(tasks);
-
         _logger.LogInformation("ExecuteAsync: Stopped.");
+
+        await _telemetryClient.FlushAsync(CancellationToken.None);
+        _logger.LogInformation("ExecuteAsync: Telemetry flushed.");
     }
 }
 
