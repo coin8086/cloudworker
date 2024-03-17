@@ -1,5 +1,27 @@
 # Cloud Native SOA
 
+## Overview
+
+Cloud SOA is a queue based SOA system on Azure.
+
+```mermaid
+flowchart
+    subgraph Azure
+        cluster((service hosts))
+        inq(request queue)
+        outq(response queue)
+        storage[(file share)]
+        cluster --> |read| inq
+        cluster --> |write| outq
+        cluster --> storage
+    end
+
+    client((clients))
+    client --> |write| inq
+    client --> |read| outq
+    client --> storage
+```
+
 ## Service
 
 ### Used Defined Service (UDS)
