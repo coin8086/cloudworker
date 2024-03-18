@@ -26,6 +26,7 @@ public class ServiceBusQueueMessage : IMessage
 
     public string Content => _message.Body.ToString();
 
+    //TODO: Retry on throttled for the following methods
     public Task RenewLeaseAsync()
     {
         return _receiver.RenewMessageLockAsync(_message);
@@ -103,12 +104,21 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
     public async Task<IReadOnlyList<IMessage>> WaitBatchAsync(int batchSize, CancellationToken cancel = default)
     {
         IReadOnlyList<ServiceBusReceivedMessage>? messages = null;
-        await RetryWhenThrottled(async () =>
+        while (true)
         {
-            messages = await _receiver.ReceiveMessagesAsync(batchSize, TimeSpan.MaxValue, cancel).ConfigureAwait(false);
-        }, cancel).ConfigureAwait(false);
-        //TODO: This is possible under some condition.
-        Trace.Assert(messages != null && messages.Count > 0, "Service Bus ReceiveMessagesAsync returns empty result!");
+            await RetryWhenThrottled(async () =>
+            {
+                messages = await _receiver.ReceiveMessagesAsync(batchSize, TimeSpan.MaxValue, cancel).ConfigureAwait(false);
+            }, cancel).ConfigureAwait(false);
+            if (messages?.Count > 0)
+            {
+                break;
+            }
+            else
+            {
+                _logger?.LogWarning("Service Bus ReceiveMessagesAsync returns empty result!");
+            }
+        }
         return messages!.Select(msg => new ServiceBusQueueMessage(msg, _receiver)).ToImmutableList();
     }
 
