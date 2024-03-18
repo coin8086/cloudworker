@@ -107,6 +107,7 @@ public class ServiceBusQueue : IMessageQueue, IAsyncDisposable
         {
             messages = await _receiver.ReceiveMessagesAsync(batchSize, TimeSpan.MaxValue, cancel).ConfigureAwait(false);
         }, cancel).ConfigureAwait(false);
+        //TODO: This is possible under some condition.
         Trace.Assert(messages != null && messages.Count > 0, "Service Bus ReceiveMessagesAsync returns empty result!");
         return messages!.Select(msg => new ServiceBusQueueMessage(msg, _receiver)).ToImmutableList();
     }
