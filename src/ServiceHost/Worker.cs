@@ -40,6 +40,26 @@ class Worker : BackgroundService
         _responses = responses;
         _workerOptions = options.Value;
         _telemetryClient = telemetryClient;
+        SetTelemetryProperties();
+    }
+
+    private void SetTelemetryProperties()
+    {
+        string? queueType = null;
+        if (_responses is ServiceBusQueue)
+        {
+            queueType = ServiceBusQueue.QueueType;
+        }
+        else if (_responses is StorageQueue)
+        {
+            queueType = StorageQueue.QueueType;
+        }
+        else
+        {
+            queueType = "unknown";
+        }
+        _telemetryClient.Context.GlobalProperties.Add("QueueType", queueType);
+        _telemetryClient.Context.GlobalProperties.Add("ServiceType", _userService.GetType().FullName);
     }
 
     private async Task ProcessMessageAsync(CancellationToken stoppingToken)
