@@ -125,7 +125,7 @@ class Program
         }
         if (tasks.Count > 0)
         {
-            Console.WriteLine($"Started at: {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss.fff}");
+            Console.WriteLine($"Started at: {DateTimeOffset.UtcNow:yyyy-MM-ddTHH:mm:ss.fffZ}");
             Console.WriteLine("Press any key to exit early...");
             _ = Task.Run(() =>
             {
@@ -148,7 +148,7 @@ class Program
                 throughput = (options.Count - MessagesFailedSending) / sw.Elapsed.TotalSeconds;
             }
 
-            Console.WriteLine($"Stopped at: {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss.fff}");
+            Console.WriteLine($"Stopped at: {DateTimeOffset.UtcNow:yyyy-MM-ddTHH:mm:ss.fffZ}");
             Console.WriteLine($"Number of messages to send and/or receive: {options.Count}");
             Console.WriteLine($"Number of messages failed being sent: {MessagesFailedSending}");
             Console.WriteLine($"Adjusted number of messages to receive: {MessagesToReceive}");
