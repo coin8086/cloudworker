@@ -16,6 +16,9 @@ class Program
         [Option('l', "length", Default = (int)4, HelpText = "Message length")]
         public int MessageLength { get; set; }
 
+        [Option('m', "message", HelpText = "Message content")]
+        public string? Message { get; set; }
+
         [Option('c', "count", Default = (int)2000, HelpText = "Number of messages to send and/or receive")]
         public int Count { get; set; }
 
@@ -40,6 +43,10 @@ class Program
         public override void Validate()
         {
             base.Validate();
+            if (!string.IsNullOrEmpty(Message))
+            {
+                MessageLength = Message.Length;
+            }
             if (MessageLength <= 0)
             {
                 throw new ArgumentException("MessageLength must be greater than 0!");
@@ -161,7 +168,7 @@ class Program
 
     static Task StartSending(Options options)
     {
-        var message = new String('a', options.MessageLength);
+        var message = string.IsNullOrEmpty(options.Message) ?  new String('a', options.MessageLength) : options.Message;
         var batch = options.Count / options.SenderCount;
         var queueOpts = new Cloud.Soa.E2E.QueueOptions(options) { QueueName = options.RequestQueueName };
         var logger = _LoggerFactory!.CreateLogger("Sender");
