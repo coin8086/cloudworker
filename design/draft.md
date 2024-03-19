@@ -1,8 +1,8 @@
-# Cloud Native SOA
+# Cloud SOA
 
 ## Overview
 
-Cloud SOA is a queue based SOA system on Azure.
+Cloud SOA is a queue based system on Cloud for SOA workload.
 
 ```mermaid
 flowchart
@@ -67,34 +67,40 @@ flowchart TD
 
 ## Client
 
-**Create a session**
+### Control Plane Operations
 
-Queues and cluster are created externally to a session.
+Create a pair of queues for requests and responses separately
 
 ```cs
 var requestQueue = await Queue.CreateAsync(...);
 var responseQueue = await Queue.CreateAsync(...);
-var cluster = await Cluster.CreateAsync(...);
-var session = await Session.CreateAsync(requestQueue, responseQueue);
 ```
 
-Question: do we really need a session, since the request and response queues are enough for sending requests and receiving responses?
-
-**Send requests by the session**
+Create one or more clusters for the pair of queues
 
 ```cs
+var cluster = await Clsuter.CreateAsync(requestQueue, responseQueue, ...);
+```
+
+### Data Plane Operations
+
+Send requests to request queue
+
+```cs
+var requestQueueClient = ...;
 var tasks = new Task[1000];
 for (var i = 1; i < 1000; i++) {
-    tasks[i] = session.sendRequestAsync(...);
+    tasks[i] = requestQueueClient.sendAsync(...);
 }
 await Task.WhenAll(tasks);
 ```
 
-**Get responses by the session**
+Get responses from response queue
 
 ```cs
+var responseQueueClient = ...;
 for (var i = 1; i < 1000; i++) {
-    var result = await session.WaitResponseAsync()
+    var result = await responseQueueClient.WaitAsync()
 
     //Process the result...
 
