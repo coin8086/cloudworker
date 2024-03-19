@@ -42,7 +42,7 @@ class Program
         var tasks = new Task[options.Count];
 
         Console.WriteLine($"Send {options.Count} messages, each of length {options.Message!.Length}, to queue {options.QueueName}.");
-        Console.WriteLine($"Start sending at {DateTimeOffset.Now}");
+        Console.WriteLine($"Started at {DateTimeOffset.UtcNow:yyyy-MM-ddTHH:mm:ss.fffZ}");
 
         for (int i = 0; i < options.Count; i++)
         {
@@ -50,7 +50,7 @@ class Program
         }
         Task.WaitAll(tasks);
 
-        Console.WriteLine($"End sending at {DateTimeOffset.Now}");
+        Console.WriteLine($"Stopped at {DateTimeOffset.UtcNow:yyyy-MM-ddTHH:mm:ss.fffZ}");
         return 0;
     }
 }

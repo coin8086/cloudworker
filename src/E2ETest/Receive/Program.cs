@@ -40,7 +40,7 @@ class Program
         };
 
         int nReceived = 0;
-        Console.WriteLine($"Start receiving at {DateTimeOffset.Now}.");
+        Console.WriteLine($"Started at {DateTimeOffset.UtcNow:yyyy-MM-ddTHH:mm:ss.fffZ}");
 
         while (!token.IsCancellationRequested)
         {
@@ -70,7 +70,7 @@ class Program
             }
         }
 
-        Console.WriteLine($"End receiving at {DateTimeOffset.Now}.");
+        Console.WriteLine($"Stopped at {DateTimeOffset.UtcNow:yyyy-MM-ddTHH:mm:ss.fffZ}");
         Console.WriteLine($"Received {nReceived} messages.");
         return 0;
     }
