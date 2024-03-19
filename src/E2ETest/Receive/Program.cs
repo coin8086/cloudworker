@@ -1,7 +1,6 @@
 ﻿using Cloud.Soa.E2E;
 using Cloud.Soa.MessageQueue;
 using CommandLine;
-using System.Diagnostics;
 
 namespace Receive;
 

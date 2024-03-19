@@ -1,6 +1,5 @@
 ﻿using Cloud.Soa.E2E;
 using CommandLine;
-using System.Diagnostics;
 
 namespace Send;
 
