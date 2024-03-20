@@ -67,19 +67,43 @@ flowchart TD
 
 ## Client
 
-### Control Plane Operations
+### Control Plane/Cloud Resource Operations
 
 Create a pair of queues for requests and responses separately
 
 ```cs
-var requestQueue = await Queue.CreateAsync(...);
-var responseQueue = await Queue.CreateAsync(...);
+//Create a queue space with two queues, named after "requests" and "responses" separately.
+var queueSpace = QueueSpace.Create(...);
+queueSpace.CreateQueue("requests", ...);
+queueSpace.CreateQueue("responses", ...);
 ```
 
-Create one or more clusters for the pair of queues
+Create a file share for user service and data
 
 ```cs
-var cluster = await Clsuter.CreateAsync(requestQueue, responseQueue, ...);
+var fileShare = FileShare.Create(...);
+fileShare.upload("local-user-service-package-path", "fileshare-path");
+```
+
+Create monitoring resources for clusters
+
+```cs
+var monitor = ResourceMonitor.Create(...);
+```
+
+Create one or more clusters with the pair of queues, file share and monitor
+
+```cs
+var queueConfig = { queueSpace, "requests", "responses", ...};
+var fileshareConfig = { fileShare, "fileshare-path", "target-mount-path", ... };
+var serviceHostConfig = { "user-service-path", ... } ;
+var cluster = Clsuter.Create(queueConfig, fileshareConfig, serviceHostConfig, monitor, ...);
+```
+
+Besides, a key vault is used when providing secrets such as queue space connection strings in a deployment
+
+```cs
+var kv = await KeyVault.Create(...);
 ```
 
 ### Data Plane Operations
