@@ -6,6 +6,8 @@ param location string = resourceGroup().location
 
 param serviceBusName string
 param serviceBusRg string
+param requestQueueName string = 'requests'
+param responseQueueName string = 'responses'
 
 param appInsightsName string = ''
 param appInsightsRg string = ''
@@ -36,6 +38,8 @@ module aci 'aci.bicep' = {
     service: service
     location: location
     connectionString: serviceBusConnectionString
+    requestQueue: requestQueueName
+    responseQueue: responseQueueName
     appInsights: appInsightsConnectionString
   }
 }
