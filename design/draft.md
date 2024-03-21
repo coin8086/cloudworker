@@ -67,46 +67,67 @@ flowchart TD
 
 ## Client
 
-### Control Plane/Cloud Resource Operations
+### Control Plane/Cloud Resource Allocation Operations
+
+#### Overview
+
+Control plane/resource allocation operations can be done by tools like Azure CLI in Bash and PowerShell, etc., whatever can deploy a resource to Azure.
+
+The main components of the system's infrastructure are:
+
+* Queue (Service Bus queue/Storge queue/...)
+* Cluster (ACI/AKS/...)
+* Storage (Azure Storage file share/...)
+* Monitor (Azure Monitor/...)
+
+#### Components
+
+Here PowerShell is used as one of the available tools for resource operations.
 
 Create a pair of queues for requests and responses separately
 
-```cs
+```ps1
 //Create a queue space with two queues, named after "requests" and "responses" separately.
-var queueSpace = QueueSpace.Create(...);
-queueSpace.CreateQueue("requests", ...);
-queueSpace.CreateQueue("responses", ...);
+$queueSpace = New-QueueSpace ...
+New-Queue -Space $queueSpace -Name "requests"
+New-Queue -Space $queueSpace -Name "responses"
 ```
 
 Create a file share for user service and data
 
-```cs
-var fileShare = FileShare.Create(...);
-fileShare.upload("local-user-service-package-path", "fileshare-path");
+```ps1
+$fileShare = New-FileShare ...
+New-FileShareFile -LocalPath "local-user-service-package-path" -TargetPath "fileshare-path"
 ```
 
 Create monitoring resources for clusters
 
-```cs
-var monitor = ResourceMonitor.Create(...);
+```ps1
+$monitor = New-Monitor ...
 ```
 
 Create one or more clusters with the pair of queues, file share and monitor
 
-```cs
-var queueConfig = { queueSpace, "requests", "responses", ...};
-var fileshareConfig = { fileShare, "fileshare-path", "target-mount-path", ... };
-var serviceHostConfig = { "user-service-path", ... } ;
-var cluster = Clsuter.Create(queueConfig, fileshareConfig, serviceHostConfig, monitor, ...);
-```
-
-Besides, a key vault is used when providing secrets such as queue space connection strings in a deployment
-
-```cs
-var kv = await KeyVault.Create(...);
+```ps1
+$queueConfig = { $queueSpace.ConnectionString, "requests", "responses", ... }
+$fileshareConfig = { $fileShare.ConnectionString, "fileshare-path", "target-mount-path", ... }
+$serviceConfig = { "service-assembly-path", ... }
+$monitorConfig = { $monitor.ConnectionString, ... }
+$clusterConfig = @{
+    queue = $queueConfig
+    fileShare = $fileConfig
+    service = $serviceConfig
+    monitor = $monitorConfig
+    dockerImage = '...'
+    nodes = 100
+    ...
+}
+$cluster = New-Clsuter $clusterConfig
 ```
 
 ### Data Plane Operations
+
+Data plane operations are done in a programming language like C#, linking against a SDK.
 
 Send requests to request queue
 
