@@ -9,10 +9,13 @@ namespace Cloud.Soa.ServiceHost;
 
 static class Queues
 {
-    //NOTE: This is just the queue service (IMessageQueue) and queue option (Options<T>) name in DI, not the QueueOptions.QueueName!
-    public const string RequestQueue = "Requests";
-
-    public const string ResponseQueue = "Responses";
+    //NOTE: RequestQueue/ResponseQueue is not queue name but the name for
+    //(1) keyed queue service of type IMessageQueue
+    //(2) named queue options of type IOptionsMonitor<T>
+    //(3) configuration section for the named queue options
+    //Because of item (3), when the values are changed, the configuration file/environment variables/... must be changed accordingly.
+    public const string RequestQueue = "Request";
+    public const string ResponseQueue = "Response";
 
     //NOTE: The parameter "name" is the name of the config section under "Queues". It is also used as the name for Options<T>.
     public static IServiceCollection AddQueueOptions<T>(this IServiceCollection services, IConfiguration configuration, string name) where T : QueueOptions
