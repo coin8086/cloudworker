@@ -21,6 +21,8 @@ param queueType string = 'servicebus'
 
 @secure()
 param connectionString string
+param requestQueue string = 'requests'
+param responseQueue string = 'responses'
 param messageLease int = 60
 param queryInterval int = 500
 
@@ -77,6 +79,14 @@ resource containers 'Microsoft.ContainerInstance/containerGroups@2023-05-01' = [
               {
                 name: 'Queues__ConnectionString'
                 secureValue: connectionString
+              }
+              {
+                name: 'Queues__Request__QueueName'
+                value: requestQueue
+              }
+              {
+                name: 'Queues__Response__QueueName'
+                value: responseQueue
               }
               {
                 name: 'Queues__MessageLease'
