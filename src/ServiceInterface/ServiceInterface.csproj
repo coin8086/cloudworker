@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <RootNamespace>Cloud.Soa</RootNamespace>
-    <AssemblyName>Cloud.Soa.ServiceInterface</AssemblyName>
+    <RootNamespace>CloudWork</RootNamespace>
+    <AssemblyName>CloudWork.ServiceInterface</AssemblyName>
   </PropertyGroup>
 
 </Project>

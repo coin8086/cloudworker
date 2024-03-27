@@ -1,12 +1,12 @@
-﻿using Cloud.Soa.E2E;
-using Cloud.Soa.MessageQueue;
+﻿using CloudWork.E2E;
+using CloudWork.MessageQueue;
 using CommandLine;
 
 namespace Receive;
 
 class Program
 {
-    class Options : Cloud.Soa.E2E.QueueOptions
+    class Options : CloudWork.E2E.QueueOptions
     {
         [Option('n', "queue-name", Default = "responses")]
         public override string? QueueName { get; set; }

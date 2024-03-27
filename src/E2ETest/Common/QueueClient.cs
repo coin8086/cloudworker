@@ -1,7 +1,7 @@
-﻿using Cloud.Soa.MessageQueue;
+﻿using CloudWork.MessageQueue;
 using Microsoft.Extensions.Logging;
 
-namespace Cloud.Soa.E2E;
+namespace CloudWork.E2E;
 
 public static class QueueClient
 {

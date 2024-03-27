@@ -1,11 +1,11 @@
-﻿using Cloud.Soa.MessageQueue;
+﻿using CloudWork.MessageQueue;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 
-namespace Cloud.Soa.ServiceHost;
+namespace CloudWork.ServiceHost;
 
 static class Queues
 {

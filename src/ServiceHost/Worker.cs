@@ -1,4 +1,4 @@
-using Cloud.Soa.MessageQueue;
+using CloudWork.MessageQueue;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Extensions.Configuration;
@@ -10,7 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Cloud.Soa.ServiceHost;
+namespace CloudWork.ServiceHost;
 
 class WorkerOptions
 {

@@ -1,5 +1,5 @@
-﻿using Cloud.Soa.E2E;
-using Cloud.Soa.MessageQueue;
+﻿using CloudWork.E2E;
+using CloudWork.MessageQueue;
 using CommandLine;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
@@ -8,7 +8,7 @@ namespace PerfTest;
 
 class Program
 {
-    class Options : Cloud.Soa.E2E.QueueOptions
+    class Options : CloudWork.E2E.QueueOptions
     {
         [Option(Hidden = true, Required = false)]
         public override string? QueueName { get; set; }
@@ -170,7 +170,7 @@ class Program
     {
         var message = string.IsNullOrEmpty(options.Message) ?  new String('a', options.MessageLength) : options.Message;
         var batch = options.Count / options.SenderCount;
-        var queueOpts = new Cloud.Soa.E2E.QueueOptions(options) { QueueName = options.RequestQueueName };
+        var queueOpts = new CloudWork.E2E.QueueOptions(options) { QueueName = options.RequestQueueName };
         var logger = _LoggerFactory!.CreateLogger("Sender");
         var tasks = new Task[options.SenderCount];
         for (var i = 0; i < options.SenderCount; i++)
@@ -209,7 +209,7 @@ class Program
 
     static Task StartReceiving(Options options)
     {
-        var queueOpts = new Cloud.Soa.E2E.QueueOptions(options) { QueueName = options.ResponseQueueName };
+        var queueOpts = new CloudWork.E2E.QueueOptions(options) { QueueName = options.ResponseQueueName };
         var logger = _LoggerFactory!.CreateLogger("Receiver");
         var tasks = new Task[options.ReceiverCount];
         for (var i = 0; i < options.ReceiverCount; i++)

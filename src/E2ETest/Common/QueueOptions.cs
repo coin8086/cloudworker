@@ -1,7 +1,7 @@
-﻿using Cloud.Soa.MessageQueue;
+﻿using CloudWork.MessageQueue;
 using CommandLine;
 
-namespace Cloud.Soa.E2E;
+namespace CloudWork.E2E;
 
 public class QueueOptions
 {

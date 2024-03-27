@@ -51,8 +51,8 @@ param concurrency int = 20
 param appInsights string = ''
 
 var serviceMap = {
-  echo: '/services/echoservice/Cloud.Soa.EchoService.dll'
-  cgi: '/services/cgiservice/Cloud.Soa.CGIService.dll'
+  echo: '/services/echoservice/CloudWork.EchoService.dll'
+  cgi: '/services/cgiservice/CloudWork.CGIService.dll'
 }
 var assemblyPath = serviceMap[service]
 

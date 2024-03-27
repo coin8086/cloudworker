@@ -1,8 +1,8 @@
-# Cloud SOA
+# CloudWork
 
 ## Overview
 
-Cloud SOA is a queue based system on Cloud for SOA workload.
+CloudWork is a queue based system on Cloud for SOA workload.
 
 ```mermaid
 flowchart

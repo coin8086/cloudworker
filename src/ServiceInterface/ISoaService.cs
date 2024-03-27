@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Cloud.Soa
+namespace CloudWork
 {
     public interface ISoaService
     {
