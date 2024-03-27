@@ -1,4 +1,4 @@
-﻿using CloudWork.MessageQueue;
+using CloudWork.MessageQueue;
 using CommandLine;
 
 namespace CloudWork.E2E;

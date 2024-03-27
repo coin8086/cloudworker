@@ -1,4 +1,4 @@
-﻿using CloudWork.MessageQueue;
+using CloudWork.MessageQueue;
 using Microsoft.Extensions.Logging;
 
 namespace CloudWork.E2E;

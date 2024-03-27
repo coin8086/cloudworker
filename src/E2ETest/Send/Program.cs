@@ -1,4 +1,4 @@
-﻿using CloudWork.E2E;
+using CloudWork.E2E;
 using CommandLine;
 
 namespace Send;

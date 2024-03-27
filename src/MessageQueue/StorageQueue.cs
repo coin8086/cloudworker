@@ -1,4 +1,4 @@
-﻿using Azure.Storage.Queues;
+using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿using CloudWork.MessageQueue;
+using CloudWork.MessageQueue;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
