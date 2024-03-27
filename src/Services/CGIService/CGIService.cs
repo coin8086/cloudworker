@@ -30,7 +30,7 @@ public class CGICallResult
     public string? Exception {  get; set; }
 }
 
-public class CGIService : ISoaService
+public class CGIService : IUserService
 {
     private readonly ILogger _logger;
     private readonly CGIServiceOptions _options;

@@ -22,14 +22,14 @@ class WorkerOptions
 class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
-    private readonly ISoaService _userService;
+    private readonly IUserService _userService;
     private readonly IMessageQueue _requests;
     private readonly IMessageQueue _responses;
     private readonly WorkerOptions _workerOptions;
     private readonly TelemetryClient _telemetryClient;
 
     public Worker(
-        IOptions<WorkerOptions> options, ILogger<Worker> logger, ISoaService userService,
+        IOptions<WorkerOptions> options, ILogger<Worker> logger, IUserService userService,
         [FromKeyedServices(Queues.RequestQueue)] IMessageQueue requests,
         [FromKeyedServices(Queues.ResponseQueue)] IMessageQueue responses,
         TelemetryClient telemetryClient)
@@ -109,22 +109,22 @@ class Worker : BackgroundService
                     {
                         try
                         {
-                            //InvokeAsync of a soa service should catch all application exceptions and handle them properly.
+                            //InvokeAsync of a user service should catch all application exceptions and handle them properly.
                             //This means it could return error message to client in the result, or throw an exception out,
-                            //which all depend on the soa service. The only exception is the OperationCanceledException, which
+                            //which all depend on the user service. The only exception is the OperationCanceledException, which
                             //should be thrown when stoppingToken is set to cancelled.
                             result = await _userService.InvokeAsync(request.Content, stoppingToken);
                         }
                         catch (OperationCanceledException)
                         {
-                            _logger.LogInformation("Invoking SOA service is cancelled. Return current request back to the queue.");
+                            _logger.LogInformation("Invoking user service is cancelled. Return current request back to the queue.");
                             timer.Change(Timeout.Infinite, Timeout.Infinite);
                             await request.ReturnAsync();
                             break;
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Error when invoking SOA service");
+                            _logger.LogError(ex, "Error when invoking user service");
                             timer.Change(Timeout.Infinite, Timeout.Infinite);
                             await request.ReturnAsync();
                             throw;

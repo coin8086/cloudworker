@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace CloudWork
 {
-    public interface ISoaService
+    public interface IUserService
     {
         //TODO: Add a method for initialization
         //Task InitializeAsync(CancellationToken cancel = default);

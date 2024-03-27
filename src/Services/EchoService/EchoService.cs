@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace CloudWork.EchoService;
 
-public class EchoService : ISoaService
+public class EchoService : IUserService
 {
     //Neither ILogger nor IConfiguration is used in the service. So ignore them.
     public EchoService(object logger, object configuration) { }
