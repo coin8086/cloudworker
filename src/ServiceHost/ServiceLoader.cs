@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Reflection;
 
-namespace CloudWork.ServiceHost;
+namespace CloudWorker.ServiceHost;
 
 interface IServiceLoader
 {

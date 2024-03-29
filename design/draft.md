@@ -1,8 +1,8 @@
-# CloudWork
+# CloudWorker
 
 ## Overview
 
-CloudWork is a queue based system on Cloud for SOA workload.
+CloudWorker is a queue based system on Cloud for SOA workload.
 
 ```mermaid
 flowchart

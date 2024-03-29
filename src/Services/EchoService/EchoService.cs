@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CloudWork.EchoService;
+namespace CloudWorker.EchoService;
 
 public class EchoService : IUserService
 {

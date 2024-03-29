@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <RootNamespace>CloudWork.EchoService</RootNamespace>
-    <AssemblyName>CloudWork.EchoService</AssemblyName>
+    <RootNamespace>CloudWorker.EchoService</RootNamespace>
+    <AssemblyName>CloudWorker.EchoService</AssemblyName>
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
 

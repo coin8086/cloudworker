@@ -1,4 +1,4 @@
-namespace CloudWork.MessageQueue;
+namespace CloudWorker.MessageQueue;
 
 public class QueueOptions
 {

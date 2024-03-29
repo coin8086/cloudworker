@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Collections.Generic;
 
-namespace CloudWork.MessageQueue;
+namespace CloudWorker.MessageQueue;
 
 public interface IMessage
 {

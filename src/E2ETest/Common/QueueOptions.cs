@@ -1,7 +1,7 @@
-using CloudWork.MessageQueue;
+using CloudWorker.MessageQueue;
 using CommandLine;
 
-namespace CloudWork.E2E;
+namespace CloudWorker.E2E;
 
 public class QueueOptions
 {

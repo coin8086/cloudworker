@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CloudWork.ServiceHost;
+namespace CloudWorker.ServiceHost;
 
 static class ApplicationInsightsExtensions
 {

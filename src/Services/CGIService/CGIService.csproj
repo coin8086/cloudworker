@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <RootNamespace>CloudWork.CGIService</RootNamespace>
-    <AssemblyName>CloudWork.CGIService</AssemblyName>
+    <RootNamespace>CloudWorker.CGIService</RootNamespace>
+    <AssemblyName>CloudWorker.CGIService</AssemblyName>
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
 

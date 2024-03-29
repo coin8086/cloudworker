@@ -1,7 +1,7 @@
-using CloudWork.MessageQueue;
+using CloudWorker.MessageQueue;
 using Microsoft.Extensions.Logging;
 
-namespace CloudWork.E2E;
+namespace CloudWorker.E2E;
 
 public static class QueueClient
 {

@@ -1,4 +1,4 @@
-using CloudWork.MessageQueue;
+using CloudWorker.MessageQueue;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Extensions.Configuration;
@@ -10,7 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CloudWork.ServiceHost;
+namespace CloudWorker.ServiceHost;
 
 class WorkerOptions
 {

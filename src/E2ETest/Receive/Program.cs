@@ -1,12 +1,12 @@
-using CloudWork.E2E;
-using CloudWork.MessageQueue;
+using CloudWorker.E2E;
+using CloudWorker.MessageQueue;
 using CommandLine;
 
 namespace Receive;
 
 class Program
 {
-    class Options : CloudWork.E2E.QueueOptions
+    class Options : CloudWorker.E2E.QueueOptions
     {
         [Option('n', "queue-name", Default = "responses")]
         public override string? QueueName { get; set; }

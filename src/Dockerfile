@@ -15,4 +15,4 @@ COPY --from=build /publish/cgiservice cgiservice
 COPY --from=build /publish/echoservice echoservice
 WORKDIR /app
 COPY --from=build /publish/servicehost .
-ENTRYPOINT ["dotnet", "CloudWork.ServiceHost.dll"]
+ENTRYPOINT ["dotnet", "CloudWorker.ServiceHost.dll"]

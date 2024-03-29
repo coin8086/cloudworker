@@ -1,11 +1,11 @@
-using CloudWork.E2E;
+using CloudWorker.E2E;
 using CommandLine;
 
 namespace Send;
 
 class Program
 {
-    class Options : CloudWork.E2E.QueueOptions
+    class Options : CloudWorker.E2E.QueueOptions
     {
         [Option('n', "queue-name", Default = "requests")]
         public override string? QueueName { get; set; }

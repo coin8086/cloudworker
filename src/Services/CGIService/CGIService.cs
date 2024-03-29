@@ -9,7 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CloudWork.CGIService;
+namespace CloudWorker.CGIService;
 
 public class CGIServiceOptions
 {

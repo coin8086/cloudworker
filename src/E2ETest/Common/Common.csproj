@@ -4,8 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>CloudWork.E2E</RootNamespace>
-    <AssemblyName>CloudWork.E2E.Common</AssemblyName>
+    <RootNamespace>CloudWorker.E2E</RootNamespace>
+    <AssemblyName>CloudWorker.E2E.Common</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
