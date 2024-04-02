@@ -1,12 +1,12 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace CloudWorker
 {
-    public interface IUserService
+    public interface IUserService : IAsyncDisposable
     {
-        //TODO: Add a method for initialization
-        //Task InitializeAsync(CancellationToken cancel = default);
+        Task InitializeAsync(CancellationToken cancel = default);
 
         Task<string> InvokeAsync(string input, CancellationToken cancel = default);
     }

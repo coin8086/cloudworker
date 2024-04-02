@@ -69,6 +69,11 @@ public class CGIService : IUserService
         return options;
     }
 
+    public Task InitializeAsync(CancellationToken cancel = default)
+    {
+        return Task.CompletedTask;
+    }
+
     public async Task<string> InvokeAsync(string input, CancellationToken cancel = default)
     {
         _logger.LogTrace("InvokeAsync: input={input}", input);
@@ -145,5 +150,10 @@ public class CGIService : IUserService
             catch { }
             return JsonSerializer.Serialize(result);
         }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        return ValueTask.CompletedTask;
     }
 }

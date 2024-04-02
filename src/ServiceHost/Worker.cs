@@ -152,6 +152,21 @@ class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        try
+        {
+            await _userService.InitializeAsync(stoppingToken);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("ExecuteAsync: Canceled when initializing.");
+            return;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ExecuteAsync: Failed initializing user service.");
+            throw;
+        }
+
         int concurrency = _workerOptions.Concurrency ?? 1;
         if (concurrency <= 0)
         {
@@ -184,9 +199,13 @@ class Worker : BackgroundService
         }
         await Task.WhenAll(tasks);
         _logger.LogInformation("ExecuteAsync: Stopped.");
+    }
 
-        await _telemetryClient.FlushAsync(CancellationToken.None);
-        _logger.LogInformation("ExecuteAsync: Telemetry flushed.");
+    public override void Dispose()
+    {
+        base.Dispose();
+        _telemetryClient.FlushAsync(CancellationToken.None).Wait();
+        _logger.LogInformation("Telemetry flushed.");
     }
 }
 
