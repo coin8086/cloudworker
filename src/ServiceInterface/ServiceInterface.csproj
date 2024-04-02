@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <RootNamespace>CloudWorker</RootNamespace>
     <AssemblyName>CloudWorker.ServiceInterface</AssemblyName>
+    <PackageId>CloudWorker.ServiceInterface</PackageId>
+    <Version>1.0.0</Version>
   </PropertyGroup>
 
 </Project>
