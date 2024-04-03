@@ -4,23 +4,13 @@ using System.Threading.Tasks;
 
 namespace CloudWorker.EchoService;
 
-public class EchoService : IUserService
+public class EchoService : UserService
 {
     //Neither ILogger nor IConfiguration is used in the service. So ignore them.
     public EchoService(object logger, object configuration) { }
 
-    public Task InitializeAsync(CancellationToken cancel = default)
-    {
-        return Task.CompletedTask;
-    }
-
-    public Task<string> InvokeAsync(string input, CancellationToken cancel = default)
+    public override Task<string> InvokeAsync(string input, CancellationToken cancel = default)
     {
         return Task.FromResult(input);
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        return ValueTask.CompletedTask;
     }
 }
