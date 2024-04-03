@@ -1,4 +1,5 @@
 using CloudWorker.MessageQueue;
+using CloudWorker.ServiceInterface;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Extensions.Configuration;

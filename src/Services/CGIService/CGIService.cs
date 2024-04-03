@@ -1,3 +1,4 @@
+using CloudWorker.ServiceInterface;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
