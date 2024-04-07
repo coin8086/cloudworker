@@ -33,14 +33,12 @@ public class CGICallResult
 
 public class CGIService : UserService
 {
-    private readonly ILogger _logger;
     private readonly CGIServiceOptions _options;
 
     //NOTE: Users can leverage ILogger and IConfiguration from host, or build their own ones for
     //customization.
-    public CGIService(ILogger logger, IConfiguration _)
+    public CGIService(ILogger logger, IConfiguration hostConfig) : base(logger, hostConfig)
     {
-        _logger = logger;
         _options = LoadConfiguration();
     }
 
