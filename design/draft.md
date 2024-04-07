@@ -2,12 +2,12 @@
 
 ## Overview
 
-CloudWorker is a queue based system on Cloud for SOA workload.
+CloudWorker is a queue based system on cloud for [embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel) workload.
 
 ```mermaid
 flowchart
-    subgraph Azure
-        cluster((service hosts))
+    subgraph Cloud
+        cluster((cluster of workers))
         inq(request queue)
         outq(response queue)
         storage[(file share)]
@@ -22,24 +22,45 @@ flowchart
     client --> storage
 ```
 
-## Service
+A worker is composed of a service host and a User Defined Service (UDS).
+
+```mermaid
+flowchart
+    subgraph worker
+        svchost(service host) --> |load| svc(UDS)
+    end
+```
 
 ### Used Defined Service (UDS)
 
-In the system, a SOA service is a Used Defined Service (UDS) that implements the following interface:
+A UDS is a C# class that implements the following interface:
 
 ```cs
-interface ISoaService
+interface IUserService : IAsyncDisposable
 {
+    Task InitializeAsync(CancellationToken cancel);
+
     Task<string> InvokeAsync(string input, CancellationToken token)
 }
 ```
 
+The `input` is whatever a user puts in a message of a request queue and the returned string will be the content of a response message.
+
+Though a UDS is in C#, it can be extended/implemented to support other programming languages, like Java, Python, etc.
+
+For example,
+
+```mermaid
+flowchart LR
+    uds(UDS) --> |start| grpc(gRPC server)
+    uds --> |talk to| grpc
+```
+
+Here a UDS starts a gRPC server and then talks to it. The gRPC server can be implemented in whatever programming language.
+
 ### Service Host
 
-A service host is the one that hosts a UDS.
-
-It works like this:
+A service host is a process that hosts a UDS. It works like this:
 
 ```mermaid
 flowchart TD
@@ -65,13 +86,13 @@ flowchart TD
     afterCall --> take
 ```
 
-## Client
+## Implementation
 
-### Control Plane/Cloud Resource Allocation Operations
+An implementation of Azure is provided, though the core abstraction/interfaces can be implemented in a different cloud infrastrutrue.
 
-#### Overview
+### Control Plane Operations
 
-Control plane/resource allocation operations can be done by tools like Azure CLI in Bash and PowerShell, etc., whatever can deploy a resource to Azure.
+Control plane operations are used to build a cloud infrastructure of the system.
 
 The main components of the system's infrastructure are:
 
@@ -80,9 +101,9 @@ The main components of the system's infrastructure are:
 * Storage (Azure Storage file share/...)
 * Monitor (Azure Monitor/...)
 
-#### Components
+Hereafter PowerShell is used to describe the control plane operations.
 
-Here PowerShell is used as one of the available tools for resource operations.
+#### Components
 
 Create a pair of queues for requests and responses separately
 
@@ -93,7 +114,7 @@ New-Queue -Space $queueSpace -Name "requests"
 New-Queue -Space $queueSpace -Name "responses"
 ```
 
-Create a file share for user service and data
+Create a file share for user service(UDS) and data
 
 ```ps1
 $fileShare = New-FileShare ...
@@ -127,7 +148,9 @@ $cluster = New-Clsuter $clusterConfig
 
 ### Data Plane Operations
 
-Data plane operations are done in a programming language like C#, linking against a SDK.
+Data plane operations are used to run user workload against a built-up cloud infrastructure.
+
+After a UDS is deployed to the cloud infra, user can send requests to and get responses from it.
 
 Send requests to request queue
 
