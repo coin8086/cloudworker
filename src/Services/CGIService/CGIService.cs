@@ -128,9 +128,17 @@ public class CGIService : UserService
             };
             return JsonSerializer.Serialize(result);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex)
         {
-            _logger.LogError(ex, "InvokeAsync: Error when running '{file}'", _options.FileName);
+            if (cancel.IsCancellationRequested && ex is OperationCanceledException)
+            {
+                _logger.LogInformation("InvokeAsync: Operation is canceled.");
+            }
+            else
+            {
+                _logger.LogError(ex, "InvokeAsync: Error when running '{file}'", _options.FileName);
+            }
+
             var result = new CGICallResult()
             {
                 Stdout = stdout.ToString(),

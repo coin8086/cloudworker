@@ -111,14 +111,13 @@ class Worker : BackgroundService
                         try
                         {
                             //InvokeAsync of a user service should catch all application exceptions and handle them properly.
-                            //This means it could return error message to client in the result, or throw an exception out,
-                            //which all depend on the user service. The only exception is the OperationCanceledException, which
-                            //should be thrown when stoppingToken is set to cancelled.
+                            //The only exception is the OperationCanceledException, which can be thrown when stoppingToken is
+                            //set to canceled.
                             result = await _userService.InvokeAsync(request.Content, stoppingToken);
                         }
-                        catch (OperationCanceledException)
+                        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                         {
-                            _logger.LogInformation("Invoking user service is cancelled. Return current request back to the queue.");
+                            _logger.LogInformation("Invoking user service is canceled.");
                             timer.Change(Timeout.Infinite, Timeout.Infinite);
                             await request.ReturnAsync();
                             break;
@@ -139,7 +138,7 @@ class Worker : BackgroundService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "ProcessMessage Error");
+                    _logger.LogError(ex, "ProcessMessage error");
                     throw;
                 }
             }
