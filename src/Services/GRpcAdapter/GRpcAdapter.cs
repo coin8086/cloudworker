@@ -34,7 +34,14 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
     protected override void LoadConfiguration()
     {
         base.LoadConfiguration();
-        throw new NotImplementedException();
+        if (_options == null)
+        {
+            throw new ArgumentException("No configuration for GRpcAdapter!");
+        }
+        if (string.IsNullOrWhiteSpace(_options.ServerURL) || string.IsNullOrEmpty(_options.ServerFileName))
+        {
+            throw new ArgumentException("ServerURL or ServerFileName is empty!");
+        }
     }
 
     public override Task InitializeAsync(CancellationToken cancel = default)
