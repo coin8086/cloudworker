@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CloudWorker.EchoService;
 
-public class EchoService : UserService
+public class EchoService : UserServiceBase
 {
     public EchoService(ILogger logger, IConfiguration hostConfig) : base(logger, hostConfig) {}
 

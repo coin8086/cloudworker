@@ -2,9 +2,7 @@ using CloudWorker.ServiceInterface;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -14,8 +12,7 @@ namespace CloudWorker.CGIService;
 
 public class CGIServiceOptions
 {
-    [Required]
-    public required string FileName { get; set; }
+    public string? FileName { get; set; }
 
     public string? Arguments { get; set; }
 }
@@ -31,41 +28,22 @@ public class CGICallResult
     public string? Exception {  get; set; }
 }
 
-public class CGIService : UserService
+public class CGIService : UserService<CGIServiceOptions>
 {
-    private readonly CGIServiceOptions _options;
+    protected override string _settingsFileName { get; } = "cgisettings.json";
 
-    //NOTE: Users can leverage ILogger and IConfiguration from host, or build their own ones for
-    //customization.
-    public CGIService(ILogger logger, IConfiguration hostConfig) : base(logger, hostConfig)
+    protected override string _environmentPrefix { get; } = "CGI_";
+
+    public CGIService(ILogger logger, IConfiguration hostConfig) : base(logger, hostConfig) {}
+
+    protected override void LoadConfiguration()
     {
-        _options = LoadConfiguration();
-    }
-
-    private CGIServiceOptions LoadConfiguration()
-    {
-        var configFileBase = Path.GetDirectoryName(typeof(CGIService).Assembly.Location);
-        if (string.IsNullOrWhiteSpace(configFileBase))
-        {
-            configFileBase = Directory.GetCurrentDirectory();
-        }
-
-        _logger.LogInformation("Look up configuration file in '{configFileBase}'.", configFileBase);
-
-        var builder = new ConfigurationBuilder()
-            .SetBasePath(configFileBase)
-            .AddJsonFile("cgisettings.json", true)
-            .AddEnvironmentVariables("CGI_");
-
-        var configuration = builder.Build();
-        var options = configuration.Get<CGIServiceOptions>();
-        if (string.IsNullOrWhiteSpace(options?.FileName))
+        base.LoadConfiguration();
+        if (string.IsNullOrWhiteSpace(_options?.FileName))
         {
             throw new ArgumentException("FileName is required but missing in configuration!");
         }
-
-        _logger.LogInformation("FileName='{FileName}' Arguments='{Arguments}'", options.FileName, options.Arguments);
-        return options;
+        _logger.LogInformation("FileName='{FileName}' Arguments='{Arguments}'", _options.FileName, _options.Arguments);
     }
 
     public override async Task<string> InvokeAsync(string input, CancellationToken cancel = default)
@@ -79,7 +57,7 @@ public class CGIService : UserService
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            FileName = _options.FileName,
+            FileName = _options!.FileName,
             Arguments = _options.Arguments,
         };
 

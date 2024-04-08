@@ -1,31 +1,38 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Threading;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace CloudWorker.ServiceInterface;
 
-public abstract class UserService : IUserService
+public abstract class UserService<TOptions> : UserServiceBase where TOptions : class
 {
-    protected ILogger _logger;
+    protected TOptions? _options;
 
-    protected IConfiguration _hostConfig;
+    protected virtual string _settingsFileName { get; } = "ServiceSettings.json";
 
-    public UserService(ILogger logger, IConfiguration hostConfig)
+    protected virtual string _environmentPrefix { get; } = "";
+
+    public UserService(ILogger logger, IConfiguration hostConfig) : base(logger, hostConfig)
     {
-        _logger = logger;
-        _hostConfig = hostConfig;
+        LoadConfiguration();
     }
 
-    public virtual ValueTask DisposeAsync()
+    protected virtual void LoadConfiguration()
     {
-        return ValueTask.CompletedTask;
-    }
+        var configFileBase = Path.GetDirectoryName(this.GetType().Assembly.Location);
+        if (string.IsNullOrWhiteSpace(configFileBase))
+        {
+            configFileBase = Directory.GetCurrentDirectory();
+        }
 
-    public virtual Task InitializeAsync(CancellationToken cancel = default)
-    {
-        return Task.CompletedTask;
-    }
+        _logger.LogInformation("Look up configuration file in '{configFileBase}'.", configFileBase);
 
-    public abstract Task<string> InvokeAsync(string input, CancellationToken cancel = default);
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(configFileBase)
+            .AddJsonFile(_settingsFileName, true)
+            .AddEnvironmentVariables(_environmentPrefix);
+
+        var configuration = builder.Build();
+        _options = configuration.Get<TOptions>();
+    }
 }
