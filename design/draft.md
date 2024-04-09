@@ -31,7 +31,7 @@ flowchart
     end
 ```
 
-### Used Defined Service (UDS)
+### User Defined Service (UDS)
 
 A UDS is a C# class that implements the following interface:
 
