@@ -108,6 +108,9 @@ public class CGIService : UserService<CGIServiceOptions>
         }
         catch (Exception ex)
         {
+            //TODO: rethrow when cancel.IsCancellationRequested && ex is OperationCanceledException
+            //NOTE: consider a shrink down process, in which a running node is stopped. Then the request
+            //being processed should be processed on a new node, instead of returning an error to client.
             if (cancel.IsCancellationRequested && ex is OperationCanceledException)
             {
                 _logger.LogInformation("InvokeAsync: Operation is canceled.");

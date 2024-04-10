@@ -104,6 +104,7 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
         }
         catch (Exception ex)
         {
+            //TODO: rethrow when cancel.IsCancellationRequested && ex is OperationCanceledException
             if (cancel.IsCancellationRequested && ex is OperationCanceledException)
             {
                 _logger.LogInformation("Operation is canceled.");
