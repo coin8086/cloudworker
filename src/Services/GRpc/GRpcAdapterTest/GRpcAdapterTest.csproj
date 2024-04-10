@@ -20,4 +20,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GRpcAdapter\GRpcAdapter.csproj" />
+    <ProjectReference Include="..\GRpcHello\GRpcHello.csproj" />
+  </ItemGroup>
+
 </Project>

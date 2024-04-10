@@ -2,7 +2,7 @@
 
 namespace CloudWorker.GRpcAdapter;
 
-class RequestMessage
+public class RequestMessage
 {
     public string? Id { get; set; }
 

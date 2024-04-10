@@ -2,7 +2,7 @@
 
 namespace CloudWorker.GRpcAdapter;
 
-class ResponseMessage
+public class ResponseMessage
 {
     public string? InReplyTo { get; set; }
 
