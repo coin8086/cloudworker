@@ -12,6 +12,11 @@ public class RequestMessage
 
     public string? Payload { get; set; }
 
+    public string ToJson()
+    {
+        return JsonSerializer.Serialize(this);
+    }
+
     public static RequestMessage FromJson(string value)
     {
         var msg = JsonSerializer.Deserialize<RequestMessage>(value);

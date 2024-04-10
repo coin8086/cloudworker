@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 namespace CloudWorker.MessageQueue;
 
+//TODO: Rename it to IQueueMessage
 public interface IMessage
 {
     string Id { get; }

@@ -14,4 +14,14 @@ public class ResponseMessage
     {
         return JsonSerializer.Serialize(this);
     }
+
+    public static ResponseMessage FromJson(string value)
+    {
+        var msg = JsonSerializer.Deserialize<ResponseMessage>(value);
+        if (msg == null || msg?.Payload == null)
+        {
+            throw new ArgumentException($"Invalid value '{value}'!");
+        }
+        return msg;
+    }
 }
