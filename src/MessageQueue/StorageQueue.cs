@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CloudWorker.MessageQueue;
 
-public class StorageQueueMessage : IMessage
+public class StorageQueueMessage : IQueueMessage
 {
     private readonly QueueClient _client;
     private readonly QueueMessage _message;
@@ -89,13 +89,13 @@ public class StorageQueue : IMessageQueue
 
     public TimeSpan MessageLease => _messageLease;
 
-    public async Task<IMessage> WaitAsync(CancellationToken cancel = default)
+    public async Task<IQueueMessage> WaitAsync(CancellationToken cancel = default)
     {
         var messages = await WaitBatchAsync(1, cancel).ConfigureAwait(false);
         return messages[0];
     }
 
-    public async Task<IReadOnlyList<IMessage>> WaitBatchAsync(int batchSize, CancellationToken cancel = default)
+    public async Task<IReadOnlyList<IQueueMessage>> WaitBatchAsync(int batchSize, CancellationToken cancel = default)
     {
         var delay = _options.QueryInterval ?? StorageQueueOptions.Default.QueryInterval;
         while (true)

@@ -224,7 +224,7 @@ class Program
     {
         while (!Stop.IsCancellationRequested)
         {
-            IReadOnlyList<IMessage>? messages = null;
+            IReadOnlyList<IQueueMessage>? messages = null;
             try
             {
                 messages = await receiver.WaitBatchAsync(batchSize, Stop.Token).ConfigureAwait(false);

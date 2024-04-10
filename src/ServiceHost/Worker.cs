@@ -69,7 +69,7 @@ class Worker : BackgroundService
         var interval = (int)(lease * 3 / 4);
         while (!stoppingToken.IsCancellationRequested)
         {
-            IMessage? request = null;
+            IQueueMessage? request = null;
             try
             {
                 request = await _requests.WaitAsync(stoppingToken);

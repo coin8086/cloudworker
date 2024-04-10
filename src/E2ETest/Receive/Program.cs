@@ -43,7 +43,7 @@ class Program
 
         while (!token.IsCancellationRequested)
         {
-            IMessage? message = null;
+            IQueueMessage? message = null;
             try
             {
                 message = await client.WaitAsync(cancel: token);
