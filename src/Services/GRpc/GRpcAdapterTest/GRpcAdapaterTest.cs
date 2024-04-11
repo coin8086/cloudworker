@@ -4,6 +4,7 @@ using CloudWorker.ServiceInterface;
 using GRpcHello;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace GRpcAdapterTest;
 
@@ -11,11 +12,10 @@ public class GRpcAdapaterTest : IDisposable
 {
     private ILoggerFactory _loggerFactory;
 
-    private ILogger _logger;
+    private IUserService _service;
 
-    private IConfiguration _hostConfig;
-
-    public GRpcAdapaterTest()
+    //TODO: Make an ILogger with ITestOutputHelper.
+    public GRpcAdapaterTest(ITestOutputHelper output)
     {
         CheckEnvironmentVariables();
 
@@ -23,12 +23,15 @@ public class GRpcAdapaterTest : IDisposable
         {
             builder.ClearProviders().AddSimpleConsole();
         });
-        _logger = _loggerFactory.CreateLogger<GRpcAdapaterTest>();
-        _hostConfig = new ConfigurationBuilder().Build();
+        var logger = _loggerFactory.CreateLogger<GRpcAdapaterTest>();
+        var hostConfig = new ConfigurationBuilder().Build();
+
+        _service = new GRpcAdapter(logger, hostConfig);
     }
 
     public void Dispose()
     {
+        _service.DisposeAsync().AsTask().Wait();
         _loggerFactory.Dispose();
     }
 
@@ -52,10 +55,7 @@ public class GRpcAdapaterTest : IDisposable
     [Fact]
     public async void IntegrationTest()
     {
-        IUserService service = new GRpcAdapter(_logger, _hostConfig);
-        Assert.True(true);
-
-        await service.InitializeAsync();
+        await _service.InitializeAsync();
         Assert.True(true);
 
         //Happy path
@@ -63,7 +63,7 @@ public class GRpcAdapaterTest : IDisposable
         var gMsg = new HelloRequest() { Name = "Rob" };
         var request = new Request(gMethod, gMsg);
 
-        var responseString = await service.InvokeAsync(request.ToJson());
+        var responseString = await _service.InvokeAsync(request.ToJson());
         Assert.False(string.IsNullOrWhiteSpace(responseString));
 
         var response = new Response<HelloReply>(responseString);
@@ -75,8 +75,5 @@ public class GRpcAdapaterTest : IDisposable
         Assert.Equal("Hello " + gMsg.Name, response.GRpcMessage.Message);
 
         //Bad path...
-
-        await service.DisposeAsync();
-        Assert.True(true);
     }
 }
