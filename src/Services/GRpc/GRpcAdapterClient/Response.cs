@@ -10,19 +10,25 @@ public class Response<T> where T : IMessage<T>, new()
 
     public ResponseMessage Message { get; private set; }
 
-    public T GRpcMessage { get; private set; }
+    public T? GRpcMessage { get; private set; }
 
     public Response(IQueueMessage queueMessage)
     {
         QueueMessage = queueMessage;
         Message = ResponseMessage.FromJson(QueueMessage.Content);
-        GRpcMessage = ParseGRpcMessageFrom(Message.Payload!);
+        if (Message.Payload != null)
+        {
+            GRpcMessage = ParseGRpcMessageFrom(Message.Payload);
+        }
     }
 
     public Response(string message)
     {
         Message = ResponseMessage.FromJson(message);
-        GRpcMessage = ParseGRpcMessageFrom(Message.Payload!);
+        if (Message.Payload != null)
+        {
+            GRpcMessage = ParseGRpcMessageFrom(Message.Payload);
+        }
     }
 
     public static T ParseGRpcMessageFrom(string message)

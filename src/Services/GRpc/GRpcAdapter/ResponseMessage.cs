@@ -18,7 +18,7 @@ public class ResponseMessage
     public static ResponseMessage FromJson(string value)
     {
         var msg = JsonSerializer.Deserialize<ResponseMessage>(value);
-        if (msg == null || msg?.Payload == null)
+        if (msg == null)
         {
             throw new ArgumentException($"Invalid value '{value}'!");
         }
