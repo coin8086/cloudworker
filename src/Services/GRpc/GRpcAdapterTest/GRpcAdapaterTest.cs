@@ -7,19 +7,52 @@ using Microsoft.Extensions.Logging;
 
 namespace GRpcAdapterTest;
 
-public class GRpcAdapaterTest
+public class GRpcAdapaterTest : IDisposable
 {
-    private (ILogger logger, IConfiguration hostConfig) PrepareHostingEnvrionment(GRpcAdapterOptions opts)
+    private ILoggerFactory _loggerFactory;
+
+    private ILogger _logger;
+
+    private IConfiguration _hostConfig;
+
+    public GRpcAdapaterTest()
     {
-        throw new NotImplementedException();
+        CheckEnvironmentVariables();
+
+        _loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.ClearProviders().AddSimpleConsole();
+        });
+        _logger = _loggerFactory.CreateLogger<GRpcAdapaterTest>();
+        _hostConfig = new ConfigurationBuilder().Build();
+    }
+
+    public void Dispose()
+    {
+        _loggerFactory.Dispose();
+    }
+
+    private static void CheckEnvironmentVariables()
+    {
+        var list = new string[]
+        {
+            "GRPC_ServerURL",
+            "GRPC_ServerFileName",
+            "GRPC_ServerArguments"
+        };
+        foreach (var key in list)
+        {
+            var value = Environment.GetEnvironmentVariable(key);
+            if (string.IsNullOrEmpty(value)) {
+                throw new InvalidOperationException($"Environment variable '{key}' is required but missing!");
+            }
+        }
     }
 
     [Fact]
-    public async void Test1()
+    public async void IntegrationTest()
     {
-        //TODO: Provide real options...
-        var (logger, hostConfig) = PrepareHostingEnvrionment(new GRpcAdapterOptions());
-        IUserService service = new GRpcAdapter(logger, hostConfig);
+        IUserService service = new GRpcAdapter(_logger, _hostConfig);
         Assert.True(true);
 
         await service.InitializeAsync();

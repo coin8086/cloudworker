@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <GRPC_ServerURL>http://localhost:5228</GRPC_ServerURL>
+      <GRPC_ServerFileName>dotnet</GRPC_ServerFileName>
+      <GRPC_ServerArguments>run -lp http --project C:\code\cloudworker\src\Services\GRpc\GRpcHello</GRPC_ServerArguments>
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>
