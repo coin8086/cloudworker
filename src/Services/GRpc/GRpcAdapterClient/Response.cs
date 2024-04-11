@@ -6,7 +6,7 @@ namespace CloudWorker.GRpcAdapterClient;
 
 public class Response<T> where T : IMessage<T>, new()
 {
-    public IQueueMessage QueueMessage { get; private set; }
+    public IQueueMessage? QueueMessage { get; private set; }
 
     public ResponseMessage Message { get; private set; }
 
@@ -19,10 +19,16 @@ public class Response<T> where T : IMessage<T>, new()
         GRpcMessage = ParseGRpcMessageFrom(Message.Payload!);
     }
 
+    public Response(string message)
+    {
+        Message = ResponseMessage.FromJson(message);
+        GRpcMessage = ParseGRpcMessageFrom(Message.Payload!);
+    }
+
     public static T ParseGRpcMessageFrom(string message)
     {
         var bytes = Convert.FromBase64String(message);
-        var parser = new Google.Protobuf.MessageParser<T>(() => new T());
+        var parser = new MessageParser<T>(() => new T());
         return (T)parser.ParseFrom(bytes!);
     }
 }
