@@ -45,7 +45,7 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
         _logger.LogInformation("gRPC server URL: {url}", _options.ServerURL);
     }
 
-    public override Task InitializeAsync(CancellationToken cancel = default)
+    public override async Task InitializeAsync(CancellationToken cancel = default)
     {
         var startInfo = new ProcessStartInfo()
         {
@@ -65,16 +65,18 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
 
         try
         {
-            //TODO: Wait for it up?
+            //TODO: Shall we monitor the server process and reinitialize one or throw a fatal exception when it's down?
             _serverProcess.Start();
             _logger.LogInformation("gRPC server process id: {id}", _serverProcess.Id);
+
+            //TODO: Wait for it up by testing the server URL
+            await Task.Delay(3000);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error when starting server process with '{filename}'.", _options.ServerFileName);
             throw;
         }
-        return Task.CompletedTask;
     }
 
     public override ValueTask DisposeAsync()
