@@ -42,6 +42,7 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
         {
             throw new ArgumentException("ServerURL or ServerFileName is empty!");
         }
+        _logger.LogInformation("gRPC server URL: {url}", _options.ServerURL);
     }
 
     public override Task InitializeAsync(CancellationToken cancel = default)
@@ -66,6 +67,7 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
         {
             //TODO: Wait for it up?
             _serverProcess.Start();
+            _logger.LogInformation("gRPC server process id: {id}", _serverProcess.Id);
         }
         catch (Exception ex)
         {
@@ -77,6 +79,14 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
 
     public override ValueTask DisposeAsync()
     {
+        try
+        {
+            //NOTE: Dispose() doesn't ensure to end the process so we kill it.
+            _logger.LogInformation("Kill gRPC server process {id}", _serverProcess?.Id);
+            _serverProcess?.Kill();
+        }
+        catch (Exception) {}
+
         _serverProcess?.Dispose();
         _serverProcess = null;
         return base.DisposeAsync();
