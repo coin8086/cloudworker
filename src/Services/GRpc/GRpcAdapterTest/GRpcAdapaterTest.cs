@@ -1,10 +1,9 @@
 using CloudWorker.GRpcAdapter;
+using CloudWorker.GRpcAdapterClient;
 using CloudWorker.ServiceInterface;
-using Google.Protobuf;
 using GRpcHello;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 
 namespace GRpcAdapterTest;
 
@@ -27,27 +26,22 @@ public class GRpcAdapaterTest
         Assert.True(true);
 
         //Happy path
-        var gRequest = new HelloRequest() { Name = "Rob" };
-        var request = new RequestMessage()
-        {
-            //TODO: Provide full ServiceName...
-            Id = "1", ServiceName = "GreeterService", MethodName = "SayHello",
-            Payload = Convert.ToBase64String(gRequest.ToByteArray())
-        };
-        var requestString = JsonSerializer.Serialize(request);
+        var gMethod = Greeter.Descriptor.FindMethodByName("SayHello");
+        var gMsg = new HelloRequest() { Name = "Rob" };
+        var request = new Request(gMethod, gMsg);
 
-        var responseString = await service.InvokeAsync(requestString);
-        Assert.NotEmpty(responseString);
+        var responseString = await service.InvokeAsync(request.ToJson());
+        Assert.False(string.IsNullOrWhiteSpace(responseString));
 
-        var response = JsonSerializer.Deserialize<ResponseMessage>(responseString);
-        Assert.NotNull(response);
-        Assert.NotNull(response.Payload);
+        var response = new Response<HelloReply>(responseString);
+        Assert.NotNull(response.Message);
+        Assert.Equal(request.Message.Id, response.Message.InReplyTo);
+        Assert.Null(response.Message.Error);
+        Assert.NotNull(response.Message.Payload);
+        Assert.NotNull(response.GRpcMessage);
+        Assert.Equal("Hello " + gMsg.Name, response.GRpcMessage.Message);
 
-        var parser = new MessageParser<HelloReply>(() => new HelloReply());
-        var gResponse = parser.ParseFrom(Convert.FromBase64String(response.Payload));
-        Assert.NotNull(gResponse);
-
-        //Sad path...
+        //Bad path...
 
         await service.DisposeAsync();
         Assert.True(true);
