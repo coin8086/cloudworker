@@ -3,27 +3,19 @@ using CloudWorker.GRpcAdapterClient;
 using CloudWorker.ServiceInterface;
 using GRpcHello;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace GRpcAdapterTest;
 
 public class GRpcAdapaterTest : IDisposable
 {
-    private ILoggerFactory _loggerFactory;
-
     private IUserService _service;
 
-    //TODO: Make an ILogger with ITestOutputHelper.
     public GRpcAdapaterTest(ITestOutputHelper output)
     {
         CheckEnvironmentVariables();
 
-        _loggerFactory = LoggerFactory.Create(builder =>
-        {
-            builder.ClearProviders().AddSimpleConsole();
-        });
-        var logger = _loggerFactory.CreateLogger<GRpcAdapaterTest>();
+        var logger = new TestOutputLogger(output);
         var hostConfig = new ConfigurationBuilder().Build();
 
         _service = new GRpcAdapter(logger, hostConfig);
@@ -32,7 +24,6 @@ public class GRpcAdapaterTest : IDisposable
     public void Dispose()
     {
         _service.DisposeAsync().AsTask().Wait();
-        _loggerFactory.Dispose();
     }
 
     private static void CheckEnvironmentVariables()
