@@ -93,7 +93,7 @@ class Program
             builder.AddFilter("Default", options.LogLevel);
             builder.AddSimpleConsole(options =>
             {
-                options.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff ";
+                options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ ";
             });
         });
         _Logger = _LoggerFactory.CreateLogger<Program>();
