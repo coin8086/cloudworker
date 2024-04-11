@@ -20,6 +20,13 @@ public class Request
 
     public static RequestMessage BuildRequestMessage(MethodDescriptor method, IMessage message, string? requestId = null)
     {
+        if (method.IsClientStreaming ||  method.IsServerStreaming)
+        {
+            throw new InvalidOperationException("gRPC streaming call is not supported!");
+        }
+
+        requestId ??= Guid.NewGuid().ToString();
+
         var reqestMessage = new RequestMessage()
         {
             Id = requestId,
