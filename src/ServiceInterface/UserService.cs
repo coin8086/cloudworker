@@ -29,7 +29,7 @@ public abstract class UserService<TOptions> : UserServiceBase where TOptions : c
                 configFileBase = Directory.GetCurrentDirectory();
             }
 
-            _logger.LogInformation("Look up configuration file in '{configFileBase}'.", configFileBase);
+            _logger.LogInformation("Look up configuration file '{configFile}' in '{configFileBase}'.", _settingsFileName, configFileBase);
 
             builder.SetBasePath(configFileBase).AddJsonFile(_settingsFileName, true);
         }
