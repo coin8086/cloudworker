@@ -69,13 +69,51 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
             _serverProcess.Start();
             _logger.LogInformation("gRPC server process id: {id}", _serverProcess.Id);
 
-            //TODO: Wait for it up by testing the server URL
-            await Task.Delay(3000);
+            await ServerUpOrThrow(15);
+            _logger.LogInformation("gRPC server is up.");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error when starting server process with '{filename}'.", _options.ServerFileName);
             throw;
+        }
+    }
+
+    private async Task ServerUpOrThrow(int timeoutInSecond)
+    {
+        using var source = new CancellationTokenSource();
+        var token = source.Token;
+        var up = false;
+
+        var checkTask = Task.Run(async () =>
+        {
+            using var client = new HttpClient();
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    await client.GetAsync(_options!.ServerURL, token);
+                    up = true;
+                    break;
+                }
+                catch (HttpRequestException)
+                {
+                    continue;
+                }
+            }
+        });
+
+        var timerTask = Task.Run(async () =>
+        {
+            await Task.Delay(timeoutInSecond * 1000, token);
+            source.Cancel();
+        });
+
+        await Task.WhenAny(checkTask, timerTask);
+        source.Cancel();
+        if (!up)
+        {
+            throw new ApplicationException($"gRPC server doesn't come up within {timeoutInSecond} seconds!");
         }
     }
 
