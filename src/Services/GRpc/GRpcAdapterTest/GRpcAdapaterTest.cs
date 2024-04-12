@@ -44,12 +44,13 @@ public class GRpcAdapaterTest : IDisposable
     }
 
     [Fact]
-    public async void IntegrationTest()
+    public async void EverythingIsOK()
     {
         await _service.InitializeAsync();
         Assert.True(true);
 
-        //Happy path
+        //One gRPC call
+
         var gMethod = Greeter.Descriptor.FindMethodByName("SayHello");
         var gMsg = new HelloRequest() { Name = "Rob" };
         var request = new Request(gMethod, gMsg);
@@ -65,6 +66,40 @@ public class GRpcAdapaterTest : IDisposable
         Assert.NotNull(response.GRpcMessage);
         Assert.Equal("Hello " + gMsg.Name, response.GRpcMessage.Message);
 
-        //Bad path...
+        //Many concurrent gRPC calls
+
+        var num = 100;
+        var tasks = new Task<string>[num];
+        var reqString = request.ToJson();
+        for (var i = 0; i < num; i++)
+        {
+            tasks[i] = _service.InvokeAsync(reqString);
+        }
+        await Task.WhenAll(tasks);
+        Assert.DoesNotContain(tasks, t => t.IsFaulted);
+        var responses = tasks.Select(t => new Response<HelloReply>(t.Result));
+        var expectedMsg = "Hello " + gMsg.Name;
+        Assert.DoesNotContain(responses,
+            resp => resp.Message.Error != null || resp.GRpcMessage == null || !resp.GRpcMessage.Message.Equals(expectedMsg));
+    }
+
+    [Fact]
+    public async void GRpcServerIsDown()
+    {
+        //Simulate the condition that the server is down by no call to _service.InitializeAsync.
+
+        var gMethod = Greeter.Descriptor.FindMethodByName("SayHello");
+        var gMsg = new HelloRequest() { Name = "Rob" };
+        var request = new Request(gMethod, gMsg);
+
+        var responseString = await _service.InvokeAsync(request.ToJson());
+        Assert.False(string.IsNullOrWhiteSpace(responseString));
+
+        var response = new Response<HelloReply>(responseString);
+        Assert.NotNull(response.Message);
+        Assert.Equal(request.Message.Id, response.Message.InReplyTo);
+        Assert.NotNull(response.Message.Error);
+        Assert.Null(response.Message.Payload);
+        Assert.Null(response.GRpcMessage);
     }
 }
