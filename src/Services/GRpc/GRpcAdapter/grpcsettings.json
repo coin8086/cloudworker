@@ -1,5 +1,6 @@
 {
   "ServerURL": "",
   "ServerFileName": "",
-  "ServerArguments":  ""
+  "ServerArguments": "",
+  "ServerUpTimeout": 30
 }

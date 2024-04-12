@@ -14,6 +14,10 @@ public class GRpcAdapterOptions
     public string? ServerFileName { get; set;}
 
     public string? ServerArguments { get; set; }
+
+    public int? ServerUpTimeout { get; set; } = 30;
+
+    public static GRpcAdapterOptions Default = new GRpcAdapterOptions();
 }
 
 public class GRpcAdapter : UserService<GRpcAdapterOptions>
@@ -34,6 +38,7 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
     protected override void LoadConfiguration()
     {
         base.LoadConfiguration();
+
         if (_options == null)
         {
             throw new ArgumentException("No configuration for GRpcAdapter!");
@@ -42,6 +47,8 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
         {
             throw new ArgumentException("ServerURL or ServerFileName is empty!");
         }
+        _options.ServerUpTimeout ??= GRpcAdapterOptions.Default.ServerUpTimeout;
+
         _logger.LogInformation("gRPC server URL: {url}", _options.ServerURL);
     }
 
@@ -69,7 +76,7 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
             _serverProcess.Start();
             _logger.LogInformation("gRPC server process id: {id}", _serverProcess.Id);
 
-            await ServerUpOrThrow(15);
+            await ServerUpOrThrow();
             _logger.LogInformation("gRPC server is up.");
         }
         catch (Exception ex)
@@ -79,7 +86,7 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
         }
     }
 
-    private async Task ServerUpOrThrow(int timeoutInSecond)
+    private async Task ServerUpOrThrow()
     {
         using var source = new CancellationTokenSource();
         var token = source.Token;
@@ -105,7 +112,7 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
 
         var timerTask = Task.Run(async () =>
         {
-            await Task.Delay(timeoutInSecond * 1000, token);
+            await Task.Delay((int)(_options!.ServerUpTimeout! * 1000), token);
             source.Cancel();
         });
 
@@ -113,7 +120,7 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
         source.Cancel();
         if (!up)
         {
-            throw new ApplicationException($"gRPC server doesn't come up within {timeoutInSecond} seconds!");
+            throw new ApplicationException($"gRPC server doesn't come up within {_options!.ServerUpTimeout!} seconds!");
         }
     }
 
