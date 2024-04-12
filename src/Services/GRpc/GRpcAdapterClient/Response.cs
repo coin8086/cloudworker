@@ -4,34 +4,30 @@ using Google.Protobuf;
 
 namespace CloudWorker.GRpcAdapterClient;
 
-public class Response<T> where T : IMessage<T>, new()
+public class Response<T> : ResponseMessage where T : IMessage<T>, new()
 {
     public IQueueMessage? QueueMessage { get; private set; }
 
-    public ResponseMessage Message { get; private set; }
-
     public T? GRpcMessage { get; private set; }
 
-    public Response(IQueueMessage queueMessage)
+    public Response(IQueueMessage queueMessage) : this(queueMessage.Content)
     {
         QueueMessage = queueMessage;
-        Message = ResponseMessage.FromJson(QueueMessage.Content);
-        if (Message.Payload != null)
-        {
-            GRpcMessage = ParseGRpcMessageFrom(Message.Payload);
-        }
     }
 
-    public Response(string message)
+    public Response(string value)
     {
-        Message = ResponseMessage.FromJson(message);
-        if (Message.Payload != null)
+        var message = FromJson(value);
+        InReplyTo = message.InReplyTo;
+        Error = message.Error;
+        Payload = message.Payload;
+        if (Payload != null)
         {
-            GRpcMessage = ParseGRpcMessageFrom(Message.Payload);
+            GRpcMessage = ParseGRpcMessageFrom(Payload);
         }
     }
 
-    public static T ParseGRpcMessageFrom(string message)
+    private static T ParseGRpcMessageFrom(string message)
     {
         var bytes = Convert.FromBase64String(message);
         var parser = new MessageParser<T>(() => new T());

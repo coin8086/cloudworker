@@ -59,10 +59,9 @@ public class GRpcAdapaterTest : IDisposable
         Assert.False(string.IsNullOrWhiteSpace(responseString));
 
         var response = new Response<HelloReply>(responseString);
-        Assert.NotNull(response.Message);
-        Assert.Equal(request.Message.Id, response.Message.InReplyTo);
-        Assert.Null(response.Message.Error);
-        Assert.NotNull(response.Message.Payload);
+        Assert.Equal(request.Id, response.InReplyTo);
+        Assert.Null(response.Error);
+        Assert.NotNull(response.Payload);
         Assert.NotNull(response.GRpcMessage);
         Assert.Equal("Hello " + gMsg.Name, response.GRpcMessage.Message);
 
@@ -80,7 +79,7 @@ public class GRpcAdapaterTest : IDisposable
         var responses = tasks.Select(t => new Response<HelloReply>(t.Result));
         var expectedMsg = "Hello " + gMsg.Name;
         Assert.DoesNotContain(responses,
-            resp => resp.Message.Error != null || resp.GRpcMessage == null || !resp.GRpcMessage.Message.Equals(expectedMsg));
+            resp => resp.Error != null || resp.GRpcMessage == null || !resp.GRpcMessage.Message.Equals(expectedMsg));
     }
 
     [Fact]
@@ -96,10 +95,9 @@ public class GRpcAdapaterTest : IDisposable
         Assert.False(string.IsNullOrWhiteSpace(responseString));
 
         var response = new Response<HelloReply>(responseString);
-        Assert.NotNull(response.Message);
-        Assert.Equal(request.Message.Id, response.Message.InReplyTo);
-        Assert.NotNull(response.Message.Error);
-        Assert.Null(response.Message.Payload);
+        Assert.Equal(request.Id, response.InReplyTo);
+        Assert.NotNull(response.Error);
+        Assert.Null(response.Payload);
         Assert.Null(response.GRpcMessage);
     }
 }
