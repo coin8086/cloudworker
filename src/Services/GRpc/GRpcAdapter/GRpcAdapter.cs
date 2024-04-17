@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
-namespace CloudWorker.GRpcAdapter;
+namespace CloudWorker.Services.GRpcAdapter;
 
 public class GRpcAdapterOptions
 {

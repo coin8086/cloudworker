@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace CloudWorker.GRpcAdapter;
+namespace CloudWorker.Services.GRpcAdapter;
 
 public class RequestMessage
 {

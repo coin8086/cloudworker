@@ -1,8 +1,8 @@
-﻿using CloudWorker.GRpcAdapter;
+﻿using CloudWorker.Services.GRpcAdapter;
 using CloudWorker.MessageQueue;
 using Google.Protobuf;
 
-namespace CloudWorker.GRpcAdapterClient;
+namespace CloudWorker.Services.GRpcAdapter.Client;
 
 public class Response<T> : ResponseMessage where T : IMessage<T>, new()
 {

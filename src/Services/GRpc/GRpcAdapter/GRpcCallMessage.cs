@@ -1,4 +1,4 @@
-﻿namespace CloudWorker.GRpcAdapter;
+﻿namespace CloudWorker.Services.GRpcAdapter;
 
 class GRpcCallMessage
 {
