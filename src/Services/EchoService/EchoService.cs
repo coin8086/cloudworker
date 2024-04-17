@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CloudWorker.EchoService;
+namespace CloudWorker.Services.Echo;
 
 public class EchoService : UserServiceBase
 {
