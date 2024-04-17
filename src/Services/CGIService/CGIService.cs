@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CloudWorker.CGIService;
+namespace CloudWorker.Services.CGI;
 
 public class CGIServiceOptions
 {

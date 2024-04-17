@@ -52,7 +52,7 @@ param appInsights string = ''
 
 var serviceMap = {
   echo: '/services/echoservice/CloudWorker.Services.Echo.dll'
-  cgi: '/services/cgiservice/CloudWorker.CGIService.dll'
+  cgi: '/services/cgiservice/CloudWorker.Services.CGI.dll'
 }
 var assemblyPath = serviceMap[service]
 
