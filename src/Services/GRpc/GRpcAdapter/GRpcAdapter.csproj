@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>CloudWorker.Services.GRpcAdapter</RootNamespace>
     <AssemblyName>CloudWorker.Services.GRpcAdapter</AssemblyName>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
 
   <ItemGroup>
