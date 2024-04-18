@@ -23,6 +23,13 @@ class ServiceLoaderOptions
 
 class ServiceLoader : IServiceLoader
 {
+    //NOTE: These types are shared between the host and the plugin (the user service) and thus
+    //require special handling. See the following documents for what and why:
+    //https://github.com/natemcmaster/DotNetCorePlugins
+    //https://learn.microsoft.com/en-us/dotnet/api/system.runtime.loader.assemblyloadcontext?view=net-8.0
+
+    private static Type[] SharedTypes = [typeof(ILogger), typeof(IConfiguration)];
+
     private readonly ILogger _logger;
     private readonly ILogger _userLogger;
     private readonly IConfiguration _configuration;
@@ -55,7 +62,7 @@ class ServiceLoader : IServiceLoader
 
     static Assembly LoadAssembly(string path, ILogger? logger = null)
     {
-        var loadContext = new ServiceAssemblyLoadContext(path, logger);
+        var loadContext = new ServiceAssemblyLoadContext(path, SharedTypes, logger);
         return loadContext.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(path)));
     }
 
