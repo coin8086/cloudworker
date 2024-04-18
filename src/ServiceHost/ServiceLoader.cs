@@ -41,7 +41,7 @@ class ServiceLoader : IServiceLoader
     {
         try
         {
-            var assembly = LoadAssembly(_options.AssemblyPath!);
+            var assembly = LoadAssembly(_options.AssemblyPath!, _logger);
             var type = GetUserServiceType(assembly);
             var instance = (Activator.CreateInstance(type, _userLogger, _configuration) as IUserService)!;
             return instance;
@@ -53,9 +53,9 @@ class ServiceLoader : IServiceLoader
         }
     }
 
-    static Assembly LoadAssembly(string path)
+    static Assembly LoadAssembly(string path, ILogger? logger = null)
     {
-        var loadContext = new ServiceAssemblyLoadContext(path);
+        var loadContext = new ServiceAssemblyLoadContext(path, logger);
         return loadContext.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(path)));
     }
 
