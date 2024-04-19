@@ -3,8 +3,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>CloudWorker.Services.GRpcAdapter.Client</RootNamespace>
-    <AssemblyName>CloudWorker.Services.GRpcAdapter.Client</AssemblyName>
+    <RootNamespace>CloudWorker.Services.GRpc.Client</RootNamespace>
+    <AssemblyName>CloudWorker.Services.GRpc.Client</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

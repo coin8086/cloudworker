@@ -1,7 +1,7 @@
 ﻿using CloudWorker.MessageQueue;
 using Google.Protobuf;
 
-namespace CloudWorker.Services.GRpcAdapter.Client;
+namespace CloudWorker.Services.GRpc.Client;
 
 public class Response<T> : ResponseMessage where T : IMessage<T>, new()
 {

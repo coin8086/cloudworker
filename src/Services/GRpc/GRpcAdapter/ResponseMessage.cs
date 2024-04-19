@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json;
 
-namespace CloudWorker.Services.GRpcAdapter;
+namespace CloudWorker.Services.GRpc;
 
 public class ResponseMessage
 {

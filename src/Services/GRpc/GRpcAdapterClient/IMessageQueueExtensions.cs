@@ -2,7 +2,7 @@
 using Google.Protobuf;
 using System.Collections.Immutable;
 
-namespace CloudWorker.Services.GRpcAdapter.Client;
+namespace CloudWorker.Services.GRpc.Client;
 
 public static class IMessageQueueExtensions
 {

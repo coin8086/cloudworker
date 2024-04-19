@@ -1,7 +1,7 @@
 ﻿using Google.Protobuf.Reflection;
 using Google.Protobuf;
 
-namespace CloudWorker.Services.GRpcAdapter.Client;
+namespace CloudWorker.Services.GRpc.Client;
 
 public class Request : RequestMessage
 {

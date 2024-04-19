@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CloudWorker.Services.GRpcAdapter;
+namespace CloudWorker.Services.GRpc;
 
 public class GRpcAdapterOptions
 {
@@ -45,7 +45,7 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
 
         if (_options == null)
         {
-            throw new ArgumentException("No configuration for GRpcAdapter!");
+            throw new ArgumentException("No configuration for GRpc!");
         }
         if (string.IsNullOrWhiteSpace(_options.ServerURL) || string.IsNullOrEmpty(_options.ServerFileName))
         {

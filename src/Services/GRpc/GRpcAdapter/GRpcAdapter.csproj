@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <RootNamespace>CloudWorker.Services.GRpcAdapter</RootNamespace>
-    <AssemblyName>CloudWorker.Services.GRpcAdapter</AssemblyName>
+    <RootNamespace>CloudWorker.Services.GRpc</RootNamespace>
+    <AssemblyName>CloudWorker.Services.GRpc</AssemblyName>
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
 

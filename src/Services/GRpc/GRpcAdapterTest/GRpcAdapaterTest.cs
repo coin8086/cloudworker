@@ -1,5 +1,5 @@
-using CloudWorker.Services.GRpcAdapter;
-using CloudWorker.Services.GRpcAdapter.Client;
+using CloudWorker.Services.GRpc;
+using CloudWorker.Services.GRpc.Client;
 using CloudWorker.ServiceInterface;
 using GRpcHello;
 using Microsoft.Extensions.Configuration;

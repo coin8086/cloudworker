@@ -1,6 +1,6 @@
 ﻿using CloudWorker.E2E;
 using CloudWorker.MessageQueue;
-using CloudWorker.Services.GRpcAdapter.Client;
+using CloudWorker.Services.GRpc.Client;
 using CommandLine;
 using GRpcHello;
 
