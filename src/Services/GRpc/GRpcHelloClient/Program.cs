@@ -60,12 +60,15 @@ class Program
         var gMsg = new HelloRequest() { Name = "Rob" };
         var request = new Request(gMethod, gMsg);
 
-        Console.WriteLine($"Sending '{gMsg}' to '{gMethod.FullName}'");
+        Console.WriteLine($"Send '{gMsg}' to '{request.ServiceName}::{request.MethodName}' with request id {request.Id}.");
         await sender.SendGRpcMessageAsync(request);
 
         var receiver = CreateReceiver(options);
         var response = await receiver.WaitGRpcMessageAsync<HelloReply>();
-        Console.WriteLine($"Received {response.GRpcMessage}");
+        Console.WriteLine($"Received '{response.GRpcMessage}' in reply to {response.InReplyTo}.");
+
+        await response.QueueMessage!.DeleteAsync();
+        Console.WriteLine($"Deleted the message.");
 
         return 0;
     }

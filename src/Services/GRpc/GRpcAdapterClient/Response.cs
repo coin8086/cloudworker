@@ -1,5 +1,4 @@
-﻿using CloudWorker.Services.GRpcAdapter;
-using CloudWorker.MessageQueue;
+﻿using CloudWorker.MessageQueue;
 using Google.Protobuf;
 
 namespace CloudWorker.Services.GRpcAdapter.Client;

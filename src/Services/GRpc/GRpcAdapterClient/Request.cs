@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf.Reflection;
 using Google.Protobuf;
-using CloudWorker.Services.GRpcAdapter;
 
 namespace CloudWorker.Services.GRpcAdapter.Client;
 
