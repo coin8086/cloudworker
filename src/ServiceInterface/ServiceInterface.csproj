@@ -5,8 +5,6 @@
     <Nullable>enable</Nullable>
     <RootNamespace>CloudWorker.ServiceInterface</RootNamespace>
     <AssemblyName>CloudWorker.ServiceInterface</AssemblyName>
-    <PackageId>CloudWorker.ServiceInterface</PackageId>
-    <Version>1.2.0</Version>
   </PropertyGroup>
 
   <!-- NOTE: Do not copy the following assemblies that are already contained in ServiceHost! -->
