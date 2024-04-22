@@ -1,7 +1,8 @@
 param count int = 10
 param offset int = 0
 param concurrency int = 100
-param service string = 'cgi'
+param service string = 'echo'
+param envionmentVariables array = []
 param location string = resourceGroup().location
 
 param serviceBusName string
@@ -36,6 +37,7 @@ module aci 'aci.bicep' = {
     offset: offset
     concurrency: concurrency
     service: service
+    envionmentVariables: envionmentVariables
     location: location
     connectionString: serviceBusConnectionString
     requestQueue: requestQueueName
