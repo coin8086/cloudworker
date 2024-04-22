@@ -40,7 +40,7 @@ module monitor 'appinsights.bicep' = {
   }
 }
 
-module cluster 'aci-with-sbq.bicep' = {
+module cluster 'aci-with-assets.bicep' = {
   scope: computingRg
   name: 'cluster-deployment'
   params: {
