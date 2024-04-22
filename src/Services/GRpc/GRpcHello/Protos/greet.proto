@@ -2,7 +2,9 @@ syntax = "proto3";
 
 option csharp_namespace = "GRpcHello";
 
-package greet;
+//Align the package name to the one in https://github.com/grpc/grpc/blob/master/examples/protos/helloworld.proto
+//so that the examples in that repo can be used as gRPC server/client in our tests.
+package helloworld;
 
 // The greeting service definition.
 service Greeter {
