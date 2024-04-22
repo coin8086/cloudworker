@@ -152,7 +152,8 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
         }
         catch (Exception ex)
         {
-            //TODO: rethrow when cancel.IsCancellationRequested && ex is OperationCanceledException
+            //TODO: provide an option to users that let them choose to either fail the running work item
+            //or put it back to queue when canceled.
             if (cancel.IsCancellationRequested && ex is OperationCanceledException)
             {
                 _logger.LogInformation("Operation is canceled.");
