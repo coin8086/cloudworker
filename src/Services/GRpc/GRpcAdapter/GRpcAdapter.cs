@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -98,20 +97,8 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
 
         var checkTask = Task.Run(async () =>
         {
-            using var client = new HttpClient();
-            while (!token.IsCancellationRequested)
-            {
-                try
-                {
-                    await client.GetAsync(_options!.ServerURL, token);
-                    up = true;
-                    break;
-                }
-                catch (HttpRequestException)
-                {
-                    continue;
-                }
-            }
+            await _channel.ConnectAsync(token);
+            up = true;
         });
 
         var timerTask = Task.Run(async () =>
