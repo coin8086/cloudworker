@@ -11,6 +11,16 @@ param memoryInGB int = 1
 param image string = 'leizacrdev.azurecr.io/soa/servicehost:1.5-ubuntu22'
 
 /*
+ * Storage
+ */
+
+param mountPath string = ''
+param fileShareName string = ''
+param storageAccount string = ''
+@secure()
+param storageAccountKey string = ''
+
+ /*
  * Queue
  */
 
@@ -103,6 +113,20 @@ var envVarsAsObj = union(coreEnvVarsAsObj, envionmentVariablesAsObj)
 var envVars = map(items(envVarsAsObj),
   item => contains(item.value, 'secureValue') ? { name: item.key, secureValue: item.value.secureValue } : { name: item.key, value: item.value.value })
 
+var mountStroage = !empty(mountPath) && !empty(fileShareName) && !empty(storageAccount) && !empty(storageAccountKey)
+var volumnMounts = mountStroage ? [{
+  name: 'fileShare'
+  mountPath: mountPath
+}] : []
+var volumes = mountStroage ? [{
+  name: 'fileShare'
+  azureFile: {
+    shareName: fileShareName
+    storageAccountName: storageAccount
+    storageAccountKey: storageAccountKey
+  }
+}] : []
+
 resource containers 'Microsoft.ContainerInstance/containerGroups@2023-05-01' = [
   for i in range(0, count): {
     name: '${prefix}${(i+offset)}'
@@ -121,12 +145,14 @@ resource containers 'Microsoft.ContainerInstance/containerGroups@2023-05-01' = [
                 memoryInGB: memoryInGB
               }
             }
+            volumeMounts: volumnMounts
           }
         }
       ]
       initContainers: []
       restartPolicy: 'Always'
       osType: 'Linux'
+      volumes: volumes
     }
   }
 ]
