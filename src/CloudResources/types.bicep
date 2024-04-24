@@ -52,3 +52,15 @@ type GitRepoMountType = {
 @export()
 type GitRepoMountArrayType = GitRepoMountType[]
 
+@export()
+type FileShareMountType = {
+  name: string
+  mountPath: string
+  fileShareName: string
+  storageAccountName: string
+  @secure()
+  storageAccountKey: string
+}
+
+@export()
+type FileShareMountArrayType = FileShareMountType[]

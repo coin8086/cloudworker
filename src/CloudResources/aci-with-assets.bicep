@@ -1,4 +1,4 @@
-import { ServiceType, QueueOptionsType, EnvionmentVariableArrayType, GitRepoMountArrayType } from 'types.bicep'
+import { ServiceType, QueueOptionsType, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType } from 'types.bicep'
 
 param count int = 10
 param offset int = 0
@@ -14,7 +14,8 @@ param queueOptions QueueOptionsType?
 param appInsightsName string = ''
 param appInsightsRg string = ''
 
-param gitRepoMounts GitRepoMountArrayType = []
+param gitRepos GitRepoMountArrayType = []
+param fileShares FileShareMountArrayType = []
 
 resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' existing = {
   name: serviceBusName
@@ -45,6 +46,7 @@ module aci 'aci.bicep' = {
     concurrency: concurrency
     service: service
     envionmentVariables: envionmentVariables
-    gitRepoMounts: gitRepoMounts
+    gitRepos: gitRepos
+    fileShares: fileShares
   }
 }

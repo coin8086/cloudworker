@@ -1,4 +1,4 @@
-import { ServiceType, QueueOptionsType, QueueOptionsDefault, EnvionmentVariableArrayType, GitRepoMountArrayType } from 'types.bicep'
+import { ServiceType, QueueOptionsType, QueueOptionsDefault, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType } from 'types.bicep'
 
 /*
  * Container
@@ -93,9 +93,9 @@ var envVars = map(items(envVarsAsObj), item => item.value)
  * Mounts
  */
 
-param gitRepoMounts GitRepoMountArrayType = []
-var volumeMounts = map(gitRepoMounts, e => { name: e.name, mountPath: e.mountPath })
-var volumes = map(gitRepoMounts,
+param gitRepos GitRepoMountArrayType = []
+var gitRepoMounts = map(gitRepos, e => { name: e.name, mountPath: e.mountPath })
+var gitRepoVolumes = map(gitRepos,
   e => {
     name: e.name
     gitRepo: {
@@ -104,6 +104,21 @@ var volumes = map(gitRepoMounts,
       revision: e.?revision
     }
   })
+
+param fileShares FileShareMountArrayType = []
+var fileShareMounts = map(fileShares, e => { name: e.name, mountPath: e.mountPath })
+var fileShareVolumes = map(fileShares,
+  e => {
+    name: e.name
+    azureFile: {
+      shareName: e.fileShareName
+      storageAccountName: e.storageAccountName
+      storageAccountKey: e.storageAccountKey
+    }
+  })
+
+var volumeMounts = concat(gitRepoMounts, fileShareMounts)
+var volumes = concat(gitRepoVolumes, fileShareVolumes)
 
 resource containers 'Microsoft.ContainerInstance/containerGroups@2023-05-01' = [
   for i in range(0, count): {
