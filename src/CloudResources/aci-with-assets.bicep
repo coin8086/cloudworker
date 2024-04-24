@@ -1,8 +1,10 @@
+import { ServiceType, EnvionmentVariableArrayType } from 'types.bicep'
+
 param count int = 10
 param offset int = 0
 param concurrency int = 100
-param service string = 'echo'
-param envionmentVariables array = []
+param service ServiceType = 'echo'
+param envionmentVariables EnvionmentVariableArrayType = []
 param location string = resourceGroup().location
 
 param serviceBusName string

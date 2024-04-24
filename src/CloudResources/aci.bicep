@@ -1,3 +1,5 @@
+import { QueueType, ServiceType, EnvionmentVariableArrayType } from 'types.bicep'
+
 /*
  * Container
  */
@@ -14,11 +16,7 @@ param image string = 'leizacrdev.azurecr.io/soa/servicehost:1.5-ubuntu22'
  * Queue
  */
 
-@allowed([
-  'servicebus'
-  'storage'
-])
-param queueType string = 'servicebus'
+param queueType QueueType = 'servicebus'
 
 @secure()
 param connectionString string
@@ -43,13 +41,8 @@ param concurrency int = 20
  * Service
  */
 
- @allowed([
-  'cgi'
-  'echo'
-  'grpc'
-])
-param service string = 'echo'
-param envionmentVariables array = []
+param service ServiceType = 'echo'
+param envionmentVariables EnvionmentVariableArrayType = []
 
 var serviceMap = {
   cgi: '/services/cgiservice/CloudWorker.Services.CGI.dll'
