@@ -1,4 +1,4 @@
-import { QueueType, ServiceType, EnvionmentVariableArrayType } from 'types.bicep'
+import { QueueType, ServiceType, EnvionmentVariableArrayType, GitRepoMountArrayType } from 'types.bicep'
 
 /*
  * Container
@@ -11,6 +11,22 @@ param location string = 'southeastasia'
 param cpu int = 1
 param memoryInGB int = 1
 param image string = 'leizacrdev.azurecr.io/soa/servicehost:1.5-ubuntu22'
+
+/*
+ * Mounts
+ */
+
+param gitRepoMounts GitRepoMountArrayType = []
+var volumeMounts = map(gitRepoMounts, e => { name: e.name, mountPath: e.mountPath })
+var volumes = map(gitRepoMounts,
+  e => {
+    name: e.name
+    gitRepo: {
+      repository: (e.privateRepository ?? e.repository)!
+      directory: e.directory
+      revision: e.revision
+    }
+  })
 
 /*
  * Queue
@@ -114,12 +130,14 @@ resource containers 'Microsoft.ContainerInstance/containerGroups@2023-05-01' = [
                 memoryInGB: memoryInGB
               }
             }
+            volumeMounts: volumeMounts
           }
         }
       ]
       initContainers: []
       restartPolicy: 'Always'
       osType: 'Linux'
+      volumes: volumes
     }
   }
 ]
