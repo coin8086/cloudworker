@@ -8,6 +8,11 @@ param serviceBusName string = 'servicebus-${uniqueString(messagingRgName)}'
 param requestQueueName string = 'requests'
 param responseQueueName string = 'responses'
 
+var queueOptions = {
+  requestQueue: requestQueueName
+  responseQueue: responseQueueName
+}
+
 resource messagingRg 'Microsoft.Resources/resourceGroups@2023-07-01' = {
   name: messagingRgName
   location: location
@@ -44,6 +49,7 @@ module cluster 'aci-with-assets.bicep' = {
   scope: computingRg
   name: 'cluster-deployment'
   params: {
+    queueOptions: queueOptions
     serviceBusName: serviceBusName
     serviceBusRg: messagingRgName
     appInsightsName: appInsightsName

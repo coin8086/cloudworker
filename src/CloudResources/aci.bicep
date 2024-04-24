@@ -1,4 +1,4 @@
-import { QueueType, ServiceType, EnvionmentVariableArrayType, GitRepoMountArrayType } from 'types.bicep'
+import { ServiceType, QueueOptionsType, QueueOptionsDefault, EnvionmentVariableArrayType, GitRepoMountArrayType } from 'types.bicep'
 
 /*
  * Container
@@ -32,14 +32,8 @@ var volumes = map(gitRepoMounts,
  * Queue
  */
 
-param queueType QueueType = 'servicebus'
-
-@secure()
-param connectionString string
-param requestQueue string = 'requests'
-param responseQueue string = 'responses'
-param messageLease int = 60
-param queryInterval int = 500
+param queueOptions QueueOptionsType
+var _queueOptions = union(QueueOptionsDefault, queueOptions)
 
 /*
  * Monitor
@@ -70,27 +64,27 @@ var assemblyPath = serviceMap[service]
 var coreEnvVars = [
   {
     name: 'Queues__QueueType'
-    value: queueType
+    value: _queueOptions.queueType
   }
   {
     name: 'Queues__ConnectionString'
-    secureValue: connectionString
+    secureValue: _queueOptions.connectionString
   }
   {
     name: 'Queues__Request__QueueName'
-    value: requestQueue
+    value: _queueOptions.requestQueue
   }
   {
     name: 'Queues__Response__QueueName'
-    value: responseQueue
+    value: _queueOptions.responseQueue
   }
   {
     name: 'Queues__MessageLease'
-    value: messageLease
+    value: _queueOptions.messageLease
   }
   {
     name: 'Queues__QueryInterval'
-    value: queryInterval
+    value: _queueOptions.queryInterval
   }
   {
     name: 'ApplicationInsights__ConnectionString'

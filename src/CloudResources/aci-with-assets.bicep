@@ -1,4 +1,4 @@
-import { ServiceType, EnvionmentVariableArrayType } from 'types.bicep'
+import { ServiceType, QueueOptionsType, EnvionmentVariableArrayType } from 'types.bicep'
 
 param count int = 10
 param offset int = 0
@@ -9,8 +9,7 @@ param location string = resourceGroup().location
 
 param serviceBusName string
 param serviceBusRg string
-param requestQueueName string = 'requests'
-param responseQueueName string = 'responses'
+param queueOptions QueueOptionsType?
 
 param appInsightsName string = ''
 param appInsightsRg string = ''
@@ -22,6 +21,7 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' existin
 
 var serviceBusEndpoint = '${serviceBus.id}/AuthorizationRules/RootManageSharedAccessKey'
 var serviceBusConnectionString = listKeys(serviceBusEndpoint, serviceBus.apiVersion).primaryConnectionString
+var _queueOptions = union(queueOptions ?? {}, { connectionString: serviceBusConnectionString })
 
 var useMonitor = !empty(appInsightsName) && !empty(appInsightsRg)
 
@@ -41,9 +41,7 @@ module aci 'aci.bicep' = {
     service: service
     envionmentVariables: envionmentVariables
     location: location
-    connectionString: serviceBusConnectionString
-    requestQueue: requestQueueName
-    responseQueue: responseQueueName
+    queueOptions: _queueOptions
     appInsights: appInsightsConnectionString
   }
 }

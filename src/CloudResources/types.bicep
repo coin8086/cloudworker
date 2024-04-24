@@ -1,6 +1,27 @@
 @export()
 type QueueType = 'servicebus' | 'storage'
 
+//NOTE: connectionString is requried.
+@export()
+type QueueOptionsType = {
+  @secure()
+  connectionString: string?
+  queueType: QueueType?
+  requestQueue: string?
+  responseQueue: string?
+  messageLease: int?
+  queryInterval: int?
+}
+
+@export()
+var QueueOptionsDefault = {
+  queueType: 'servicebus'
+  requestQueue: 'requests'
+  responseQueue: 'responses'
+  messageLease: 60
+  queryInterval: 500
+}
+
 @export()
 type ServiceType = 'cgi' | 'echo' | 'grpc'
 
