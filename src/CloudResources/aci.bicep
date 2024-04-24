@@ -109,8 +109,7 @@ var coreEnvVars = [
 var coreEnvVarsAsObj = toObject(coreEnvVars, e => e.name)
 var envionmentVariablesAsObj = toObject(envionmentVariables, e => e.name)
 var envVarsAsObj = union(coreEnvVarsAsObj, envionmentVariablesAsObj)
-var envVars = map(items(envVarsAsObj),
-  item => contains(item.value, 'secureValue') ? { name: item.key, secureValue: item.value.secureValue } : { name: item.key, value: item.value.value })
+var envVars = map(items(envVarsAsObj), item => item.value)
 
 resource containers 'Microsoft.ContainerInstance/containerGroups@2023-05-01' = [
   for i in range(0, count): {

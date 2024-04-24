@@ -4,10 +4,12 @@ type QueueType = 'servicebus' | 'storage'
 @export()
 type ServiceType = 'cgi' | 'echo' | 'grpc'
 
+//NOTE: Either value or secureValue is requried.
 @export()
 type EnvionmentVariableType = {
   name: string
   value: string?
+  @secure()
   secureValue: string?
 }
 
