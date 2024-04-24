@@ -13,22 +13,6 @@ param memoryInGB int = 1
 param image string = 'leizacrdev.azurecr.io/soa/servicehost:1.5-ubuntu22'
 
 /*
- * Mounts
- */
-
-param gitRepoMounts GitRepoMountArrayType = []
-var volumeMounts = map(gitRepoMounts, e => { name: e.name, mountPath: e.mountPath })
-var volumes = map(gitRepoMounts,
-  e => {
-    name: e.name
-    gitRepo: {
-      repository: (e.privateRepository ?? e.repository)!
-      directory: e.directory
-      revision: e.revision
-    }
-  })
-
-/*
  * Queue
  */
 
@@ -104,6 +88,22 @@ var coreEnvVarsAsObj = toObject(coreEnvVars, e => e.name)
 var envionmentVariablesAsObj = toObject(envionmentVariables, e => e.name)
 var envVarsAsObj = union(coreEnvVarsAsObj, envionmentVariablesAsObj)
 var envVars = map(items(envVarsAsObj), item => item.value)
+
+/*
+ * Mounts
+ */
+
+param gitRepoMounts GitRepoMountArrayType = []
+var volumeMounts = map(gitRepoMounts, e => { name: e.name, mountPath: e.mountPath })
+var volumes = map(gitRepoMounts,
+  e => {
+    name: e.name
+    gitRepo: {
+      repository: (e.?privateRepository ?? e.repository)!
+      directory: e.?directory
+      revision: e.?revision
+    }
+  })
 
 resource containers 'Microsoft.ContainerInstance/containerGroups@2023-05-01' = [
   for i in range(0, count): {

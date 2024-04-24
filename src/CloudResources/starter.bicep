@@ -1,4 +1,10 @@
+import { ServiceType, EnvionmentVariableArrayType, GitRepoMountArrayType } from 'types.bicep'
+
 targetScope = 'subscription'
+
+param service ServiceType = 'echo'
+param envionmentVariables EnvionmentVariableArrayType = []
+param gitRepoMounts GitRepoMountArrayType = []
 
 param messagingRgName string
 param computingRgName string
@@ -49,6 +55,9 @@ module cluster 'aci-with-assets.bicep' = {
   scope: computingRg
   name: 'cluster-deployment'
   params: {
+    service: service
+    envionmentVariables: envionmentVariables
+    gitRepoMounts: gitRepoMounts
     queueOptions: queueOptions
     serviceBusName: serviceBusName
     serviceBusRg: messagingRgName
