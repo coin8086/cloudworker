@@ -103,6 +103,7 @@ class Program
             //It's optional to wait all the sending tasks
             await Task.WhenAll(sendTasks);
 
+            //TODO: The performance of batch receive is very poor! Is Service Bus queue prefetch required for it?
             var deleteTasks = new List<Task>();
             while (deleteTasks.Count < sendTasks.Length)
             {
