@@ -84,6 +84,11 @@ class Program
             var response = await receiver.WaitGRpcMessageAsync<HelloReply>();
             Console.WriteLine($"Received '{response.GRpcMessage}' in reply to {response.InReplyTo}.");
 
+            if (response.Error != null)
+            {
+                Console.WriteLine($"Error: {response.Error}");
+            }
+
             await response.QueueMessage!.DeleteAsync();
             Console.WriteLine($"Deleted the message.");
         }
