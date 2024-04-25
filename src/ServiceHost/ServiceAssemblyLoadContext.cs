@@ -52,7 +52,7 @@ class ServiceAssemblyLoadContext : AssemblyLoadContext
             return LoadFromAssemblyPath(assemblyPath);
         }
 
-        _logger?.LogDebug("Resolved no path for assembly.");
+        _logger?.LogDebug("Resolved no path for {assembly}.", assemblyName.Name);
         return null;
     }
 
@@ -67,7 +67,7 @@ class ServiceAssemblyLoadContext : AssemblyLoadContext
             return LoadUnmanagedDllFromPath(libraryPath);
         }
 
-        _logger?.LogDebug("Resolved no path for assembly.");
+        _logger?.LogDebug("Resolved no path for {assembly}.", unmanagedDllName);
         return IntPtr.Zero;
     }
 }
