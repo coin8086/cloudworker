@@ -46,17 +46,32 @@ public class GRpcAdapter : UserService<GRpcAdapterOptions>
         {
             throw new ArgumentException("No configuration for GRpc!");
         }
-        if (string.IsNullOrWhiteSpace(_options.ServerURL) || string.IsNullOrEmpty(_options.ServerFileName))
+
+        if (string.IsNullOrWhiteSpace(_options.ServerURL))
         {
-            throw new ArgumentException("ServerURL or ServerFileName is empty!");
+            throw new ArgumentException("ServerURL is empty!");
+        }
+        _logger.LogInformation("gRPC server URL: {url}", _options.ServerURL);
+
+        if (string.IsNullOrEmpty(_options.ServerFileName))
+        {
+            _logger.LogInformation("ServerFileName is empty. gRPC server is supposed to be up in some other way.");
         }
         _options.ServerUpTimeout ??= GRpcAdapterOptions.Default.ServerUpTimeout;
-
-        _logger.LogInformation("gRPC server URL: {url}", _options.ServerURL);
     }
 
     public override async Task InitializeAsync(CancellationToken cancel = default)
     {
+        if (string.IsNullOrEmpty(_options!.ServerFileName))
+        {
+            _logger.LogInformation("Wait gRPC server up.");
+            await ServerUpOrThrow();
+            _logger.LogInformation("gRPC server is up.");
+            return;
+        }
+
+        _logger.LogInformation("Start gRPC server.");
+
         var startInfo = new ProcessStartInfo()
         {
             UseShellExecute = false,
