@@ -7,4 +7,9 @@
     <AssemblyName>CloudWorker.Client.SDK</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Include="Bicep/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
