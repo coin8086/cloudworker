@@ -39,8 +39,8 @@ param service ServiceType = 'echo'
 param envionmentVariables EnvionmentVariableArrayType = []
 
 var serviceMap = {
-  cgi: '/services/cgiservice/CloudWorker.Services.CGI.dll'
-  echo: '/services/echoservice/CloudWorker.Services.Echo.dll'
+  cgi: '/services/cgi/CloudWorker.Services.CGI.dll'
+  echo: '/services/echo/CloudWorker.Services.Echo.dll'
   grpc: '/services/grpc/CloudWorker.Services.GRpc.dll'
 }
 var assemblyPath = serviceMap[service]

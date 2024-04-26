@@ -5,15 +5,15 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY . .
 RUN dotnet publish ServiceHost/ServiceHost.csproj -c $BUILD_CONFIGURATION -o /publish/servicehost /p:UseAppHost=false
-RUN dotnet publish Services/CGIService/CGIService.csproj -c $BUILD_CONFIGURATION -o /publish/cgiservice
-RUN dotnet publish Services/EchoService/EchoService.csproj -c $BUILD_CONFIGURATION -o /publish/echoservice
+RUN dotnet publish Services/CGI/CGIService.csproj -c $BUILD_CONFIGURATION -o /publish/cgi
+RUN dotnet publish Services/Echo/EchoService.csproj -c $BUILD_CONFIGURATION -o /publish/echo
 RUN dotnet publish Services/GRpc/GRpcAdapter/GRpcAdapter.csproj -c $BUILD_CONFIGURATION -o /publish/grpc
 
 FROM mcr.microsoft.com/dotnet/runtime:8.0-jammy
 # USER app
 WORKDIR /services
-COPY --from=build /publish/cgiservice cgiservice
-COPY --from=build /publish/echoservice echoservice
+COPY --from=build /publish/cgi cgi
+COPY --from=build /publish/echo echo
 COPY --from=build /publish/grpc grpc
 WORKDIR /app
 COPY --from=build /publish/servicehost .
