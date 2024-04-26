@@ -1,0 +1,181 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.0",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.26.54.24096",
+      "templateHash": "10662974862102275084"
+    },
+    "__bicep_exported_variables!": [
+      {
+        "name": "QueueOptionsDefault"
+      }
+    ]
+  },
+  "definitions": {
+    "QueueType": {
+      "type": "string",
+      "allowedValues": [
+        "servicebus",
+        "storage"
+      ],
+      "metadata": {
+        "__bicep_export!": true
+      }
+    },
+    "QueueOptionsType": {
+      "type": "object",
+      "properties": {
+        "connectionString": {
+          "type": "securestring",
+          "nullable": true
+        },
+        "queueType": {
+          "$ref": "#/definitions/QueueType",
+          "nullable": true
+        },
+        "requestQueue": {
+          "type": "string",
+          "nullable": true
+        },
+        "responseQueue": {
+          "type": "string",
+          "nullable": true
+        },
+        "messageLease": {
+          "type": "int",
+          "nullable": true
+        },
+        "queryInterval": {
+          "type": "int",
+          "nullable": true
+        }
+      },
+      "metadata": {
+        "__bicep_export!": true
+      }
+    },
+    "ServiceType": {
+      "type": "string",
+      "allowedValues": [
+        "cgi",
+        "echo",
+        "grpc"
+      ],
+      "metadata": {
+        "__bicep_export!": true
+      }
+    },
+    "EnvionmentVariableType": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "nullable": true
+        },
+        "secureValue": {
+          "type": "securestring",
+          "nullable": true
+        }
+      },
+      "metadata": {
+        "__bicep_export!": true
+      }
+    },
+    "EnvionmentVariableArrayType": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/EnvionmentVariableType"
+      },
+      "metadata": {
+        "__bicep_export!": true
+      }
+    },
+    "GitRepoMountType": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "mountPath": {
+          "type": "string"
+        },
+        "repository": {
+          "type": "string",
+          "nullable": true
+        },
+        "privateRepository": {
+          "type": "securestring",
+          "nullable": true
+        },
+        "directory": {
+          "type": "string",
+          "nullable": true
+        },
+        "revision": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      "metadata": {
+        "__bicep_export!": true
+      }
+    },
+    "GitRepoMountArrayType": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/GitRepoMountType"
+      },
+      "metadata": {
+        "__bicep_export!": true
+      }
+    },
+    "FileShareMountType": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "mountPath": {
+          "type": "string"
+        },
+        "fileShareName": {
+          "type": "string"
+        },
+        "storageAccountName": {
+          "type": "string"
+        },
+        "storageAccountKey": {
+          "type": "securestring"
+        }
+      },
+      "metadata": {
+        "__bicep_export!": true
+      }
+    },
+    "FileShareMountArrayType": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/FileShareMountType"
+      },
+      "metadata": {
+        "__bicep_export!": true
+      }
+    }
+  },
+  "variables": {
+    "QueueOptionsDefault": {
+      "queueType": "servicebus",
+      "requestQueue": "requests",
+      "responseQueue": "responses",
+      "messageLease": 60,
+      "queryInterval": 500
+    }
+  },
+  "resources": {}
+}

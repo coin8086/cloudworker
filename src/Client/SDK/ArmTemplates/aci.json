@@ -1,0 +1,340 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.0",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.26.54.24096",
+      "templateHash": "6159555746785349539"
+    }
+  },
+  "definitions": {
+    "_1.EnvionmentVariableType": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "nullable": true
+        },
+        "secureValue": {
+          "type": "securestring",
+          "nullable": true
+        }
+      },
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
+    "_1.FileShareMountType": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "mountPath": {
+          "type": "string"
+        },
+        "fileShareName": {
+          "type": "string"
+        },
+        "storageAccountName": {
+          "type": "string"
+        },
+        "storageAccountKey": {
+          "type": "securestring"
+        }
+      },
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
+    "_1.GitRepoMountType": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "mountPath": {
+          "type": "string"
+        },
+        "repository": {
+          "type": "string",
+          "nullable": true
+        },
+        "privateRepository": {
+          "type": "securestring",
+          "nullable": true
+        },
+        "directory": {
+          "type": "string",
+          "nullable": true
+        },
+        "revision": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
+    "_1.QueueType": {
+      "type": "string",
+      "allowedValues": [
+        "servicebus",
+        "storage"
+      ],
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
+    "EnvionmentVariableArrayType": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/_1.EnvionmentVariableType"
+      },
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
+    "FileShareMountArrayType": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/_1.FileShareMountType"
+      },
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
+    "GitRepoMountArrayType": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/_1.GitRepoMountType"
+      },
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
+    "QueueOptionsType": {
+      "type": "object",
+      "properties": {
+        "connectionString": {
+          "type": "securestring",
+          "nullable": true
+        },
+        "queueType": {
+          "$ref": "#/definitions/_1.QueueType",
+          "nullable": true
+        },
+        "requestQueue": {
+          "type": "string",
+          "nullable": true
+        },
+        "responseQueue": {
+          "type": "string",
+          "nullable": true
+        },
+        "messageLease": {
+          "type": "int",
+          "nullable": true
+        },
+        "queryInterval": {
+          "type": "int",
+          "nullable": true
+        }
+      },
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
+    "ServiceType": {
+      "type": "string",
+      "allowedValues": [
+        "cgi",
+        "echo",
+        "grpc"
+      ],
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    }
+  },
+  "parameters": {
+    "prefix": {
+      "type": "string",
+      "defaultValue": "servicehost"
+    },
+    "count": {
+      "type": "int",
+      "defaultValue": 1
+    },
+    "offset": {
+      "type": "int",
+      "defaultValue": 0
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "southeastasia"
+    },
+    "cpu": {
+      "type": "int",
+      "defaultValue": 1
+    },
+    "memoryInGB": {
+      "type": "int",
+      "defaultValue": 1
+    },
+    "image": {
+      "type": "string",
+      "defaultValue": "leizacrdev.azurecr.io/soa/servicehost:1.5-ubuntu22"
+    },
+    "queueOptions": {
+      "$ref": "#/definitions/QueueOptionsType"
+    },
+    "appInsights": {
+      "type": "securestring",
+      "defaultValue": ""
+    },
+    "concurrency": {
+      "type": "int",
+      "defaultValue": 20
+    },
+    "service": {
+      "$ref": "#/definitions/ServiceType",
+      "defaultValue": "echo"
+    },
+    "envionmentVariables": {
+      "$ref": "#/definitions/EnvionmentVariableArrayType",
+      "defaultValue": []
+    },
+    "gitRepos": {
+      "$ref": "#/definitions/GitRepoMountArrayType",
+      "defaultValue": []
+    },
+    "fileShares": {
+      "$ref": "#/definitions/FileShareMountArrayType",
+      "defaultValue": []
+    }
+  },
+  "variables": {
+    "_queueOptions": "[union(variables('QueueOptionsDefault'), parameters('queueOptions'))]",
+    "serviceMap": {
+      "cgi": "/services/cgi/CloudWorker.Services.CGI.dll",
+      "echo": "/services/echo/CloudWorker.Services.Echo.dll",
+      "grpc": "/services/grpc/CloudWorker.Services.GRpc.dll"
+    },
+    "assemblyPath": "[variables('serviceMap')[parameters('service')]]",
+    "coreEnvVars": [
+      {
+        "name": "Queues__QueueType",
+        "value": "[variables('_queueOptions').queueType]"
+      },
+      {
+        "name": "Queues__ConnectionString",
+        "secureValue": "[variables('_queueOptions').connectionString]"
+      },
+      {
+        "name": "Queues__Request__QueueName",
+        "value": "[variables('_queueOptions').requestQueue]"
+      },
+      {
+        "name": "Queues__Response__QueueName",
+        "value": "[variables('_queueOptions').responseQueue]"
+      },
+      {
+        "name": "Queues__MessageLease",
+        "value": "[variables('_queueOptions').messageLease]"
+      },
+      {
+        "name": "Queues__QueryInterval",
+        "value": "[variables('_queueOptions').queryInterval]"
+      },
+      {
+        "name": "ApplicationInsights__ConnectionString",
+        "value": "[parameters('appInsights')]"
+      },
+      {
+        "name": "Worker__Concurrency",
+        "value": "[parameters('concurrency')]"
+      },
+      {
+        "name": "Service__AssemblyPath",
+        "value": "[variables('assemblyPath')]"
+      }
+    ],
+    "coreEnvVarsAsObj": "[toObject(variables('coreEnvVars'), lambda('e', lambdaVariables('e').name))]",
+    "envionmentVariablesAsObj": "[toObject(parameters('envionmentVariables'), lambda('e', lambdaVariables('e').name))]",
+    "envVarsAsObj": "[union(variables('coreEnvVarsAsObj'), variables('envionmentVariablesAsObj'))]",
+    "envVars": "[map(items(variables('envVarsAsObj')), lambda('item', lambdaVariables('item').value))]",
+    "gitRepoMounts": "[map(parameters('gitRepos'), lambda('e', createObject('name', lambdaVariables('e').name, 'mountPath', lambdaVariables('e').mountPath)))]",
+    "gitRepoVolumes": "[map(parameters('gitRepos'), lambda('e', createObject('name', lambdaVariables('e').name, 'gitRepo', createObject('repository', coalesce(tryGet(lambdaVariables('e'), 'privateRepository'), lambdaVariables('e').repository), 'directory', tryGet(lambdaVariables('e'), 'directory'), 'revision', tryGet(lambdaVariables('e'), 'revision')))))]",
+    "fileShareMounts": "[map(parameters('fileShares'), lambda('e', createObject('name', lambdaVariables('e').name, 'mountPath', lambdaVariables('e').mountPath)))]",
+    "fileShareVolumes": "[map(parameters('fileShares'), lambda('e', createObject('name', lambdaVariables('e').name, 'azureFile', createObject('shareName', lambdaVariables('e').fileShareName, 'storageAccountName', lambdaVariables('e').storageAccountName, 'storageAccountKey', lambdaVariables('e').storageAccountKey))))]",
+    "volumeMounts": "[concat(variables('gitRepoMounts'), variables('fileShareMounts'))]",
+    "volumes": "[concat(variables('gitRepoVolumes'), variables('fileShareVolumes'))]",
+    "QueueOptionsDefault": {
+      "queueType": "servicebus",
+      "requestQueue": "requests",
+      "responseQueue": "responses",
+      "messageLease": 60,
+      "queryInterval": 500
+    }
+  },
+  "resources": {
+    "containers": {
+      "copy": {
+        "name": "containers",
+        "count": "[length(range(0, parameters('count')))]"
+      },
+      "type": "Microsoft.ContainerInstance/containerGroups",
+      "apiVersion": "2023-05-01",
+      "name": "[format('{0}{1}', parameters('prefix'), add(range(0, parameters('count'))[copyIndex()], parameters('offset')))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": "Standard",
+        "containers": [
+          {
+            "name": "servicehost",
+            "properties": {
+              "image": "[parameters('image')]",
+              "environmentVariables": "[variables('envVars')]",
+              "resources": {
+                "requests": {
+                  "cpu": "[parameters('cpu')]",
+                  "memoryInGB": "[parameters('memoryInGB')]"
+                }
+              },
+              "volumeMounts": "[variables('volumeMounts')]"
+            }
+          }
+        ],
+        "initContainers": [],
+        "restartPolicy": "Always",
+        "osType": "Linux",
+        "volumes": "[variables('volumes')]"
+      }
+    }
+  }
+}
