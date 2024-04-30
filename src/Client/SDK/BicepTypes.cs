@@ -10,8 +10,9 @@ public enum ServiceType
     GRPC
 }
 
-public class SecureEnvironmentVariable
+public class SecureEnvironmentVariable : IValidatable
 {
+    [Required]
     public string? Name { get; set; }
 
     public string? Value { get; set; }
@@ -20,10 +21,7 @@ public class SecureEnvironmentVariable
 
     public void Validate()
     {
-        if (string.IsNullOrWhiteSpace(Name))
-        {
-            throw new ArgumentException("Cannot be empty.", nameof(Name));
-        }
+        IValidatable.Validate(this);
         if (string.IsNullOrWhiteSpace(Value) && string.IsNullOrWhiteSpace(SecureValue))
         {
             throw new ArgumentException("Either 'Value' or 'SecureValue' should be provided.");
@@ -31,27 +29,25 @@ public class SecureEnvironmentVariable
     }
 }
 
-public class FileShareMount
+public class FileShareMount : IValidatable
 {
+    [Required]
     public string? Name { get; set; }
 
+    [Required]
     public string? MountPath { get; set; }
 
+    [Required]
     public string? FileShareName { get; set; }
 
+    [Required]
     public string? StorageAccountName { get; set; }
 
+    [Required]
     public string? storageAccountKey { get; set; }
 
     public void Validate()
     {
-        var properties = typeof(FileShareMount).GetProperties();
-        foreach (var property in properties) {
-            var value = (string?)property.GetValue(this);
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                throw new ArgumentException("Cannot be empty.", property.Name);
-            }
-        }
+        IValidatable.Validate(this);
     }
 }
