@@ -1,4 +1,6 @@
-﻿using CloudWorker.MessageQueue;
+﻿using Azure.Core;
+using CloudWorker.MessageQueue;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -11,43 +13,19 @@ public interface ISession
     IMessageQueue CreateSender();
 
     IMessageQueue CreateReceiver();
-
-    Task DestroyAsync();
 }
+
+public class SessionConfig : ClusterConfig {}
 
 public class Session : ISession
 {
-    public string Id { get; }
+    public string Id => _cluster.Id.ToString();
 
-    protected Cluster _cluster;
+    private Cluster _cluster;
 
-    protected Session(Cluster cluster)
+    private Session(Cluster cluster)
     {
         _cluster = cluster;
-        Id = cluster.Id;
-    }
-
-    public static async Task<Session> CreateAsync(ClusterConfig clusterConfig)
-    {
-        var cluster = await Cluster.CreateAsync(clusterConfig);
-        return new Session(cluster);
-    }
-
-    public static async Task<Session> GetAsync(string id)
-    {
-        var cluster = await Cluster.GetAsync(id);
-        return new Session(cluster);
-    }
-
-    public static async Task DestroyAsync(string id)
-    {
-        var session = await GetAsync(id);
-        await session.DestroyAsync();
-    }
-
-    public async Task DestroyAsync()
-    {
-        await _cluster.DestroyAsync();
     }
 
     public IMessageQueue CreateSender()
@@ -58,5 +36,29 @@ public class Session : ISession
     public IMessageQueue CreateReceiver()
     {
         throw new NotImplementedException();
+    }
+
+    public static async Task<Session> CreateOrUpdateAsync(TokenCredential credential, SessionConfig sessionConfig, string? sessionId = null, 
+        ILoggerFactory? loggerFactory = null)
+    {
+        var logger = loggerFactory?.CreateLogger<Cluster>();
+        var cluster = new Cluster(credential, sessionConfig, sessionId, logger);
+        await cluster.CreateOrUpdateAsync();
+        return new Session(cluster);
+    }
+
+    public static async Task<Session> GetAsync(TokenCredential credential, string sessionId, ILoggerFactory? loggerFactory = null)
+    {
+        var logger = loggerFactory?.CreateLogger<Cluster>();
+        var cluster = new Cluster(credential, sessionId, logger);
+        await cluster.GetAsync();
+        return new Session(cluster);
+    }
+
+    public static async Task DestroyAsync(TokenCredential credential, string sessionId, ILoggerFactory? loggerFactory = null)
+    {
+        var logger = loggerFactory?.CreateLogger<Cluster>();
+        var cluster = new Cluster(credential, sessionId, logger);
+        await cluster.DestroyAsync();
     }
 }

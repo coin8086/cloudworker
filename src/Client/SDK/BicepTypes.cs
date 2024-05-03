@@ -1,14 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CloudWorker.Client.SDK.Bicep;
-
-public enum ServiceType
-{
-    Custom,
-    Echo,
-    CGI,
-    GRPC
-}
 
 public class SecureEnvironmentVariable : IValidatable
 {
@@ -19,7 +13,9 @@ public class SecureEnvironmentVariable : IValidatable
 
     public string? SecureValue { get; set; }
 
+    [MemberNotNull(nameof(Name))]
     public void Validate()
+#pragma warning disable CS8774 // Member must have a non-null value when exiting.
     {
         IValidatable.Validate(this);
         if (string.IsNullOrWhiteSpace(Value) && string.IsNullOrWhiteSpace(SecureValue))
@@ -27,6 +23,7 @@ public class SecureEnvironmentVariable : IValidatable
             throw new ArgumentException("Either 'Value' or 'SecureValue' should be provided.");
         }
     }
+#pragma warning restore CS8774 // Member must have a non-null value when exiting.
 }
 
 public class FileShareMount : IValidatable
@@ -46,8 +43,37 @@ public class FileShareMount : IValidatable
     [Required]
     public string? storageAccountKey { get; set; }
 
+    [MemberNotNull(nameof(Name), nameof(MountPath), nameof(FileShareName), nameof(StorageAccountName), nameof(storageAccountKey))]
     public void Validate()
+#pragma warning disable CS8774 // Member must have a non-null value when exiting.
     {
         IValidatable.Validate(this);
     }
+#pragma warning restore CS8774 // Member must have a non-null value when exiting.
+}
+
+public class StarterParameters : IValidatable
+{
+    [Required]
+    public string? Service {  get; set; }
+
+    [ValidateElement]
+    public IEnumerable<SecureEnvironmentVariable>? EnvironmentVariables { get; set; }
+
+    [ValidateElement]
+    public IEnumerable<FileShareMount>? FileShareMounts { get; set; }
+
+    [Required]
+    public string? MessagingRgName { get; set; }
+
+    [Required]
+    public string? ComputingRgName { get; set; }
+
+    [MemberNotNull(nameof(Service), nameof(MessagingRgName), nameof(ComputingRgName))]
+    public void Validate()
+#pragma warning disable CS8774 // Member must have a non-null value when exiting.
+    {
+        IValidatable.Validate(this);
+    }
+#pragma warning restore CS8774 // Member must have a non-null value when exiting.
 }
