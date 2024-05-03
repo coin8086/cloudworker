@@ -44,7 +44,7 @@ public class GRpcAdapaterTest : IDisposable
     }
 
     [Fact]
-    public async void EverythingIsOK()
+    public async Task EverythingIsOK()
     {
         await _service.InitializeAsync();
         Assert.True(true);
@@ -83,7 +83,7 @@ public class GRpcAdapaterTest : IDisposable
     }
 
     [Fact]
-    public async void GRpcServerIsDown()
+    public async Task GRpcServerIsDown()
     {
         //Simulate the condition that the server is down by no call to _service.InitializeAsync.
 
