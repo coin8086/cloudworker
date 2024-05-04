@@ -1,4 +1,4 @@
-import { ServiceType, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType } from 'types.bicep'
+import { ServiceType, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType, QueueOptionsDefault } from 'types.bicep'
 
 targetScope = 'subscription'
 
@@ -23,6 +23,11 @@ var queueOptions = {
 resource messagingRg 'Microsoft.Resources/resourceGroups@2023-07-01' = {
   name: messagingRgName
   location: location
+  tags: {
+    QueueType: QueueOptionsDefault.queueType
+    RequestQueueName: requestQueueName
+    ResponseQueueName: responseQueueName
+  }
 }
 
 resource computingRg 'Microsoft.Resources/resourceGroups@2023-07-01' = {

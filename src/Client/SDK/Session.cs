@@ -51,7 +51,7 @@ public class Session : ISession
     {
         var logger = loggerFactory?.CreateLogger<Cluster>();
         var cluster = new Cluster(credential, sessionId, logger);
-        await cluster.GetAsync();
+        await cluster.ValidateAsync();
         return new Session(cluster);
     }
 
