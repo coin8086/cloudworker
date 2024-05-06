@@ -2,7 +2,7 @@
 using Azure.Identity;
 using CloudWorker.Client.SDK;
 
-namespace General;
+namespace SessionSample;
 
 class Program
 {
