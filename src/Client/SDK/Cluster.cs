@@ -9,23 +9,23 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CloudWorker.Client.SDK;
 
-//TODO: add parameter CancellationToken to async methods
 public interface ICluster
 {
     string Id { get; }
 
-    Task CreateOrUpdateAsync();
+    Task CreateOrUpdateAsync(CancellationToken token = default);
 
-    Task ValidateAsync();
+    Task ValidateAsync(CancellationToken token = default);
 
-    Task DestroyAsync();
+    Task DestroyAsync(CancellationToken token = default);
 
     //TODO: Or: Task<IDictionary<string, string>> GetPropertiesAsync() ?
-    Task<ClusterProperties> GetPropertiesAsync();
+    Task<ClusterProperties> GetPropertiesAsync(CancellationToken token = default);
 }
 
 public class Cluster : ICluster
@@ -92,7 +92,7 @@ public class Cluster : ICluster
         _logger = logger;
     }
 
-    public async Task CreateOrUpdateAsync()
+    public async Task CreateOrUpdateAsync(CancellationToken token = default)
     {
         if (_clusterConfig == null)
         {
@@ -114,7 +114,7 @@ public class Cluster : ICluster
             var client = new ArmClient(_credential, _clusterConfig.SubScriptionId);
             var sub = client.GetDefaultSubscription();
             var deployments = sub.GetArmDeployments();
-            var result = await deployments.CreateOrUpdateAsync(Azure.WaitUntil.Completed, DeploymentName, deploymentData);
+            var result = await deployments.CreateOrUpdateAsync(Azure.WaitUntil.Completed, DeploymentName, deploymentData, token);
             var deployment = result.Value;
 
             //...
@@ -147,25 +147,25 @@ public class Cluster : ICluster
         return parameters;
     }
 
-    public Task ValidateAsync()
+    public Task ValidateAsync(CancellationToken token = default)
     {
         throw new NotImplementedException();
     }
 
-    public Task DestroyAsync()
+    public Task DestroyAsync(CancellationToken token = default)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<ClusterProperties> GetPropertiesAsync()
+    public async Task<ClusterProperties> GetPropertiesAsync(CancellationToken token = default)
     {
         try
         {
             var client = new ArmClient(_credential, _clusterId.SubscriptionId.ToString());
             var sub = client.GetDefaultSubscription();
 
-            var qTask = GetQueuePropertiesAsync(sub);
-            var sTask = GetServicePropertiesAsync(sub);
+            var qTask = GetQueuePropertiesAsync(sub, token);
+            var sTask = GetServicePropertiesAsync(sub, token);
 
             await Task.WhenAll(qTask, sTask);
 
@@ -182,9 +182,9 @@ public class Cluster : ICluster
         }
     }
 
-    private async Task<QueueProperties> GetQueuePropertiesAsync(SubscriptionResource subscription)
+    private async Task<QueueProperties> GetQueuePropertiesAsync(SubscriptionResource subscription, CancellationToken token = default)
     {
-        ResourceGroupResource rg = await subscription.GetResourceGroupAsync(MessagingRgName);
+        ResourceGroupResource rg = await subscription.GetResourceGroupAsync(MessagingRgName, token);
         var queueProperties = new QueueProperties();
 
         //Get some properties by tags on messaging rg
@@ -207,15 +207,15 @@ public class Cluster : ICluster
 
         //For sbq ...
 
-        ServiceBusNamespaceResource sb = await rg.GetServiceBusNamespaceAsync(ServiceBusName);
-        ServiceBusNamespaceAuthorizationRuleResource rule = await sb.GetServiceBusNamespaceAuthorizationRuleAsync("RootManageSharedAccessKey");
-        ServiceBusAccessKeys keys = await rule.GetKeysAsync();
+        ServiceBusNamespaceResource sb = await rg.GetServiceBusNamespaceAsync(ServiceBusName, token);
+        ServiceBusNamespaceAuthorizationRuleResource rule = await sb.GetServiceBusNamespaceAuthorizationRuleAsync("RootManageSharedAccessKey", token);
+        ServiceBusAccessKeys keys = await rule.GetKeysAsync(token);
         queueProperties.ConnectionString = keys.PrimaryConnectionString;
 
         throw new NotImplementedException();
     }
 
-    private Task<ServiceProperties> GetServicePropertiesAsync(SubscriptionResource subscription)
+    private Task<ServiceProperties> GetServicePropertiesAsync(SubscriptionResource subscription, CancellationToken token = default)
     {
         throw new NotImplementedException();
     }

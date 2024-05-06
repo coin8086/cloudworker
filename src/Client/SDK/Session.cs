@@ -2,6 +2,7 @@
 using CloudWorker.MessageQueue;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CloudWorker.Client.SDK;
@@ -38,27 +39,29 @@ public class Session : ISession
         throw new NotImplementedException();
     }
 
-    public static async Task<Session> CreateOrUpdateAsync(TokenCredential credential, SessionConfig sessionConfig, string? sessionId = null, 
-        ILoggerFactory? loggerFactory = null)
+    public static async Task<Session> CreateOrUpdateAsync(TokenCredential credential, SessionConfig sessionConfig, string? sessionId = null,
+        ILoggerFactory? loggerFactory = null, CancellationToken token = default)
     {
         var logger = loggerFactory?.CreateLogger<Cluster>();
         var cluster = new Cluster(credential, sessionConfig, sessionId, logger);
-        await cluster.CreateOrUpdateAsync();
+        await cluster.CreateOrUpdateAsync(token);
         return new Session(cluster);
     }
 
-    public static async Task<Session> GetAsync(TokenCredential credential, string sessionId, ILoggerFactory? loggerFactory = null)
+    public static async Task<Session> GetAsync(TokenCredential credential, string sessionId,
+        ILoggerFactory? loggerFactory = null, CancellationToken token = default)
     {
         var logger = loggerFactory?.CreateLogger<Cluster>();
         var cluster = new Cluster(credential, sessionId, logger);
-        await cluster.ValidateAsync();
+        await cluster.ValidateAsync(token);
         return new Session(cluster);
     }
 
-    public static async Task DestroyAsync(TokenCredential credential, string sessionId, ILoggerFactory? loggerFactory = null)
+    public static async Task DestroyAsync(TokenCredential credential, string sessionId,
+        ILoggerFactory? loggerFactory = null, CancellationToken token = default)
     {
         var logger = loggerFactory?.CreateLogger<Cluster>();
         var cluster = new Cluster(credential, sessionId, logger);
-        await cluster.DestroyAsync();
+        await cluster.DestroyAsync(token);
     }
 }
