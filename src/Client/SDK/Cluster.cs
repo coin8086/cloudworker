@@ -2,6 +2,8 @@
 using Azure.ResourceManager;
 using Azure.ResourceManager.Resources;
 using Azure.ResourceManager.Resources.Models;
+using Azure.ResourceManager.ServiceBus;
+using Azure.ResourceManager.ServiceBus.Models;
 using CloudWorker.Client.SDK.Bicep;
 using Microsoft.Extensions.Logging;
 using System;
@@ -11,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace CloudWorker.Client.SDK;
 
+//TODO: add parameter CancellationToken to async methods
 public interface ICluster
 {
     string Id { get; }
@@ -21,6 +24,7 @@ public interface ICluster
 
     Task DestroyAsync();
 
+    //TODO: Or: Task<IDictionary<string, string>> GetPropertiesAsync() ?
     Task<ClusterProperties> GetPropertiesAsync();
 }
 
@@ -41,6 +45,10 @@ public class Cluster : ICluster
     private string MessagingRgName => $"{_clusterId.ResourceId}-messaging";
 
     private string ComputingRgName => $"{_clusterId.ResourceId}-computing";
+
+    private string ServiceBusName => $"{_clusterId.ResourceId}-servicebus";
+
+    private string AppInsightsName => $"{_clusterId.ResourceId}-appinsights";
 
     //NOTE: The following tags are defined in starter.bicep. Keey them up to date!
     private const string QueueTypeTag = "QueueType";
@@ -176,8 +184,7 @@ public class Cluster : ICluster
 
     private async Task<QueueProperties> GetQueuePropertiesAsync(SubscriptionResource subscription)
     {
-        var result = await subscription.GetResourceGroupAsync(MessagingRgName);
-        var rg = result.Value;
+        ResourceGroupResource rg = await subscription.GetResourceGroupAsync(MessagingRgName);
         var queueProperties = new QueueProperties();
 
         //Get some properties by tags on messaging rg
@@ -197,6 +204,13 @@ public class Cluster : ICluster
             }
         }
         //TODO: Get queue connection string...
+
+        //For sbq ...
+
+        ServiceBusNamespaceResource sb = await rg.GetServiceBusNamespaceAsync(ServiceBusName);
+        ServiceBusNamespaceAuthorizationRuleResource rule = await sb.GetServiceBusNamespaceAuthorizationRuleAsync("RootManageSharedAccessKey");
+        ServiceBusAccessKeys keys = await rule.GetKeysAsync();
+        queueProperties.ConnectionString = keys.PrimaryConnectionString;
 
         throw new NotImplementedException();
     }

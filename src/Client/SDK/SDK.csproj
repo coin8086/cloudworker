@@ -20,6 +20,7 @@
     <PackageReference Include="Azure.Identity" Version="1.11.2" />
     <PackageReference Include="Azure.ResourceManager" Version="1.11.1" />
     <PackageReference Include="Azure.ResourceManager.Resources" Version="1.7.1" />
+    <PackageReference Include="Azure.ResourceManager.ServiceBus" Version="1.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
   </ItemGroup>
 
