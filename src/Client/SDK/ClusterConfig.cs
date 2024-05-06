@@ -18,7 +18,6 @@ public class ClusterConfig : IValidatable
     [Required]
     public string? SubScriptionId { get; set; }
 
-    [Required]
     public string? Location { get; set; }
 
     public ServiceType Service { get; set; }
