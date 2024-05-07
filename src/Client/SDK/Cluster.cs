@@ -41,7 +41,7 @@ public class Cluster : ICluster
 
     public string Id => _clusterId.ToString();
 
-    private string DeploymentName => $"{this.GetType().FullName}:{_clusterId.ResourceId}";
+    private string DeploymentName => $"{_clusterId.ResourceId}-deployment";
 
     private string MessagingRgName => $"{_clusterId.ResourceId}-messaging";
 
