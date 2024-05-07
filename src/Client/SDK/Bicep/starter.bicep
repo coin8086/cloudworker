@@ -33,6 +33,9 @@ resource messagingRg 'Microsoft.Resources/resourceGroups@2023-07-01' = {
 resource computingRg 'Microsoft.Resources/resourceGroups@2023-07-01' = {
   name: computingRgName
   location: location
+  tags: {
+    Service: service
+  }
 }
 
 module servicebus 'servicebus.bicep' = {

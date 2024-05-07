@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.26.54.24096",
-      "templateHash": "16696357238253268045"
+      "templateHash": "7909960591607569615"
     }
   },
   "definitions": {
@@ -183,6 +183,13 @@
     "queueOptions": {
       "requestQueue": "[parameters('requestQueueName')]",
       "responseQueue": "[parameters('responseQueueName')]"
+    },
+    "QueueOptionsDefault": {
+      "queueType": "servicebus",
+      "requestQueue": "requests",
+      "responseQueue": "responses",
+      "messageLease": 60,
+      "queryInterval": 500
     }
   },
   "resources": {
@@ -190,13 +197,21 @@
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2023-07-01",
       "name": "[parameters('messagingRgName')]",
-      "location": "[parameters('location')]"
+      "location": "[parameters('location')]",
+      "tags": {
+        "QueueType": "[variables('QueueOptionsDefault').queueType]",
+        "RequestQueueName": "[parameters('requestQueueName')]",
+        "ResponseQueueName": "[parameters('responseQueueName')]"
+      }
     },
     "computingRg": {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2023-07-01",
       "name": "[parameters('computingRgName')]",
-      "location": "[parameters('location')]"
+      "location": "[parameters('location')]",
+      "tags": {
+        "Service": "[parameters('service')]"
+      }
     },
     "servicebus": {
       "type": "Microsoft.Resources/deployments",

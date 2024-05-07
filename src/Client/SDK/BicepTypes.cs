@@ -54,6 +54,10 @@ public class FileShareMount : IValidatable
 
 public class StarterParameters : IValidatable
 {
+    //TODO: Validate this property?
+    public string? Location { get; set; }
+
+    //TODO: Support custom service
     [Required]
     public string? Service {  get; set; }
 
@@ -68,6 +72,10 @@ public class StarterParameters : IValidatable
 
     [Required]
     public string? ComputingRgName { get; set; }
+
+    public string? ServiceBusName { get; set; }
+
+    public string? AppInsightsName { get; set; }
 
     [MemberNotNull(nameof(Service), nameof(MessagingRgName), nameof(ComputingRgName))]
     public void Validate()

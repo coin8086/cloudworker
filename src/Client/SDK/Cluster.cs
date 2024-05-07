@@ -5,6 +5,7 @@ using Azure.ResourceManager.Resources.Models;
 using Azure.ResourceManager.ServiceBus;
 using Azure.ResourceManager.ServiceBus.Models;
 using CloudWorker.Client.SDK.Bicep;
+using CloudWorker.MessageQueue;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
@@ -54,6 +55,7 @@ public class Cluster : ICluster
     private const string QueueTypeTag = "QueueType";
     private const string RequestQueueNameTag = "RequestQueueName";
     private const string ResponseQueueNameTag = "ResponseQueueName";
+    private const string ServiceTag = "Service";
 
     //To create a new cluster
     public Cluster(TokenCredential credential, ClusterConfig clusterConfig, ILogger<Cluster>? logger = null) 
@@ -137,11 +139,14 @@ public class Cluster : ICluster
 
         var parameters = new StarterParameters()
         {
+            Location = _clusterConfig.Location,
             Service = _clusterConfig.Service.ToString().ToLower(),
             EnvironmentVariables = _clusterConfig.EnvironmentVariables,
             FileShareMounts = _clusterConfig.FileShareMounts,
             MessagingRgName = MessagingRgName,
             ComputingRgName = ComputingRgName,
+            ServiceBusName = ServiceBusName,
+            AppInsightsName = AppInsightsName,
         };
         parameters.Validate();
         return parameters;
@@ -185,9 +190,8 @@ public class Cluster : ICluster
     private async Task<QueueProperties> GetQueuePropertiesAsync(SubscriptionResource subscription, CancellationToken token = default)
     {
         ResourceGroupResource rg = await subscription.GetResourceGroupAsync(MessagingRgName, token);
-        var queueProperties = new QueueProperties();
 
-        //Get some properties by tags on messaging rg
+        var queueProperties = new QueueProperties();
         foreach (var tag in rg.Data.Tags)
         {
             switch (tag.Key)
@@ -203,20 +207,35 @@ public class Cluster : ICluster
                     break;
             }
         }
-        //TODO: Get queue connection string...
 
-        //For sbq ...
+        //TODO: Support getting connection string for Storage Queue
+        if (!ServiceBusQueue.QueueType.Equals(queueProperties.QueueType, StringComparison.OrdinalIgnoreCase))
+        {
+            return queueProperties;
+        }
 
         ServiceBusNamespaceResource sb = await rg.GetServiceBusNamespaceAsync(ServiceBusName, token);
         ServiceBusNamespaceAuthorizationRuleResource rule = await sb.GetServiceBusNamespaceAuthorizationRuleAsync("RootManageSharedAccessKey", token);
         ServiceBusAccessKeys keys = await rule.GetKeysAsync(token);
         queueProperties.ConnectionString = keys.PrimaryConnectionString;
 
-        throw new NotImplementedException();
+        return queueProperties;
     }
 
-    private Task<ServiceProperties> GetServicePropertiesAsync(SubscriptionResource subscription, CancellationToken token = default)
+    private async Task<ServiceProperties> GetServicePropertiesAsync(SubscriptionResource subscription, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        ResourceGroupResource rg = await subscription.GetResourceGroupAsync(ComputingRgName, token);
+
+        var serviceProperties = new ServiceProperties();
+        foreach (var tag in rg.Data.Tags)
+        {
+            switch (tag.Key)
+            {
+                case ServiceTag:
+                    serviceProperties.Service = tag.Value;
+                    break;
+            }
+        }
+        return serviceProperties;
     }
 }

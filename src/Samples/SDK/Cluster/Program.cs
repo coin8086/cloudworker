@@ -99,6 +99,8 @@ Usage:
         var logger = LoggerFactory.CreateLogger<Cluster>();
         var cluster = new Cluster(new DefaultAzureCredential(), config, logger);
         cluster.CreateOrUpdateAsync().Wait();
+
+        ShowClusterProperties(cluster);
     }
 
     static void UpdateCluster(string id, string configFile)
@@ -107,6 +109,8 @@ Usage:
         var logger = LoggerFactory.CreateLogger<Cluster>();
         var cluster = new Cluster(new DefaultAzureCredential(), config, id, logger);
         cluster.CreateOrUpdateAsync().Wait();
+
+        ShowClusterProperties(cluster);
     }
 
     static void UseCluster(string id)
@@ -114,6 +118,8 @@ Usage:
         var logger = LoggerFactory.CreateLogger<Cluster>();
         var cluster = new Cluster(new DefaultAzureCredential(), id, logger);
         cluster.ValidateAsync().Wait();
+
+        ShowClusterProperties(cluster);
     }
 
     static void DeleteCluster(string id)
