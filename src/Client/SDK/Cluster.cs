@@ -67,6 +67,7 @@ public class Cluster : ICluster
         _clusterId = ClusterId.FromString(clusterId);
         _credential = credential;
         _logger = logger;
+        _logger?.LogInformation("Cluster ID: {id}", _clusterId);
     }
 
     //To create or update a cluster
@@ -92,19 +93,25 @@ public class Cluster : ICluster
         _clusterConfig = clusterConfig;
         _credential = credential;
         _logger = logger;
+        _logger?.LogInformation("Cluster ID: {id}", _clusterId);
     }
 
     public async Task CreateOrUpdateAsync(CancellationToken token = default)
     {
         if (_clusterConfig == null)
         {
-            throw new InvalidOperationException("Cannot create a cluster without ClusterConfig!");
+            var msg = "Cannot create a cluster without ClusterConfig!";
+            _logger?.LogError(msg);
+            throw new InvalidOperationException(msg);
         }
 
+        _logger?.LogInformation("Deploy to subscription {id}", _clusterConfig.SubScriptionId);
         try
         {
             var baseDir = Path.GetDirectoryName(typeof(Cluster).Assembly.Location);
             var templateFile = Path.Join(baseDir, "ArmTemplates", "starter.json");
+            _logger?.LogInformation("Use template {file}", templateFile);
+
             var template = File.ReadAllText(templateFile);
             var parameters = NewTemplateParameters();
             var deploymentData = new ArmDeploymentContent(new ArmDeploymentProperties(ArmDeploymentMode.Incremental)
@@ -112,14 +119,15 @@ public class Cluster : ICluster
                 Template = BinaryData.FromString(template),
                 Parameters = BinaryData.FromObjectAsJson(parameters)
             });
-
             var client = new ArmClient(_credential, _clusterConfig.SubScriptionId);
             var sub = client.GetDefaultSubscription();
             var deployments = sub.GetArmDeployments();
+
+            _logger?.LogInformation("Create or update deployment {name}", DeploymentName);
             var result = await deployments.CreateOrUpdateAsync(Azure.WaitUntil.Completed, DeploymentName, deploymentData, token);
             var deployment = result.Value;
 
-            //...
+            _logger?.LogInformation("Finish deployment {name}", DeploymentName);
         }
         catch (Exception ex)
         {
