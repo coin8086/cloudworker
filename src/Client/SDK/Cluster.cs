@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -114,10 +115,14 @@ public class Cluster : ICluster
 
             var template = File.ReadAllText(templateFile);
             var parameters = NewTemplateParameters();
+            var jsonOptions = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            var parametersInJson = JsonSerializer.Serialize(parameters, jsonOptions);
+            _logger?.LogDebug("Template parameters in JSON:\n{content}", parametersInJson);
+
             var deploymentData = new ArmDeploymentContent(new ArmDeploymentProperties(ArmDeploymentMode.Incremental)
             {
                 Template = BinaryData.FromString(template),
-                Parameters = BinaryData.FromObjectAsJson(parameters)
+                Parameters = BinaryData.FromString(parametersInJson)
             });
             var client = new ArmClient(_credential, _clusterConfig.SubScriptionId);
             var sub = client.GetDefaultSubscription();

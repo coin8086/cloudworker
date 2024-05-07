@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace CloudWorker.Client.SDK.Bicep;
 
@@ -9,8 +10,10 @@ public class SecureEnvironmentVariable : IValidatable
     [Required]
     public string? Name { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Value { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? SecureValue { get; set; }
 
     [MemberNotNull(nameof(Name))]
@@ -55,6 +58,7 @@ public class FileShareMount : IValidatable
 public class StarterParameters : IValidatable
 {
     //TODO: Validate this property?
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Location { get; set; }
 
     //TODO: Support custom service
@@ -62,9 +66,11 @@ public class StarterParameters : IValidatable
     public string? Service {  get; set; }
 
     [ValidateElement]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IEnumerable<SecureEnvironmentVariable>? EnvironmentVariables { get; set; }
 
     [ValidateElement]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IEnumerable<FileShareMount>? FileShareMounts { get; set; }
 
     [Required]
@@ -73,8 +79,10 @@ public class StarterParameters : IValidatable
     [Required]
     public string? ComputingRgName { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ServiceBusName { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? AppInsightsName { get; set; }
 
     [MemberNotNull(nameof(Service), nameof(MessagingRgName), nameof(ComputingRgName))]
