@@ -20,17 +20,18 @@ class Program
     {
         var usage = @"
 Usage:
-{0} {{--create --config <cluster config file> | --update <cluster id> --config <cluster config file> | --use <clusetr id> | --delete <cluster id>}} [--help | -h]
+{0} {{--create --config <cluster config file> | --update <cluster id> --config <cluster config file> | --use <clusetr id> | --delete <cluster id>}} [--debug] [--help | -h]
 ";
         Console.WriteLine(string.Format(usage, typeof(Program).Assembly.GetName().Name));
         Environment.Exit(exitCode);
     }
 
-    static (Action action, string? clusterId, string? clusterConfigFile) ParseCommandLine(string[] args)
+    static (Action action, string? clusterId, string? clusterConfigFile, bool debug) ParseCommandLine(string[] args)
     {
         Action? action = null;
         string? clusterId = null;
         string? clusterConfigFile = null;
+        bool debug = false;
 
         try
         {
@@ -55,6 +56,9 @@ Usage:
                         break;
                     case "--config":
                         clusterConfigFile = args[++i];
+                        break;
+                    case "--debug":
+                        debug = true;
                         break;
                     case "-h":
                     case "--help":
@@ -90,7 +94,7 @@ Usage:
             ShowUsageAndExit(1);
         }
         Debug.Assert(action != null);
-        return (action.Value, clusterId, clusterConfigFile);
+        return (action.Value, clusterId, clusterConfigFile, debug);
     }
 
     static void CreateCluster(string configFile)
@@ -160,14 +164,21 @@ Usage:
             {
                 options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ ";
             });
+            if (DebugOut)
+            {
+                builder.SetMinimumLevel(LogLevel.Trace);
+            }
         });
     });
 
     static ILoggerFactory LoggerFactory => _lazyLoggerFactory.Value;
 
+    static bool DebugOut {  get; set; } = false;
+
     static void Main(string[] args)
     {
-        var (action, clusterId, configFile) = ParseCommandLine(args);
+        var (action, clusterId, configFile, debug) = ParseCommandLine(args);
+        DebugOut = debug;
         switch (action)
         {
             case Action.Create:
