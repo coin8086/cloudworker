@@ -19,10 +19,10 @@ class Program
     static void ShowUsageAndExit(int exitCode = 0)
     {
         var usage = @"
-Usage: 
-{0} {--create --config <cluster config file> | --update <cluster id> --config <cluster config file> | --use <clusetr id> | --delete <cluster id>} [--help | -h]
+Usage:
+{0} {{--create --config <cluster config file> | --update <cluster id> --config <cluster config file> | --use <clusetr id> | --delete <cluster id>}} [--help | -h]
 ";
-        Console.WriteLine(string.Format(usage, typeof(Program).Assembly.FullName));
+        Console.WriteLine(string.Format(usage, typeof(Program).Assembly.GetName().Name));
         Environment.Exit(exitCode);
     }
 
