@@ -104,7 +104,7 @@ public class Cluster : ICluster
         try
         {
             var baseDir = Path.GetDirectoryName(typeof(Cluster).Assembly.Location);
-            var templateFile = Path.Join(baseDir, "Bicep", "starter.bicep");
+            var templateFile = Path.Join(baseDir, "ArmTemplates", "starter.json");
             var template = File.ReadAllText(templateFile);
             var parameters = NewTemplateParameters();
             var deploymentData = new ArmDeploymentContent(new ArmDeploymentProperties(ArmDeploymentMode.Incremental)
