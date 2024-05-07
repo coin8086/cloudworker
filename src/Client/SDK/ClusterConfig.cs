@@ -20,7 +20,7 @@ public class ClusterConfig : IValidatable
 
     public string? Location { get; set; }
 
-    public ServiceType Service { get; set; }
+    public ServiceType Service { get; set; } = ServiceType.Echo;
 
     [ValidateElement]
     public IEnumerable<SecureEnvironmentVariable>? EnvironmentVariables { get; set; }
@@ -28,7 +28,7 @@ public class ClusterConfig : IValidatable
     [ValidateElement]
     public IEnumerable<FileShareMount>? FileShareMounts { get; set; }
 
-    [MemberNotNull(nameof(SubScriptionId), nameof(Location))]
+    [MemberNotNull(nameof(SubScriptionId))]
     public void Validate()
 #pragma warning disable CS8774 // Member must have a non-null value when exiting.
     {
