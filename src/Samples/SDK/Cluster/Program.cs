@@ -135,6 +135,8 @@ Usage:
 
     static void ShowClusterProperties(Cluster cluster)
     {
+        Console.WriteLine($"ClusterID={cluster.Id}");
+
         var properties = cluster.GetPropertiesAsync().Result;
         Console.WriteLine($"Service={properties?.ServiceProperties?.Service}");
         Console.WriteLine($"Queue:Type={properties?.QueueProperties?.QueueType}");
