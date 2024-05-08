@@ -16,6 +16,7 @@ public enum ServiceType
 //TODO: More options in the config ...
 public class ClusterConfig : IValidatable
 {
+    //TODO: Validate the GUID format
     [Required]
     public string? SubScriptionId { get; set; }
 

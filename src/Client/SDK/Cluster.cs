@@ -167,9 +167,10 @@ public class Cluster : ICluster
         return parameters;
     }
 
+    //TODO: Remove the method or provide real implementation
     public Task ValidateAsync(CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
 
     public Task DestroyAsync(CancellationToken token = default)
