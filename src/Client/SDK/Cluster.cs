@@ -1,4 +1,5 @@
-﻿using Azure.Core;
+﻿using Azure;
+using Azure.Core;
 using Azure.ResourceManager;
 using Azure.ResourceManager.Resources;
 using Azure.ResourceManager.Resources.Models;
@@ -107,7 +108,7 @@ public class Cluster : ICluster
             throw new InvalidOperationException(msg);
         }
 
-        _logger?.LogInformation("Deploy to subscription {id}", _clusterConfig.SubScriptionId);
+        _logger?.LogInformation("Create or update cluster {id}", _clusterId);
         try
         {
             var baseDir = Path.GetDirectoryName(typeof(Cluster).Assembly.Location);
@@ -139,7 +140,7 @@ public class Cluster : ICluster
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "Error when creating cluster.");
+            _logger?.LogError(ex, "Error when creating or updating cluster {id}.", _clusterId);
             throw;
         }
     }
@@ -173,9 +174,37 @@ public class Cluster : ICluster
         return Task.CompletedTask;
     }
 
-    public Task DestroyAsync(CancellationToken token = default)
+    public async Task DestroyAsync(CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        _logger?.LogInformation("Destroy cluster {id}", _clusterId);
+        try
+        {
+            var client = new ArmClient(_credential, _clusterId.SubscriptionId.ToString());
+            var sub = client.GetDefaultSubscription();
+            var qTask = DeleteResourceGroupAsync(sub, MessagingRgName);
+            var cTask = DeleteResourceGroupAsync(sub, ComputingRgName);
+            await Task.WhenAll(qTask, cTask);
+            _logger?.LogInformation("Cluster {id} is destroyed.", _clusterId);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Error when destroying cluster {id}.", _clusterId);
+            throw;
+        }
+    }
+
+    private async Task DeleteResourceGroupAsync(SubscriptionResource subscription, string rgName, CancellationToken token = default)
+    {
+        _logger?.LogInformation("Delete resource group {name} of subscription {id}", rgName, subscription.Id);
+        try
+        {
+            ResourceGroupResource rg = await subscription.GetResourceGroupAsync(rgName, token);
+            await rg.DeleteAsync(Azure.WaitUntil.Completed, cancellationToken: token);
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            _logger?.LogWarning("Resource group {name} is not found in subscription {id}.", rgName, subscription.Id);
+        }
     }
 
     public async Task<ClusterProperties> GetPropertiesAsync(CancellationToken token = default)
@@ -198,7 +227,7 @@ public class Cluster : ICluster
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "Error when getting queue properties.");
+            _logger?.LogError(ex, "Error when getting properties of cluster {id}.", _clusterId);
             throw;
         }
     }
