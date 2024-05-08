@@ -8,6 +8,7 @@ using CloudWorker.Client.SDK.Bicep;
 using CloudWorker.MessageQueue;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
@@ -152,16 +153,15 @@ public class Cluster : ICluster
 
         var parameters = new StarterParameters()
         {
-            Location = _clusterConfig.Location,
-            Service = _clusterConfig.Service.ToString().ToLower(),
-            EnvironmentVariables = _clusterConfig.EnvironmentVariables,
-            FileShareMounts = _clusterConfig.FileShareMounts,
-            MessagingRgName = MessagingRgName,
-            ComputingRgName = ComputingRgName,
-            ServiceBusName = ServiceBusName,
-            AppInsightsName = AppInsightsName,
+            Location = ArmParamValue<string>.Create(_clusterConfig.Location),
+            Service = ArmParamValue<string>.Create(_clusterConfig.Service.ToString().ToLower()),
+            EnvironmentVariables = ArmParamValue<IEnumerable<SecureEnvironmentVariable>>.Create(_clusterConfig.EnvironmentVariables),
+            FileShareMounts = ArmParamValue<IEnumerable<FileShareMount>>.Create(_clusterConfig.FileShareMounts),
+            MessagingRgName = ArmParamValue<string>.Create(MessagingRgName),
+            ComputingRgName = ArmParamValue<string>.Create(ComputingRgName),
+            ServiceBusName = ArmParamValue<string>.Create(ServiceBusName),
+            AppInsightsName = ArmParamValue<string>.Create(AppInsightsName),
         };
-        parameters.Validate();
         return parameters;
     }
 
