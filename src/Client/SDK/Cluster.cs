@@ -79,7 +79,7 @@ public class Cluster : ICluster
         if (clusterId != null)
         {
             var clsId = ClusterId.FromString(clusterId);
-            var subId = Guid.Parse(clusterConfig.SubScriptionId);
+            var subId = clusterConfig.SubScriptionId;
             if (subId != clsId.SubscriptionId)
             {
                 throw new ArgumentException("SubScription IDs are inconsistent!");
@@ -127,7 +127,7 @@ public class Cluster : ICluster
             };
             var deploymentData = new ArmDeploymentContent(deploymentProperties) { Location = _clusterConfig.Location };
 
-            var client = new ArmClient(_credential, _clusterConfig.SubScriptionId);
+            var client = new ArmClient(_credential, _clusterConfig.SubScriptionId.ToString());
             var sub = client.GetDefaultSubscription();
             var deployments = sub.GetArmDeployments();
 

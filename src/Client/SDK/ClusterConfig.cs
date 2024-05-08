@@ -1,7 +1,7 @@
 ﻿using Azure.Core;
 using CloudWorker.Client.SDK.Bicep;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace CloudWorker.Client.SDK;
 
@@ -16,9 +16,7 @@ public enum ServiceType
 //TODO: More options in the config ...
 public class ClusterConfig : IValidatable
 {
-    //TODO: Validate the GUID format
-    [Required]
-    public string? SubScriptionId { get; set; }
+    public Guid SubScriptionId { get; set; }
 
     //The location is for both ArmDeploymentContent.Location and an ARM template parameter
     public AzureLocation Location { get; set; } = AzureLocation.SoutheastAsia;
@@ -31,7 +29,6 @@ public class ClusterConfig : IValidatable
     [ValidateElement]
     public IEnumerable<FileShareMount>? FileShareMounts { get; set; }
 
-    [MemberNotNull(nameof(SubScriptionId))]
     public void Validate()
 #pragma warning disable CS8774 // Member must have a non-null value when exiting.
     {
