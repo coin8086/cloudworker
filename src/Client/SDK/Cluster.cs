@@ -44,15 +44,17 @@ public class Cluster : ICluster
 
     public string Id => _clusterId.ToString();
 
-    private string DeploymentName => $"{_clusterId.ResourceId}-deployment";
+    //NOTE: Some Azure RPs, like Service Bus, do not allow a resource name starting with a digit number.
+    //So here a name prefix "cw-" (short for CloudWorker) is used.
+    private string DeploymentName => $"cw-{_clusterId.ResourceId}-deployment";
 
-    private string MessagingRgName => $"{_clusterId.ResourceId}-messaging";
+    private string MessagingRgName => $"cw-{_clusterId.ResourceId}-messaging";
 
-    private string ComputingRgName => $"{_clusterId.ResourceId}-computing";
+    private string ComputingRgName => $"cw-{_clusterId.ResourceId}-computing";
 
-    private string ServiceBusName => $"{_clusterId.ResourceId}-servicebus";
+    private string ServiceBusName => $"cw-{_clusterId.ResourceId}-servicebus";
 
-    private string AppInsightsName => $"{_clusterId.ResourceId}-appinsights";
+    private string AppInsightsName => $"cw-{_clusterId.ResourceId}-appinsights";
 
     //NOTE: The following tags are defined in starter.bicep. Keey them up to date!
     private const string QueueTypeTag = "QueueType";
@@ -207,6 +209,7 @@ public class Cluster : ICluster
         }
     }
 
+    //TODO: Get property for monitoring/AppInsights URL
     public async Task<ClusterProperties> GetPropertiesAsync(CancellationToken token = default)
     {
         try
