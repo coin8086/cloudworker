@@ -1,4 +1,5 @@
-﻿using CloudWorker.Client.SDK.Bicep;
+﻿using Azure.Core;
+using CloudWorker.Client.SDK.Bicep;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
@@ -18,7 +19,8 @@ public class ClusterConfig : IValidatable
     [Required]
     public string? SubScriptionId { get; set; }
 
-    public string? Location { get; set; }
+    //The location is for both ArmDeploymentContent.Location and an ARM template parameter
+    public AzureLocation Location { get; set; } = AzureLocation.SoutheastAsia;
 
     public ServiceType Service { get; set; } = ServiceType.Echo;
 

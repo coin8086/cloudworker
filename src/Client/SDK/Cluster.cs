@@ -120,11 +120,13 @@ public class Cluster : ICluster
             var parametersInJson = JsonSerializer.Serialize(parameters, jsonOptions);
             _logger?.LogDebug("Template parameters in JSON:\n{content}", parametersInJson);
 
-            var deploymentData = new ArmDeploymentContent(new ArmDeploymentProperties(ArmDeploymentMode.Incremental)
+            var deploymentProperties = new ArmDeploymentProperties(ArmDeploymentMode.Incremental)
             {
                 Template = BinaryData.FromString(template),
                 Parameters = BinaryData.FromString(parametersInJson)
-            });
+            };
+            var deploymentData = new ArmDeploymentContent(deploymentProperties) { Location = _clusterConfig.Location };
+
             var client = new ArmClient(_credential, _clusterConfig.SubScriptionId);
             var sub = client.GetDefaultSubscription();
             var deployments = sub.GetArmDeployments();
