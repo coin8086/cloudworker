@@ -2,6 +2,8 @@
 using CloudWorker.Client.SDK.Bicep;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace CloudWorker.Client.SDK;
 
@@ -13,12 +15,27 @@ public enum ServiceType
     GRPC
 }
 
+public class AzureLocationJsonConverter : JsonConverter<AzureLocation>
+{
+    public override AzureLocation Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var value = reader.GetString();
+        return new AzureLocation(value!);
+    }
+
+    public override void Write(Utf8JsonWriter writer, AzureLocation value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value);
+    }
+}
+
 //TODO: More options in the config ...
 public class ClusterConfig : IValidatable
 {
     public Guid SubScriptionId { get; set; }
 
     //The location is for both ArmDeploymentContent.Location and an ARM template parameter
+    [JsonConverter(typeof(AzureLocationJsonConverter))]
     public AzureLocation Location { get; set; } = AzureLocation.SoutheastAsia;
 
     public ServiceType Service { get; set; } = ServiceType.Echo;
