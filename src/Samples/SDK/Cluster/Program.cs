@@ -192,11 +192,11 @@ Usage:
             case Action.Update:
                 UpdateCluster(clusterId!, configFile!);
                 break;
-            case Action.Delete:
-                DeleteCluster(clusterId!);
-                break;
             case Action.Use:
                 UseCluster(clusterId!);
+                break;
+            case Action.Delete:
+                DeleteCluster(clusterId!);
                 break;
         }
     }

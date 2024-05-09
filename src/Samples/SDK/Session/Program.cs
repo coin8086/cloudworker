@@ -21,17 +21,19 @@ class Program
     {
         var usage = @"
 Usage:
-{0} {{--create --config <session config file> | --update <session id> --config <session config file> | --use <clusetr id> | --delete <session id>}} [--debug] [--help | -h]
+{0} {{--create --config <session config file> | --update <session id> --config <session config file> | --use <clusetr id> | --delete <session id>}} [--send <msg>] [--count <count>] [--debug] [--help | -h]
 ";
         Console.WriteLine(string.Format(usage, typeof(Program).Assembly.GetName().Name));
         Environment.Exit(exitCode);
     }
 
-    static (Action action, string? id, string? configFile, bool debug) ParseCommandLine(string[] args)
+    static (Action action, string? id, string? configFile, string? msg, int count, bool debug) ParseCommandLine(string[] args)
     {
         Action? action = null;
         string? id = null;
         string? configFile = null;
+        string? msg = null;
+        int count = 1;
         bool debug = false;
 
         try
@@ -57,6 +59,12 @@ Usage:
                         break;
                     case "--config":
                         configFile = args[++i];
+                        break;
+                    case "--send":
+                        msg = args[++i];
+                        break;
+                    case "--count":
+                        count = int.Parse(args[++i]);
                         break;
                     case "--debug":
                         debug = true;
@@ -88,6 +96,14 @@ Usage:
                     throw new ArgumentException("Session configuration file doesn't exist.", "--config");
                 }
             }
+            if (action == Action.Delete && msg != null)
+            {
+                throw new ArgumentException("Cannot send message in delete action.", "--delete");
+            }
+            if (msg != null && count < 1)
+            {
+                throw new ArgumentException("Count cannot be less than 1.", "--count");
+            }
         }
         catch (Exception ex)
         {
@@ -95,28 +111,34 @@ Usage:
             ShowUsageAndExit(1);
         }
         Debug.Assert(action != null);
-        return (action.Value, id, configFile, debug);
+        return (action.Value, id, configFile, msg, count, debug);
     }
 
-    static void CreateSession(string configFile)
+    static Session CreateSession(string configFile)
     {
+        Console.WriteLine($"Create session");
         var config = GetConfig(configFile);
         var session = Session.CreateOrUpdateAsync(Credential, config, null, LoggerFactory).Result;
+        Console.WriteLine($"Created session {session.Id}");
+        return session;
     }
 
-    static void UpdateSession(string id, string configFile)
+    static Session UpdateSession(string id, string configFile)
     {
+        Console.WriteLine($"Update session {id}");
         var config = GetConfig(configFile);
-        var session = Session.CreateOrUpdateAsync(Credential, config, id, LoggerFactory).Result;
+        return Session.CreateOrUpdateAsync(Credential, config, id, LoggerFactory).Result;
     }
 
-    static void UseSession(string id)
+    static Session UseSession(string id)
     {
-        var session = Session.GetAsync(Credential, id, LoggerFactory).Result;
+        Console.WriteLine($"Use session {id}");
+        return Session.GetAsync(Credential, id, LoggerFactory).Result;
     }
 
     static void DeleteSession(string id)
     {
+        Console.WriteLine($"Delete session {id}");
         Session.DestroyAsync(Credential, id, LoggerFactory).Wait();
     }
 
@@ -130,6 +152,32 @@ Usage:
         }
         config.Validate();
         return config;
+    }
+
+    static void SendAndReceiveMessage(Session session, string msg, int count)
+    {
+        Console.WriteLine($"Send message \"{msg}\" {count} time(s).");
+
+        var sender = session.CreateSender();
+        var tasks = new Task[count];
+        for (var i = 0; i < count; i++)
+        {
+            tasks[i] = sender.SendAsync(msg);
+        }
+        Task.WaitAll(tasks);
+
+        Console.WriteLine("Receive messages");
+        var receiver = session.CreateReceiver();
+        for (var i = 0; i < count; i++)
+        {
+            tasks[i] = receiver.WaitAsync().ContinueWith(task =>
+            {
+                var reply = task.Result;
+                Console.WriteLine(reply.Content);
+                reply.DeleteAsync().Wait();
+            });
+        }
+        Task.WaitAll(tasks);
     }
 
     static bool DebugOut { get; set; } = false;
@@ -156,22 +204,27 @@ Usage:
 
     static void Main(string[] args)
     {
-        var (action, id, configFile, debug) = ParseCommandLine(args);
+        var (action, id, configFile, msg, count, debug) = ParseCommandLine(args);
         DebugOut = debug;
+        Session? session = null;
         switch (action)
         {
             case Action.Create:
-                CreateSession(configFile!);
+                session = CreateSession(configFile!);
                 break;
             case Action.Update:
-                UpdateSession(id!, configFile!);
+                session = UpdateSession(id!, configFile!);
+                break;
+            case Action.Use:
+                session = UseSession(id!);
                 break;
             case Action.Delete:
                 DeleteSession(id!);
                 break;
-            case Action.Use:
-                UseSession(id!);
-                break;
+        }
+        if (session != null && msg != null)
+        {
+            SendAndReceiveMessage(session, msg, count);
         }
     }
 }
