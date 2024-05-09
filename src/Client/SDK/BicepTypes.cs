@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace CloudWorker.Client.SDK.Bicep;
+
+#pragma warning disable CS8774 // Member must have a non-null value when exiting.
 
 public class SecureEnvironmentVariable : IValidatable
 {
@@ -18,7 +19,6 @@ public class SecureEnvironmentVariable : IValidatable
 
     [MemberNotNull(nameof(Name))]
     public void Validate()
-#pragma warning disable CS8774 // Member must have a non-null value when exiting.
     {
         IValidatable.Validate(this);
         if (string.IsNullOrWhiteSpace(Value) && string.IsNullOrWhiteSpace(SecureValue))
@@ -26,7 +26,6 @@ public class SecureEnvironmentVariable : IValidatable
             throw new ArgumentException("Either 'Value' or 'SecureValue' should be provided.");
         }
     }
-#pragma warning restore CS8774 // Member must have a non-null value when exiting.
 }
 
 public class FileShareMount : IValidatable
@@ -48,9 +47,9 @@ public class FileShareMount : IValidatable
 
     [MemberNotNull(nameof(Name), nameof(MountPath), nameof(FileShareName), nameof(StorageAccountName), nameof(storageAccountKey))]
     public void Validate()
-#pragma warning disable CS8774 // Member must have a non-null value when exiting.
     {
         IValidatable.Validate(this);
     }
-#pragma warning restore CS8774 // Member must have a non-null value when exiting.
 }
+
+#pragma warning restore CS8774 // Member must have a non-null value when exiting.
