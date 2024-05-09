@@ -10,9 +10,9 @@ public class RequiredAttribute : Attribute
 }
 
 [AttributeUsage(AttributeTargets.Property)]
-public class ValidateElementAttribute : Attribute
+public class ValidateCollectionAttribute : Attribute
 {
-    public ValidateElementAttribute() { }
+    public ValidateCollectionAttribute() { }
 }
 
 public interface IValidatable
@@ -45,7 +45,7 @@ public interface IValidatable
                 {
                     continue;
                 }
-                var attr = property.GetCustomAttributes(typeof(ValidateElementAttribute), true);
+                var attr = property.GetCustomAttributes(typeof(ValidateCollectionAttribute), true);
                 if (attr.Length > 0)
                 {
                     foreach (var value in collection)

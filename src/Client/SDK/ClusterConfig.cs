@@ -40,10 +40,10 @@ public class ClusterConfig : IValidatable
 
     public ServiceType Service { get; set; } = ServiceType.Echo;
 
-    [ValidateElement]
+    [ValidateCollection]
     public IEnumerable<SecureEnvironmentVariable>? EnvironmentVariables { get; set; }
 
-    [ValidateElement]
+    [ValidateCollection]
     public IEnumerable<FileShareMount>? FileShareMounts { get; set; }
 
     public void Validate()
