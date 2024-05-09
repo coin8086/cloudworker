@@ -51,7 +51,7 @@ public interface IValidatable
             if (attr.Length > 0)
             {
                 var value = property.GetValue(obj);
-                if (value != null)
+                if (value == null)
                 {
                     throw new ValidationError($"The property {property.Name} cannot be null.");
                 }
