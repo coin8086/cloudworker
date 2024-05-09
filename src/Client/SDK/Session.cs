@@ -20,11 +20,11 @@ public class SessionConfig : ClusterConfig {}
 
 public class Session : ISession
 {
-    public string Id => _cluster.Id.ToString();
+    public string Id => _cluster.Id;
 
-    private Cluster _cluster;
+    private ICluster _cluster;
 
-    private Session(Cluster cluster)
+    private Session(ICluster cluster)
     {
         _cluster = cluster;
     }
