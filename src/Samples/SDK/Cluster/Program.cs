@@ -1,4 +1,5 @@
-﻿using Azure.Identity;
+﻿using Azure.Core;
+using Azure.Identity;
 using CloudWorker.Client.SDK;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
@@ -101,7 +102,7 @@ Usage:
     {
         var config = GetClusterConfig(configFile);
         var logger = LoggerFactory.CreateLogger<Cluster>();
-        var cluster = new Cluster(new DefaultAzureCredential(), config, logger);
+        var cluster = new Cluster(Credential, config, logger);
         cluster.CreateOrUpdateAsync().Wait();
 
         ShowClusterProperties(cluster);
@@ -111,7 +112,7 @@ Usage:
     {
         var config = GetClusterConfig(configFile);
         var logger = LoggerFactory.CreateLogger<Cluster>();
-        var cluster = new Cluster(new DefaultAzureCredential(), config, id, logger);
+        var cluster = new Cluster(Credential, config, id, logger);
         cluster.CreateOrUpdateAsync().Wait();
 
         ShowClusterProperties(cluster);
@@ -120,7 +121,7 @@ Usage:
     static void UseCluster(string id)
     {
         var logger = LoggerFactory.CreateLogger<Cluster>();
-        var cluster = new Cluster(new DefaultAzureCredential(), id, logger);
+        var cluster = new Cluster(Credential, id, logger);
         cluster.ValidateAsync().Wait();
 
         ShowClusterProperties(cluster);
@@ -129,7 +130,7 @@ Usage:
     static void DeleteCluster(string id)
     {
         var logger = LoggerFactory.CreateLogger<Cluster>();
-        var cluster = new Cluster(new DefaultAzureCredential(), id, logger);
+        var cluster = new Cluster(Credential, id, logger);
         cluster.DestroyAsync().Wait();
     }
 
@@ -157,6 +158,8 @@ Usage:
         return config;
     }
 
+    static bool DebugOut { get; set; } = false;
+
     static Lazy<ILoggerFactory> _lazyLoggerFactory = new Lazy<ILoggerFactory>(() =>
     {
         return Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
@@ -175,7 +178,7 @@ Usage:
 
     static ILoggerFactory LoggerFactory => _lazyLoggerFactory.Value;
 
-    static bool DebugOut {  get; set; } = false;
+    static TokenCredential Credential => new DefaultAzureCredential();
 
     static void Main(string[] args)
     {
