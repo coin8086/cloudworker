@@ -12,6 +12,9 @@ public interface ISession
 {
     string Id { get; }
 
+    //TODO: Some way to return a immutable/readonly object?
+    ClusterProperties ClusterProperties { get; }
+
     IMessageQueue CreateSender();
 
     IMessageQueue CreateReceiver();
@@ -28,6 +31,9 @@ public class Session : ISession
     private ClusterProperties? _properties;
 
     private ILoggerFactory? _loggerFactory;
+
+    public ClusterProperties ClusterProperties => _properties ??
+        throw new InvalidOperationException("GetClusterPropertiesAsync must be called before getting ClusterProperties.");
 
     private Session(ICluster cluster, ILoggerFactory? loggerFactory = null)
     {
