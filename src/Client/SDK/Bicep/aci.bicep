@@ -36,7 +36,7 @@ param concurrency int = 20
  */
 
 param service ServiceType = 'echo'
-param envionmentVariables EnvionmentVariableArrayType = []
+param environmentVariables EnvionmentVariableArrayType = []
 
 var serviceMap = {
   cgi: '/services/cgi/CloudWorker.Services.CGI.dll'
@@ -85,8 +85,8 @@ var coreEnvVars = [
 ]
 
 var coreEnvVarsAsObj = toObject(coreEnvVars, e => e.name)
-var envionmentVariablesAsObj = toObject(envionmentVariables, e => e.name)
-var envVarsAsObj = union(coreEnvVarsAsObj, envionmentVariablesAsObj)
+var environmentVariablesAsObj = toObject(environmentVariables, e => e.name)
+var envVarsAsObj = union(coreEnvVarsAsObj, environmentVariablesAsObj)
 var envVars = map(items(envVarsAsObj), item => item.value)
 
 /*

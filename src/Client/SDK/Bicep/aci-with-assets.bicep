@@ -5,7 +5,7 @@ param offset int = 0
 param location string = resourceGroup().location
 param concurrency int = 100
 param service ServiceType = 'echo'
-param envionmentVariables EnvionmentVariableArrayType = []
+param environmentVariables EnvionmentVariableArrayType = []
 
 param serviceBusName string
 param serviceBusRg string
@@ -45,7 +45,7 @@ module aci 'aci.bicep' = {
     appInsights: appInsightsConnectionString
     concurrency: concurrency
     service: service
-    envionmentVariables: envionmentVariables
+    environmentVariables: environmentVariables
     gitRepos: gitRepos
     fileShares: fileShares
   }

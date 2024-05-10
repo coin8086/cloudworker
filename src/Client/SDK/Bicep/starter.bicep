@@ -3,7 +3,7 @@ import { ServiceType, EnvionmentVariableArrayType, GitRepoMountArrayType, FileSh
 targetScope = 'subscription'
 
 param service ServiceType = 'echo'
-param envionmentVariables EnvionmentVariableArrayType = []
+param environmentVariables EnvionmentVariableArrayType = []
 param gitRepos GitRepoMountArrayType = []
 param fileShares FileShareMountArrayType = []
 
@@ -65,7 +65,7 @@ module cluster 'aci-with-assets.bicep' = {
   name: 'cluster-deployment'
   params: {
     service: service
-    envionmentVariables: envionmentVariables
+    environmentVariables: environmentVariables
     gitRepos: gitRepos
     fileShares: fileShares
     queueOptions: queueOptions

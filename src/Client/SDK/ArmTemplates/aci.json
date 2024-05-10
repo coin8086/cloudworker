@@ -225,7 +225,7 @@
       "$ref": "#/definitions/ServiceType",
       "defaultValue": "echo"
     },
-    "envionmentVariables": {
+    "environmentVariables": {
       "$ref": "#/definitions/EnvionmentVariableArrayType",
       "defaultValue": []
     },
@@ -285,8 +285,8 @@
       }
     ],
     "coreEnvVarsAsObj": "[toObject(variables('coreEnvVars'), lambda('e', lambdaVariables('e').name))]",
-    "envionmentVariablesAsObj": "[toObject(parameters('envionmentVariables'), lambda('e', lambdaVariables('e').name))]",
-    "envVarsAsObj": "[union(variables('coreEnvVarsAsObj'), variables('envionmentVariablesAsObj'))]",
+    "environmentVariablesAsObj": "[toObject(parameters('environmentVariables'), lambda('e', lambdaVariables('e').name))]",
+    "envVarsAsObj": "[union(variables('coreEnvVarsAsObj'), variables('environmentVariablesAsObj'))]",
     "envVars": "[map(items(variables('envVarsAsObj')), lambda('item', lambdaVariables('item').value))]",
     "gitRepoMounts": "[map(parameters('gitRepos'), lambda('e', createObject('name', lambdaVariables('e').name, 'mountPath', lambdaVariables('e').mountPath)))]",
     "gitRepoVolumes": "[map(parameters('gitRepos'), lambda('e', createObject('name', lambdaVariables('e').name, 'gitRepo', createObject('repository', coalesce(tryGet(lambdaVariables('e'), 'privateRepository'), lambdaVariables('e').repository), 'directory', tryGet(lambdaVariables('e'), 'directory'), 'revision', tryGet(lambdaVariables('e'), 'revision')))))]",
