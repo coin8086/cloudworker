@@ -30,6 +30,7 @@ public class SecureEnvironmentVariable : IValidatable
 
 public class FileShareMount : IValidatable
 {
+    //TODO: The volume name must match the regex '[a-z0-9]([-a-z0-9]*[a-z0-9])?' (e.g. 'my-name')
     [Required]
     public string? Name { get; set; }
 

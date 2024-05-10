@@ -1,0 +1,23 @@
+{
+  "SubScriptionId": "",
+  "Service": "grpc",
+  "EnvironmentVariables": [
+    {
+      "Name": "GRPC_ServerURL",
+      "Value": "http://localhost:8080"
+    },
+    {
+      "Name": "GRPC_ServerFileName",
+      "Value": "/myfiles/GRpcHello/GRpcHello"
+    }
+  ],
+  "FileShares": [
+    {
+      "Name": "MyFileShare",
+      "MountPath": "/myfiles",
+      "FileShareName": "",
+      "StorageAccountName": "",
+      "storageAccountKey": ""
+    }
+  ]
+}

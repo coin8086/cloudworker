@@ -1,9 +1,12 @@
 ﻿using Azure.Core;
 using Azure.Identity;
 using CloudWorker.Client.SDK;
+using CloudWorker.Services.GRpc.Client;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Text.Json;
+
+using GRpcRequest = CloudWorker.Services.GRpc.Client.Request;
 
 namespace SessionSample;
 
@@ -27,7 +30,8 @@ Usage:
         Environment.Exit(exitCode);
     }
 
-    static (Action action, string? id, string? configFile, string? msg, int count, bool debug) ParseCommandLine(string[] args)
+    static (Action action, string? id, string? configFile, string? msg, int count, bool debug)
+        ParseCommandLine(string[] args)
     {
         Action? action = null;
         string? id = null;
@@ -157,7 +161,6 @@ Usage:
     static void SendAndReceiveMessage(Session session, string msg, int count)
     {
         Console.WriteLine($"Send message \"{msg}\" {count} time(s).");
-
         var sender = session.CreateSender();
         var tasks = new Task[count];
         for (var i = 0; i < count; i++)
@@ -175,6 +178,51 @@ Usage:
                 var reply = task.Result;
                 Console.WriteLine(reply.Content);
                 reply.DeleteAsync().Wait();
+            });
+        }
+        Task.WaitAll(tasks);
+    }
+
+    static void SendAndReceiveGRpcMessage(Session session, string msg, int count)
+    {
+        var service = session.ClusterProperties?.ServiceProperties?.Service;
+        if (!"grpc".Equals(service))
+        {
+            Console.WriteLine($"grpc service is expected but '{service}' is.");
+            return;
+        }
+
+        Console.WriteLine($"Send message \"{msg}\" {count} time(s).");
+
+        var sender = session.CreateSender();
+        var tasks = new Task[count];
+        var gMethod = GRpcHello.Greeter.Descriptor.FindMethodByName("SayHello");
+        var gMsg = new GRpcHello.HelloRequest() { Name = msg };
+        var request = new GRpcRequest(gMethod, gMsg);
+
+        for (var i = 0; i < count; i++)
+        {
+            tasks[i] = sender.SendGRpcMessageAsync(request);
+        }
+        Task.WaitAll(tasks);
+
+        Console.WriteLine("Receive messages");
+
+        var receiver = session.CreateReceiver();
+        for (var i = 0; i < count; i++)
+        {
+            tasks[i] = receiver.WaitGRpcMessageAsync<GRpcHello.HelloReply>().ContinueWith(task =>
+            {
+                var reply = task.Result;
+                if (reply.Error != null)
+                {
+                    Console.WriteLine($"Error: {reply.Error}");
+                }
+                else
+                {
+                    Console.WriteLine(reply.GRpcMessage);
+                }
+                reply.QueueMessage!.DeleteAsync().Wait();
             });
         }
         Task.WaitAll(tasks);
@@ -224,7 +272,16 @@ Usage:
         }
         if (session != null && msg != null)
         {
-            SendAndReceiveMessage(session, msg, count);
+            var service = session.ClusterProperties?.ServiceProperties?.Service;
+            Debug.Assert(service != null);
+            if ("grpc".Equals(service, StringComparison.OrdinalIgnoreCase))
+            {
+                SendAndReceiveGRpcMessage(session, msg, count);
+            }
+            else
+            {
+                SendAndReceiveMessage(session, msg, count);
+            }
         }
     }
 }

@@ -15,4 +15,23 @@
     <ProjectReference Include="..\..\..\Client\SDK\SDK.csproj" />
   </ItemGroup>
 
+  <!-- Begin for gRPC service-->
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.26.1" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.62.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.62.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Services\GRpc\GRpcAdapterClient\GRpcAdapterClient.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\..\..\Services\GRpc\GRpcHello\Protos\greet.proto" GrpcServices="Client" />
+  </ItemGroup>
+  <!-- End for gRPC service-->
+
 </Project>
