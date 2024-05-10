@@ -161,7 +161,7 @@ public class Cluster : ICluster
             Location = ArmParamValue<string>.Create(_clusterConfig.Location),
             Service = ArmParamValue<string>.Create(_clusterConfig.Service.ToString().ToLower()),
             EnvironmentVariables = ArmParamValue<IEnumerable<SecureEnvironmentVariable>>.Create(_clusterConfig.EnvironmentVariables),
-            FileShareMounts = ArmParamValue<IEnumerable<FileShareMount>>.Create(_clusterConfig.FileShareMounts),
+            FileShares = ArmParamValue<IEnumerable<FileShareMount>>.Create(_clusterConfig.FileShares),
             MessagingRgName = ArmParamValue<string>.Create(MessagingRgName),
             ComputingRgName = ArmParamValue<string>.Create(ComputingRgName),
             ServiceBusName = ArmParamValue<string>.Create(ServiceBusName),

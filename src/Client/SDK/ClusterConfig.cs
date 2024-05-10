@@ -59,7 +59,7 @@ public class ClusterConfig : IValidatable
     public IEnumerable<SecureEnvironmentVariable>? EnvironmentVariables { get; set; }
 
     [ValidateCollection]
-    public IEnumerable<FileShareMount>? FileShareMounts { get; set; }
+    public IEnumerable<FileShareMount>? FileShares { get; set; }
 
     public void Validate()
 #pragma warning disable CS8774 // Member must have a non-null value when exiting.

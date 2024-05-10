@@ -35,7 +35,7 @@ public class StarterParameters
     public ArmParamValue<IEnumerable<SecureEnvironmentVariable>>? EnvironmentVariables { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public ArmParamValue<IEnumerable<FileShareMount>>? FileShareMounts { get; set; }
+    public ArmParamValue<IEnumerable<FileShareMount>>? FileShares { get; set; }
 
     public required ArmParamValue<string> MessagingRgName { get; set; }
 
