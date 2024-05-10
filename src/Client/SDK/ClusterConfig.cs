@@ -15,6 +15,20 @@ public enum ServiceType
     GRPC
 }
 
+public class ServiceTypeJsonConverter : JsonConverter<ServiceType>
+{
+    public override ServiceType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var value = reader.GetString();
+        return Enum.Parse<ServiceType>(value!, true);
+    }
+
+    public override void Write(Utf8JsonWriter writer, ServiceType value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString().ToLower());
+    }
+}
+
 public class AzureLocationJsonConverter : JsonConverter<AzureLocation>
 {
     public override AzureLocation Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -38,6 +52,7 @@ public class ClusterConfig : IValidatable
     [JsonConverter(typeof(AzureLocationJsonConverter))]
     public AzureLocation Location { get; set; } = AzureLocation.SoutheastAsia;
 
+    [JsonConverter(typeof(ServiceTypeJsonConverter))]
     public ServiceType Service { get; set; } = ServiceType.Echo;
 
     [ValidateCollection]
