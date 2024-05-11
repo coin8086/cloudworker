@@ -1,5 +1,5 @@
 ﻿using Azure.Core;
-using CloudWorker.Client.SDK.Bicep;
+using CloudWorker.Client.SDK.ARM;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -61,11 +61,19 @@ public class ClusterConfig : IValidatable
     [ValidateCollection]
     public IEnumerable<FileShareMount>? FileShares { get; set; }
 
+    public int? NodeCount { get; set; }
+
+    [ValidateObject]
+    public NodeConfig? NodeConfig { get; set; }
+
     public void Validate()
 #pragma warning disable CS8774 // Member must have a non-null value when exiting.
     {
         IValidatable.Validate(this);
-        //TODO: validate Guid of SubScriptionId and custom type of service 
+        if (Service == ServiceType.Custom)
+        {
+            throw new NotImplementedException();
+        }
     }
 #pragma warning restore CS8774 // Member must have a non-null value when exiting.
 }

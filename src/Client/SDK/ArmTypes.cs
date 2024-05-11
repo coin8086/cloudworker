@@ -1,8 +1,7 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace CloudWorker.Client.SDK.Bicep;
+namespace CloudWorker.Client.SDK.ARM;
 
 #pragma warning disable CS8774 // Member must have a non-null value when exiting.
 
@@ -23,7 +22,7 @@ public class SecureEnvironmentVariable : IValidatable
         IValidatable.Validate(this);
         if (string.IsNullOrWhiteSpace(Value) && string.IsNullOrWhiteSpace(SecureValue))
         {
-            throw new ArgumentException("Either 'Value' or 'SecureValue' should be provided.");
+            throw new ValidationError("Either 'Value' or 'SecureValue' should be provided.");
         }
     }
 }
@@ -50,6 +49,30 @@ public class FileShareMount : IValidatable
     public void Validate()
     {
         IValidatable.Validate(this);
+    }
+}
+
+public class NodeConfig : IValidatable
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? CpuCount { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? MemInGB { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Image { get; set; }
+
+    public void Validate()
+    {
+        if (CpuCount.HasValue && CpuCount.Value < 1)
+        {
+            throw new ValidationError($"CpuCount is {CpuCount}, less than 1!");
+        }
+        if (MemInGB.HasValue && MemInGB.Value < 1)
+        {
+            throw new ValidationError($"MemInGB is {MemInGB}, less than 1!");
+        }
     }
 }
 

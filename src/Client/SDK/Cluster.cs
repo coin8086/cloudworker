@@ -5,7 +5,7 @@ using Azure.ResourceManager.Resources;
 using Azure.ResourceManager.Resources.Models;
 using Azure.ResourceManager.ServiceBus;
 using Azure.ResourceManager.ServiceBus.Models;
-using CloudWorker.Client.SDK.Bicep;
+using CloudWorker.Client.SDK.ARM;
 using CloudWorker.MessageQueue;
 using Microsoft.Extensions.Logging;
 using System;
@@ -166,6 +166,8 @@ public class Cluster : ICluster
             ComputingRgName = ArmParamValue<string>.Create(ComputingRgName),
             ServiceBusName = ArmParamValue<string>.Create(ServiceBusName),
             AppInsightsName = ArmParamValue<string>.Create(AppInsightsName),
+            NodeCount = ArmParamValue<int>.Create(_clusterConfig.NodeCount),
+            NodeConfig = ArmParamValue<NodeConfig>.Create(_clusterConfig.NodeConfig),
         };
         return parameters;
     }

@@ -1,4 +1,5 @@
-﻿using CloudWorker.Client.SDK.Bicep;
+﻿using CloudWorker.Client.SDK.ARM;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -18,6 +19,12 @@ public class ArmParamValue<T> where T : notnull
     static public ArmParamValue<T>? Create(T? value)
     {
         return value == null ? null : new ArmParamValue<T>(value);
+    }
+
+    [return: NotNullIfNotNull(nameof(value))]
+    static public ArmParamValue<ST>? Create<ST>(Nullable<ST> value) where ST : struct
+    {
+        return value.HasValue ? new ArmParamValue<ST>(value.Value) : null;
     }
 }
 
@@ -44,4 +51,10 @@ public class StarterParameters
     public required ArmParamValue<string> ServiceBusName { get; set; }
 
     public required ArmParamValue<string> AppInsightsName { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ArmParamValue<int>? NodeCount { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ArmParamValue<NodeConfig>? NodeConfig { get; set; }
 }
