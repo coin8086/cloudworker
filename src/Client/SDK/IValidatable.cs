@@ -61,6 +61,9 @@ public interface IValidatable
                 }
             }
 
+            //TODO: Validate properties of type IEnumerable<IValidatable> or IValidatable by default
+            //and remove ValidateCollectionAttribute and ValidateObjectAttribute?
+
             attr = property.GetCustomAttributes(typeof(ValidateCollectionAttribute), true);
             if (attr.Length > 0)
             {

@@ -13,7 +13,7 @@
   ],
   "FileShares": [
     {
-      "Name": "MyFileShare",
+      "Name": "myfiles",
       "MountPath": "/myfiles",
       "FileShareName": "",
       "StorageAccountName": "",
