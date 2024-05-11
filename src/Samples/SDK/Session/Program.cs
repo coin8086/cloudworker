@@ -20,6 +20,52 @@ class Program
         Delete
     }
 
+    class Options
+    {
+        public Action? Action { get; set; }
+
+        public string? Id { get; set; }
+
+        public string? ConfigFile { get; set; }
+
+        public string? Message {  get; set; }
+
+        public int Count { get; set; } = 1;
+
+        public bool Debug { get; set; } = false;
+
+        public void Validate()
+        {
+            if (Action == null)
+            {
+                throw new ArgumentException("Action must be specified.");
+            }
+            if (Action != Program.Action.Create && Id == null)
+            {
+                throw new ArgumentException($"Id is requried for action {Action}.");
+            }
+            if ((Action == Program.Action.Create || Action == Program.Action.Update))
+            {
+                if (string.IsNullOrWhiteSpace(ConfigFile))
+                {
+                    throw new ArgumentException("ConfigFile cannot be empty.");
+                }
+                if (!File.Exists(ConfigFile))
+                {
+                    throw new ArgumentException($"ConfigFile '{ConfigFile}' doesn't exist.");
+                }
+            }
+            if (Action == Program.Action.Delete && Message != null)
+            {
+                throw new ArgumentException("Cannot send message in delete action.");
+            }
+            if (Count < 1)
+            {
+                throw new ArgumentException("Count cannot be less than 1.");
+            }
+        }
+    }
+
     static void ShowUsageAndExit(int exitCode = 0)
     {
         var usage = @"
@@ -30,16 +76,9 @@ Usage:
         Environment.Exit(exitCode);
     }
 
-    static (Action action, string? id, string? configFile, string? msg, int count, bool debug)
-        ParseCommandLine(string[] args)
+    static Options ParseCommandLine(string[] args)
     {
-        Action? action = null;
-        string? id = null;
-        string? configFile = null;
-        string? msg = null;
-        int count = 1;
-        bool debug = false;
-
+        var options = new Options();
         try
         {
             for (var i = 0; i < args.Length; i++)
@@ -47,31 +86,31 @@ Usage:
                 switch (args[i])
                 {
                     case "--create":
-                        action = Action.Create;
+                        options.Action = Action.Create;
                         break;
                     case "--update":
-                        action = Action.Update;
-                        id = args[++i];
+                        options.Action = Action.Update;
+                        options.Id = args[++i];
                         break;
                     case "--use":
-                        action = Action.Use;
-                        id = args[++i];
+                        options.Action = Action.Use;
+                        options.Id = args[++i];
                         break;
                     case "--delete":
-                        action = Action.Delete;
-                        id = args[++i];
+                        options.Action = Action.Delete;
+                        options.Id = args[++i];
                         break;
                     case "--config":
-                        configFile = args[++i];
+                        options.ConfigFile = args[++i];
                         break;
                     case "--send":
-                        msg = args[++i];
+                        options.Message = args[++i];
                         break;
                     case "--count":
-                        count = int.Parse(args[++i]);
+                        options.Count = int.Parse(args[++i]);
                         break;
                     case "--debug":
-                        debug = true;
+                        options.Debug = true;
                         break;
                     case "-h":
                     case "--help":
@@ -81,41 +120,14 @@ Usage:
                         throw new ArgumentException("Unkown argument!", args[i]);
                 }
             }
-            if (action == null)
-            {
-                throw new ArgumentException("Action must be specified.");
-            }
-            if (action != Action.Create && id == null)
-            {
-                throw new ArgumentException($"Session ID is requried for action {action}.");
-            }
-            if ((action == Action.Create || action == Action.Update))
-            {
-                if (string.IsNullOrWhiteSpace(configFile))
-                {
-                    throw new ArgumentException("Session configuration file must be specified.", "--config");
-                }
-                if (!File.Exists(configFile))
-                {
-                    throw new ArgumentException("Session configuration file doesn't exist.", "--config");
-                }
-            }
-            if (action == Action.Delete && msg != null)
-            {
-                throw new ArgumentException("Cannot send message in delete action.", "--delete");
-            }
-            if (msg != null && count < 1)
-            {
-                throw new ArgumentException("Count cannot be less than 1.", "--count");
-            }
+            options.Validate();
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
             ShowUsageAndExit(1);
         }
-        Debug.Assert(action != null);
-        return (action.Value, id, configFile, msg, count, debug);
+        return options;
     }
 
     static Session CreateSession(string configFile)
@@ -252,35 +264,35 @@ Usage:
 
     static void Main(string[] args)
     {
-        var (action, id, configFile, msg, count, debug) = ParseCommandLine(args);
-        DebugOut = debug;
+        var options = ParseCommandLine(args);
+        DebugOut = options.Debug;
         Session? session = null;
-        switch (action)
+        switch (options.Action)
         {
             case Action.Create:
-                session = CreateSession(configFile!);
+                session = CreateSession(options.ConfigFile!);
                 break;
             case Action.Update:
-                session = UpdateSession(id!, configFile!);
+                session = UpdateSession(options.Id!, options.ConfigFile!);
                 break;
             case Action.Use:
-                session = UseSession(id!);
+                session = UseSession(options.Id!);
                 break;
             case Action.Delete:
-                DeleteSession(id!);
+                DeleteSession(options.Id!);
                 break;
         }
-        if (session != null && msg != null)
+        if (session != null && options.Message != null)
         {
             var service = session.ClusterProperties?.ServiceProperties?.Service;
             Debug.Assert(service != null);
             if ("grpc".Equals(service, StringComparison.OrdinalIgnoreCase))
             {
-                SendAndReceiveGRpcMessage(session, msg, count);
+                SendAndReceiveGRpcMessage(session, options.Message, options.Count);
             }
             else
             {
-                SendAndReceiveMessage(session, msg, count);
+                SendAndReceiveMessage(session, options.Message, options.Count);
             }
         }
     }

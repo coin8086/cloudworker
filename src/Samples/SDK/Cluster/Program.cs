@@ -2,7 +2,6 @@
 using Azure.Identity;
 using CloudWorker.Client.SDK;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 using System.Text.Json;
 
 namespace ClusterSample;
@@ -17,6 +16,40 @@ class Program
         Delete
     }
 
+    class Options
+    {
+        public Action? Action { get; set; }
+
+        public string? Id { get; set; }
+
+        public string? ConfigFile { get; set; }
+
+        public bool Debug { get; set; } = false;
+
+        public void Validate()
+        {
+            if (Action == null)
+            {
+                throw new ArgumentException("Action must be specified.");
+            }
+            if (Action != Program.Action.Create && Id == null)
+            {
+                throw new ArgumentException($"Id is requried for action {Action}.");
+            }
+            if ((Action == Program.Action.Create || Action == Program.Action.Update))
+            {
+                if (string.IsNullOrWhiteSpace(ConfigFile))
+                {
+                    throw new ArgumentException("ConfigFile cannot be empty.");
+                }
+                if (!File.Exists(ConfigFile))
+                {
+                    throw new ArgumentException($"ConfigFile '{ConfigFile}' doesn't exist.");
+                }
+            }
+        }
+    }
+
     static void ShowUsageAndExit(int exitCode = 0)
     {
         var usage = @"
@@ -27,13 +60,9 @@ Usage:
         Environment.Exit(exitCode);
     }
 
-    static (Action action, string? clusterId, string? clusterConfigFile, bool debug) ParseCommandLine(string[] args)
+    static Options ParseCommandLine(string[] args)
     {
-        Action? action = null;
-        string? clusterId = null;
-        string? clusterConfigFile = null;
-        bool debug = false;
-
+        var options = new Options();
         try
         {
             for (var i = 0; i < args.Length; i++)
@@ -41,25 +70,25 @@ Usage:
                 switch (args[i])
                 {
                     case "--create":
-                        action = Action.Create;
+                        options.Action = Action.Create;
                         break;
                     case "--update":
-                        action = Action.Update;
-                        clusterId = args[++i];
+                        options.Action = Action.Update;
+                        options.Id = args[++i];
                         break;
                     case "--use":
-                        action = Action.Use;
-                        clusterId = args[++i];
+                        options.Action = Action.Use;
+                        options.Id = args[++i];
                         break;
                     case "--delete":
-                        action = Action.Delete;
-                        clusterId = args[++i];
+                        options.Action = Action.Delete;
+                        options.Id = args[++i];
                         break;
                     case "--config":
-                        clusterConfigFile = args[++i];
+                        options.ConfigFile = args[++i];
                         break;
                     case "--debug":
-                        debug = true;
+                        options.Debug = true;
                         break;
                     case "-h":
                     case "--help":
@@ -69,33 +98,14 @@ Usage:
                         throw new ArgumentException("Unkown argument!", args[i]);
                 }
             }
-            if (action == null)
-            {
-                throw new ArgumentException("Action must be specified.");
-            }
-            if (action != Action.Create && clusterId == null)
-            {
-                throw new ArgumentException($"Cluster ID is requried for action {action}.");
-            }
-            if ((action == Action.Create || action == Action.Update))
-            {
-                if (string.IsNullOrWhiteSpace(clusterConfigFile))
-                {
-                    throw new ArgumentException("Cluster configuration file must be specified.", "--config");
-                }
-                if (!File.Exists(clusterConfigFile))
-                {
-                    throw new ArgumentException("Cluster configuration file doesn't exist.", "--config");
-                }
-            }
+            options.Validate();
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
             ShowUsageAndExit(1);
         }
-        Debug.Assert(action != null);
-        return (action.Value, clusterId, clusterConfigFile, debug);
+        return options;
     }
 
     static void CreateCluster(string configFile)
@@ -182,21 +192,21 @@ Usage:
 
     static void Main(string[] args)
     {
-        var (action, clusterId, configFile, debug) = ParseCommandLine(args);
-        DebugOut = debug;
-        switch (action)
+        var options = ParseCommandLine(args);
+        DebugOut = options.Debug;
+        switch (options.Action)
         {
             case Action.Create:
-                CreateCluster(configFile!);
+                CreateCluster(options.ConfigFile!);
                 break;
             case Action.Update:
-                UpdateCluster(clusterId!, configFile!);
+                UpdateCluster(options.Id!, options.ConfigFile!);
                 break;
             case Action.Use:
-                UseCluster(clusterId!);
+                UseCluster(options.Id!);
                 break;
             case Action.Delete:
-                DeleteCluster(clusterId!);
+                DeleteCluster(options.Id!);
                 break;
         }
     }
