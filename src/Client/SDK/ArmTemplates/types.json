@@ -6,9 +6,12 @@
     "_generator": {
       "name": "bicep",
       "version": "0.26.54.24096",
-      "templateHash": "10662974862102275084"
+      "templateHash": "5841453087726773521"
     },
     "__bicep_exported_variables!": [
+      {
+        "name": "NodeConfigDefault"
+      },
       {
         "name": "QueueOptionsDefault"
       }
@@ -166,6 +169,26 @@
       "metadata": {
         "__bicep_export!": true
       }
+    },
+    "NodeConfig": {
+      "type": "object",
+      "properties": {
+        "cpuCount": {
+          "type": "int",
+          "nullable": true
+        },
+        "memInGB": {
+          "type": "int",
+          "nullable": true
+        },
+        "image": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      "metadata": {
+        "__bicep_export!": true
+      }
     }
   },
   "variables": {
@@ -175,6 +198,11 @@
       "responseQueue": "responses",
       "messageLease": 60,
       "queryInterval": 500
+    },
+    "NodeConfigDefault": {
+      "cpuCount": 1,
+      "memInGB": 1,
+      "image": "leizacrdev.azurecr.io/soa/servicehost:1.5-ubuntu22"
     }
   },
   "resources": {}

@@ -1,4 +1,4 @@
-import { ServiceType, QueueOptionsType, QueueOptionsDefault, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType } from 'types.bicep'
+import { NodeConfig, NodeConfigDefault, ServiceType, QueueOptionsType, QueueOptionsDefault, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType } from 'types.bicep'
 
 /*
  * Container
@@ -8,9 +8,8 @@ param prefix string = 'servicehost'
 param count int = 1
 param offset int = 0
 param location string = 'southeastasia'
-param cpu int = 1
-param memoryInGB int = 1
-param image string = 'leizacrdev.azurecr.io/soa/servicehost:1.5-ubuntu22'
+param nodeConfig NodeConfig?
+var _nodeConfig = union(NodeConfigDefault, nodeConfig ?? {})
 
 /*
  * Queue
@@ -130,12 +129,12 @@ resource containers 'Microsoft.ContainerInstance/containerGroups@2023-05-01' = [
         {
           name: 'servicehost'
           properties: {
-            image: image
+            image: _nodeConfig.image
             environmentVariables: envVars
             resources: {
               requests: {
-                cpu: cpu
-                memoryInGB: memoryInGB
+                cpu: _nodeConfig.cpuCount
+                memoryInGB: _nodeConfig.memInGB
               }
             }
             volumeMounts: volumeMounts

@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.26.54.24096",
-      "templateHash": "6159555746785349539"
+      "templateHash": "16146252697069994432"
     }
   },
   "definitions": {
@@ -133,6 +133,28 @@
         }
       }
     },
+    "NodeConfig": {
+      "type": "object",
+      "properties": {
+        "cpuCount": {
+          "type": "int",
+          "nullable": true
+        },
+        "memInGB": {
+          "type": "int",
+          "nullable": true
+        },
+        "image": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
     "QueueOptionsType": {
       "type": "object",
       "properties": {
@@ -198,17 +220,9 @@
       "type": "string",
       "defaultValue": "southeastasia"
     },
-    "cpu": {
-      "type": "int",
-      "defaultValue": 1
-    },
-    "memoryInGB": {
-      "type": "int",
-      "defaultValue": 1
-    },
-    "image": {
-      "type": "string",
-      "defaultValue": "leizacrdev.azurecr.io/soa/servicehost:1.5-ubuntu22"
+    "nodeConfig": {
+      "$ref": "#/definitions/NodeConfig",
+      "nullable": true
     },
     "queueOptions": {
       "$ref": "#/definitions/QueueOptionsType"
@@ -239,6 +253,7 @@
     }
   },
   "variables": {
+    "_nodeConfig": "[union(variables('NodeConfigDefault'), coalesce(parameters('nodeConfig'), createObject()))]",
     "_queueOptions": "[union(variables('QueueOptionsDefault'), parameters('queueOptions'))]",
     "serviceMap": {
       "cgi": "/services/cgi/CloudWorker.Services.CGI.dll",
@@ -294,6 +309,11 @@
     "fileShareVolumes": "[map(parameters('fileShares'), lambda('e', createObject('name', lambdaVariables('e').name, 'azureFile', createObject('shareName', lambdaVariables('e').fileShareName, 'storageAccountName', lambdaVariables('e').storageAccountName, 'storageAccountKey', lambdaVariables('e').storageAccountKey))))]",
     "volumeMounts": "[concat(variables('gitRepoMounts'), variables('fileShareMounts'))]",
     "volumes": "[concat(variables('gitRepoVolumes'), variables('fileShareVolumes'))]",
+    "NodeConfigDefault": {
+      "cpuCount": 1,
+      "memInGB": 1,
+      "image": "leizacrdev.azurecr.io/soa/servicehost:1.5-ubuntu22"
+    },
     "QueueOptionsDefault": {
       "queueType": "servicebus",
       "requestQueue": "requests",
@@ -318,12 +338,12 @@
           {
             "name": "servicehost",
             "properties": {
-              "image": "[parameters('image')]",
+              "image": "[variables('_nodeConfig').image]",
               "environmentVariables": "[variables('envVars')]",
               "resources": {
                 "requests": {
-                  "cpu": "[parameters('cpu')]",
-                  "memoryInGB": "[parameters('memoryInGB')]"
+                  "cpu": "[variables('_nodeConfig').cpuCount]",
+                  "memoryInGB": "[variables('_nodeConfig').memInGB]"
                 }
               },
               "volumeMounts": "[variables('volumeMounts')]"

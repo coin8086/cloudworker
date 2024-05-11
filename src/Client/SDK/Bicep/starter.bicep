@@ -1,7 +1,9 @@
-import { ServiceType, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType, QueueOptionsDefault } from 'types.bicep'
+import { NodeConfig, ServiceType, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType, QueueOptionsDefault } from 'types.bicep'
 
 targetScope = 'subscription'
 
+param nodeConfig NodeConfig?
+param nodeCount int?
 param service ServiceType = 'echo'
 param environmentVariables EnvionmentVariableArrayType = []
 param gitRepos GitRepoMountArrayType = []
@@ -64,6 +66,8 @@ module cluster 'aci-with-assets.bicep' = {
   scope: computingRg
   name: 'cluster-deployment'
   params: {
+    nodeConfig: nodeConfig
+    count: nodeCount
     service: service
     environmentVariables: environmentVariables
     gitRepos: gitRepos
