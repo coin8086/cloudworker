@@ -1,6 +1,4 @@
-using CloudWorker.E2E;
 using CloudWorker.MessageQueue;
-using CommandLine;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
@@ -8,46 +6,55 @@ namespace PerfTest;
 
 class Program
 {
-    class Options : CloudWorker.E2E.QueueOptions
+    class Options
     {
-        [Option(Hidden = true, Required = false)]
-        public override string? QueueName { get; set; }
+        public const string ENV_CONNECTION_STRING = "QUEUE_CONNECTION_STRING";
 
-        [Option('l', "length", Default = (int)4, HelpText = "Message length")]
-        public int MessageLength { get; set; }
+        public string? ConnectionString { get; set; }
 
-        [Option('m', "message", HelpText = "Message content")]
+        public string QueueType { get; set; } = ServiceBusQueue.QueueType;
+
+        public string RequestQueueName { get; set; } = "requests";
+
+        public string ResponseQueueName { get; set; } = "responses";
+
+        //For storage queue only
+        public int QueryInterval { get; set; } = 500;
+
+        public int MessageLength { get; set; } = 4;
+
         public string? Message { get; set; }
 
-        [Option('c', "count", Default = (int)2000, HelpText = "Number of messages to send and/or receive")]
-        public int Count { get; set; }
+        //Number of messages to send and/or receive
+        public int Count { get; set; } = 2000;
 
-        [Option('s', "senders", Default = (int)10)]
-        public int SenderCount { get; set; }
+        public int SenderCount { get; set; } = 10;
 
-        [Option('r', "receivers", Default = (int)100)]
-        public int ReceiverCount {  get; set; }
+        public int ReceiverCount { get; set; } = 100;
 
-        [Option('S', "request-queue", Default = (string)"requests")]
-        public string? RequestQueueName { get; set; }
+        //Max number of messages to receive in one receive call
+        public int BatchSize { get; set; } = 1;
 
-        [Option('R', "response-queue", Default = (string)"responses")]
-        public string? ResponseQueueName { get; set; }
+        //From trace(0) to none(6)
+        public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
-        [Option('b', "batch-size", Default = (int)1, HelpText = "Max number of messages to receive in one receive call")]
-        public int BatchSize { get; set; }
-
-        [Option('L', "log-level", Default = (LogLevel)LogLevel.Information, HelpText = "From trace(0) to none(6)")]
-        public LogLevel LogLevel {  get; set; }
-
-        public override void Validate()
+        public void Validate()
         {
-            base.Validate();
-            if (!string.IsNullOrEmpty(Message))
+            if (string.IsNullOrWhiteSpace(ConnectionString))
             {
-                MessageLength = Message.Length;
+                var connectionString = Environment.GetEnvironmentVariable(ENV_CONNECTION_STRING);
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    throw new ArgumentException($"Connection string is missing! Set it in command line or in environment variable {ENV_CONNECTION_STRING}!");
+                }
+                ConnectionString = connectionString;
             }
-            if (MessageLength <= 0)
+            if (!StorageQueue.QueueType.Equals(QueueType, StringComparison.OrdinalIgnoreCase) &&
+                !ServiceBusQueue.QueueType.Equals(QueueType, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException($"Invalid queue type '{QueueType}'.", nameof(QueueType));
+            }
+            if (string.IsNullOrEmpty(Message) && MessageLength <= 0)
             {
                 throw new ArgumentException("MessageLength must be greater than 0!");
             }
@@ -70,6 +77,79 @@ class Program
         }
     }
 
+    static void ShowUsageAndExit(int exitCode = 0)
+    {
+        var usage = @"
+Usage:
+{0} --connect <queue connection string> [--queue-type <type>] [--request-queue <name>] [--response-queue <name>] [--query-interval <time in ms>] [--message-length <num in bytes>] [--message <content>] [--count <num of messages to send and/or receive>] [--senders <num>] [--receivers <num>] [--batch-size <size>] [--help | -h]
+
+Note:
+The connection string can also be set by environment variable {1}.
+";
+        Console.WriteLine(string.Format(usage, typeof(Program).Assembly.GetName().Name, Options.ENV_CONNECTION_STRING));
+        Environment.Exit(exitCode);
+    }
+
+    static Options ParseCommandLine(string[] args)
+    {
+        var options = new Options();
+        try
+        {
+            for (var i = 0; i < args.Length; i++)
+            {
+                switch (args[i])
+                {
+                    case "--connect":
+                        options.ConnectionString = args[++i];
+                        break;
+                    case "--queue-type":
+                        options.QueueType = args[++i];
+                        break;
+                    case "--request-queue":
+                        options.RequestQueueName = args[++i];
+                        break;
+                    case "--response-queue":
+                        options.ResponseQueueName = args[++i];
+                        break;
+                    case "--query-interval":
+                        options.QueryInterval = int.Parse(args[++i]);
+                        break;
+                    case "--message-length":
+                        options.MessageLength = int.Parse(args[++i]);
+                        break;
+                    case "--message":
+                        options.Message = args[++i];
+                        break;
+                    case "--count":
+                        options.Count = int.Parse(args[++i]);
+                        break;
+                    case "--senders":
+                        options.SenderCount = int.Parse(args[++i]);
+                        break;
+                    case "--receivers":
+                        options.ReceiverCount = int.Parse(args[++i]);
+                        break;
+                    case "--batch-size":
+                        options.BatchSize = int.Parse(args[++i]);
+                        break;
+                    case "-h":
+                    case "--help":
+                        ShowUsageAndExit(0);
+                        break;
+                    default:
+                        throw new ArgumentException("Unkown argument!", args[i]);
+                }
+            }
+            options.Validate();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            ShowUsageAndExit(1);
+        }
+        return options;
+    }
+
     //TODO: Refactor the following names
     static int MessagesToReceive = 0;
     static int MessagesReceived = 0;
@@ -78,10 +158,10 @@ class Program
     static ILoggerFactory? _LoggerFactory;
     static ILogger? _Logger;
 
-    static async Task<int> Main(string[] args)
+    static async Task Main(string[] args)
     {
-        return await Parser.Default.ParseArguments<Options>(args)
-            .MapResult(RunAsync, _ => Task.FromResult(1)).ConfigureAwait(false);
+        var options = ParseCommandLine(args);
+        await RunAsync(options);
     }
 
     static async Task<int> RunAsync(Options options)
@@ -170,12 +250,11 @@ class Program
     {
         var message = string.IsNullOrEmpty(options.Message) ?  new String('a', options.MessageLength) : options.Message;
         var batch = options.Count / options.SenderCount;
-        var queueOpts = new CloudWorker.E2E.QueueOptions(options) { QueueName = options.RequestQueueName };
         var logger = _LoggerFactory!.CreateLogger("Sender");
         var tasks = new Task[options.SenderCount];
         for (var i = 0; i < options.SenderCount; i++)
         {
-            var sender = QueueClient.Create(queueOpts, logger);
+            var sender = CreateSender(options, logger);
             tasks[i] = StartSender(sender, message, batch);
         }
         return Task.WhenAll(tasks);
@@ -209,12 +288,11 @@ class Program
 
     static Task StartReceiving(Options options)
     {
-        var queueOpts = new CloudWorker.E2E.QueueOptions(options) { QueueName = options.ResponseQueueName };
         var logger = _LoggerFactory!.CreateLogger("Receiver");
         var tasks = new Task[options.ReceiverCount];
         for (var i = 0; i < options.ReceiverCount; i++)
         {
-            var receiver = QueueClient.Create(queueOpts, logger);
+            var receiver = CreateReceiver(options, logger);
             tasks[i] = StartReceiver(receiver, options.BatchSize);
         }
         return Task.WhenAll(tasks);
@@ -258,5 +336,45 @@ class Program
             }
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
+    }
+
+    static IMessageQueue CreateQueueClient(string queueType, string connectionString, string queueName, ILogger? logger = null)
+    {
+        if (ServiceBusQueue.QueueType.Equals(queueType, StringComparison.OrdinalIgnoreCase))
+        {
+            var queueOptions = new ServiceBusQueueOptions()
+            {
+                QueueType = queueType,
+                ConnectionString = connectionString,
+                QueueName = queueName,
+                MessageLease = 60,
+            };
+            return new ServiceBusQueue(queueOptions, logger);
+        }
+        else if (StorageQueue.QueueType.Equals(queueType, StringComparison.OrdinalIgnoreCase))
+        {
+            var queueOptions = new StorageQueueOptions()
+            {
+                QueueType = queueType,
+                ConnectionString = connectionString,
+                QueueName = queueName,
+                MessageLease = 60,
+            };
+            return new StorageQueue(queueOptions);
+        }
+        else
+        {
+            throw new ArgumentException($"Invalid queue type {queueType}");
+        }
+    }
+
+    static IMessageQueue CreateSender(Options options, ILogger? logger = null)
+    {
+        return CreateQueueClient(options.QueueType, options.ConnectionString!, options.RequestQueueName, logger);
+    }
+
+    static IMessageQueue CreateReceiver(Options options, ILogger? logger = null)
+    {
+        return CreateQueueClient(options.QueueType, options.ConnectionString!, options.ResponseQueueName, logger);
     }
 }
