@@ -1,4 +1,6 @@
 ﻿using CloudWorker.MessageQueue;
+using CloudWorker.Services.GRpc.Client;
+using GRpcRequest = CloudWorker.Services.GRpc.Client.Request;
 
 namespace SendAndReceive;
 
@@ -17,6 +19,8 @@ class Program
         public string ResponseQueueName { get; set; } = "responses";
 
         public string? Message { get; set; }
+
+        public bool IsGRpcMessage { get; set; } = false;
 
         public int Count { get; set; } = 1;
 
@@ -52,7 +56,7 @@ class Program
     {
         var usage = @"
 Usage:
-{0} --connect <queue connection string> [--queue-type <type>] [--request-queue <name>] [--response-queue <name>] --message <content> [--count <num>] [--help | -h]
+{0} --connect <queue connection string> [--queue-type <type>] [--request-queue <name>] [--response-queue <name>] --message <content> [--grpc] [--count <num>] [--help | -h]
 
 Note:
 The connection string can also be set by environment variable {1}.
@@ -84,6 +88,9 @@ The connection string can also be set by environment variable {1}.
                         break;
                     case "--message":
                         options.Message = args[++i];
+                        break;
+                    case "--grpc":
+                        options.IsGRpcMessage = true;
                         break;
                     case "--count":
                         options.Count = int.Parse(args[++i]);
@@ -146,10 +153,8 @@ The connection string can also be set by environment variable {1}.
         return CreateQueueClient(options.QueueType, options.ConnectionString!, options.ResponseQueueName);
     }
 
-    static void Main(string[] args)
+    static void SendAndReceiveMessages(Options options)
     {
-        var options = ParseCommandLine(args);
-
         Console.WriteLine("Sending messages");
         var sender = CreateSender(options);
         var sendingTasks = new Task[options.Count];
@@ -176,5 +181,60 @@ The connection string can also be set by environment variable {1}.
 
         var tasks = sendingTasks.Concat(receivingTasks).ToArray();
         Task.WaitAll(tasks);
+    }
+
+    static void SendAndReceiveGRpcMessages(Options options)
+    {
+        Console.WriteLine("Sending gRPC messages");
+
+        var sender = CreateSender(options);
+        var sendingTasks = new Task[options.Count];
+        var gMethod = GRpcHello.Greeter.Descriptor.FindMethodByName("SayHello");
+        var gMsg = new GRpcHello.HelloRequest() { Name = options.Message };
+        var request = new GRpcRequest(gMethod, gMsg);
+        for (var i = 0; i < options.Count; i++)
+        {
+            sendingTasks[i] = sender.SendGRpcMessageAsync(request);
+        }
+
+        //Optionally wait before receiving
+        //Task.WaitAll(sendingTasks);
+
+        Console.WriteLine("Receiving gRPC messages");
+
+        var receiver = CreateReceiver(options);
+        var receivingTasks = new Task[options.Count];
+        for (var i = 0; i < options.Count; i++)
+        {
+            receivingTasks[i] = receiver.WaitGRpcMessageAsync<GRpcHello.HelloReply>().ContinueWith(task =>
+            {
+                var reply = task.Result;
+                if (reply.Error != null)
+                {
+                    Console.WriteLine($"Error: {reply.Error}");
+                }
+                else
+                {
+                    Console.WriteLine(reply.GRpcMessage);
+                }
+                reply.QueueMessage!.DeleteAsync().Wait();
+            });
+        }
+
+        var tasks = sendingTasks.Concat(receivingTasks).ToArray();
+        Task.WaitAll(tasks);
+    }
+
+    static void Main(string[] args)
+    {
+        var options = ParseCommandLine(args);
+        if (options.IsGRpcMessage)
+        {
+            SendAndReceiveGRpcMessages(options);
+        }
+        else
+        {
+            SendAndReceiveMessages(options);
+        }
     }
 }
