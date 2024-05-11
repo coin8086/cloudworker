@@ -44,9 +44,9 @@ public class FileShareMount : IValidatable
     public string? StorageAccountName { get; set; }
 
     [Required]
-    public string? storageAccountKey { get; set; }
+    public string? StorageAccountKey { get; set; }
 
-    [MemberNotNull(nameof(Name), nameof(MountPath), nameof(FileShareName), nameof(StorageAccountName), nameof(storageAccountKey))]
+    [MemberNotNull(nameof(Name), nameof(MountPath), nameof(FileShareName), nameof(StorageAccountName), nameof(StorageAccountKey))]
     public void Validate()
     {
         IValidatable.Validate(this);

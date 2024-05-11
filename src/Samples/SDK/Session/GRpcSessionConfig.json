@@ -17,7 +17,7 @@
       "MountPath": "/myfiles",
       "FileShareName": "",
       "StorageAccountName": "",
-      "storageAccountKey": ""
+      "StorageAccountKey": ""
     }
   ]
 }
