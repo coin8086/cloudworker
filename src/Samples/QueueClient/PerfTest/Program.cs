@@ -334,6 +334,7 @@ The connection string can also be set by environment variable {1}.
                     }
                 });
             }
+            //TODO: No wait before receiving a new message for higher performance
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
     }
