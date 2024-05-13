@@ -45,16 +45,16 @@ public class Cluster : ICluster
     public string Id => _clusterId.ToString();
 
     //NOTE: Some Azure RPs, like Service Bus, do not allow a resource name starting with a digit number.
-    //So here a name prefix "cw-" (short for CloudWorker) is used.
-    private string DeploymentName => $"cw-{_clusterId.ResourceId}-deployment";
+    //So here a name prefix "clw-" (short for CloudWorker) is used.
+    private string DeploymentName => $"clw-{_clusterId.ResourceId}-deployment";
 
-    private string MessagingRgName => $"cw-{_clusterId.ResourceId}-messaging";
+    private string MessagingRgName => $"clw-{_clusterId.ResourceId}-messaging";
 
-    private string ComputingRgName => $"cw-{_clusterId.ResourceId}-computing";
+    private string ComputingRgName => $"clw-{_clusterId.ResourceId}-computing";
 
-    private string ServiceBusName => $"cw-{_clusterId.ResourceId}-servicebus";
+    private string ServiceBusName => $"clw-{_clusterId.ResourceId}-servicebus";
 
-    private string AppInsightsName => $"cw-{_clusterId.ResourceId}-appinsights";
+    private string AppInsightsName => $"clw-{_clusterId.ResourceId}-appinsights";
 
     //NOTE: The following tags are defined in starter.bicep. Keey them up to date!
     private const string QueueTypeTag = "QueueType";
