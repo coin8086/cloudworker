@@ -28,7 +28,7 @@ Though for now only Azure is supported, CloudWorker is also designed for on-prem
 
 ### Worker
 
-A worker is for processing requests and producing responses. Its input comes from the request queue and its output goes into the response queue. Each worker works independently of others.
+A worker is a process that consumes requests and produces responses. Its input comes from the request queue and its output goes into the response queue. Each worker works independently of others.
 
 A worker is composed of a service host and a User Defined Service (UDS). The UDS is the real message processor.
 
