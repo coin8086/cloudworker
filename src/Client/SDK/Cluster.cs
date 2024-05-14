@@ -52,7 +52,8 @@ public class Cluster : ICluster
 
     private string ComputingRgName => $"clw-{_clusterId.ResourceId}-computing";
 
-    private string ServiceBusName => $"clw-{_clusterId.ResourceId}-servicebus";
+    //Service Bus RP requires that the name length should be less than 50 and it cannot end with -sb.
+    private string ServiceBusName => $"clw-{_clusterId.ResourceId}-sbn";
 
     private string AppInsightsName => $"clw-{_clusterId.ResourceId}-appinsights";
 
