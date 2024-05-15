@@ -1,6 +1,8 @@
-import { NodeConfig, ServiceType, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType, QueueOptionsDefault } from 'types.bicep'
+import { NodeConfig, ServiceType, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType, ServiceBusQueueOptions, ServiceBusQueueOptionsDefault } from 'types.bicep'
 
 targetScope = 'subscription'
+
+param location string = 'southeastasia'
 
 param nodeConfig NodeConfig?
 param nodeCount int?
@@ -11,24 +13,25 @@ param fileShares FileShareMountArrayType = []
 
 param messagingRgName string
 param computingRgName string
-param location string = 'southeastasia'
 param appInsightsName string = 'appinsights-${uniqueString(messagingRgName)}'
 param serviceBusName string = 'servicebus-${uniqueString(messagingRgName)}'
-param requestQueueName string = 'requests'
-param responseQueueName string = 'responses'
+
+param serviceBusQueueOptions ServiceBusQueueOptions?
+var _serviceBusQueueOptions = union(ServiceBusQueueOptionsDefault, serviceBusQueueOptions ?? {})
 
 var queueOptions = {
-  requestQueue: requestQueueName
-  responseQueue: responseQueueName
+  queueType: 'servicebus'
+  requestQueue: _serviceBusQueueOptions.requestQueue
+  responseQueue: _serviceBusQueueOptions.responseQueue
 }
 
 resource messagingRg 'Microsoft.Resources/resourceGroups@2023-07-01' = {
   name: messagingRgName
   location: location
   tags: {
-    QueueType: QueueOptionsDefault.queueType
-    RequestQueueName: requestQueueName
-    ResponseQueueName: responseQueueName
+    QueueType: queueOptions.queueType
+    RequestQueueName: queueOptions.requestQueue
+    ResponseQueueName: queueOptions.responseQueue
   }
 }
 
@@ -46,10 +49,7 @@ module servicebus 'servicebus.bicep' = {
   params: {
     name: serviceBusName
     location: location
-    queueNames: [
-      requestQueueName
-      responseQueueName
-    ]
+    options: _serviceBusQueueOptions
   }
 }
 

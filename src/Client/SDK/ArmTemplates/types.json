@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.26.54.24096",
-      "templateHash": "5841453087726773521"
+      "version": "0.27.1.19265",
+      "templateHash": "10726594186368431323"
     },
     "__bicep_exported_variables!": [
       {
@@ -14,6 +14,9 @@
       },
       {
         "name": "QueueOptionsDefault"
+      },
+      {
+        "name": "ServiceBusQueueOptionsDefault"
       }
     ]
   },
@@ -189,6 +192,62 @@
       "metadata": {
         "__bicep_export!": true
       }
+    },
+    "ServiceBusQueueSku": {
+      "type": "string",
+      "allowedValues": [
+        "Basic",
+        "Premium",
+        "Standard"
+      ],
+      "metadata": {
+        "__bicep_export!": true
+      }
+    },
+    "ServiceBusSkuBaseCapacity": {
+      "type": "int",
+      "allowedValues": [
+        1,
+        16,
+        2,
+        4,
+        8
+      ],
+      "metadata": {
+        "__bicep_export!": true
+      }
+    },
+    "ServiceBusQueueOptions": {
+      "type": "object",
+      "properties": {
+        "sku": {
+          "$ref": "#/definitions/ServiceBusQueueSku",
+          "nullable": true
+        },
+        "skuCapacity": {
+          "type": "int",
+          "nullable": true
+        },
+        "sizeInMB": {
+          "type": "int",
+          "nullable": true
+        },
+        "lockDuration": {
+          "type": "string",
+          "nullable": true
+        },
+        "requestQueue": {
+          "type": "string",
+          "nullable": true
+        },
+        "responseQueue": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      "metadata": {
+        "__bicep_export!": true
+      }
     }
   },
   "variables": {
@@ -203,6 +262,14 @@
       "cpuCount": 1,
       "memInGB": 1,
       "image": "leizacrdev.azurecr.io/soa/servicehost:1.5-ubuntu22"
+    },
+    "ServiceBusQueueOptionsDefault": {
+      "sku": "Standard",
+      "skuCapacity": null,
+      "sizeInMB": 2048,
+      "lockDuration": "PT1M",
+      "requestQueue": "[variables('QueueOptionsDefault').requestQueue]",
+      "responseQueue": "[variables('QueueOptionsDefault').responseQueue]"
     }
   },
   "resources": {}

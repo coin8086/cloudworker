@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.26.54.24096",
-      "templateHash": "9309129220520148804"
+      "version": "0.27.1.19265",
+      "templateHash": "9582114359458205782"
     }
   },
   "definitions": {
@@ -328,8 +328,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.54.24096",
-              "templateHash": "16146252697069994432"
+              "version": "0.27.1.19265",
+              "templateHash": "7502021524236536312"
             }
           },
           "definitions": {

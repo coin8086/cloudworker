@@ -65,6 +65,7 @@ type FileShareMountType = {
 @export()
 type FileShareMountArrayType = FileShareMountType[]
 
+//TODO: Rename it to NodeOptions
 @export()
 type NodeConfig = {
   cpuCount: int?
@@ -72,9 +73,36 @@ type NodeConfig = {
   image: string?
 }
 
+//TODO: Rename it to NodeOptionsDefault
 @export()
 var NodeConfigDefault = {
   cpuCount: 1
   memInGB: 1
   image: 'leizacrdev.azurecr.io/soa/servicehost:1.5-ubuntu22'
+}
+
+@export()
+type ServiceBusQueueSku = 'Basic' | 'Premium' | 'Standard'
+
+@export()
+type ServiceBusSkuBaseCapacity = 1 | 2 | 4 | 8 | 16
+
+@export()
+type ServiceBusQueueOptions = {
+  sku: ServiceBusQueueSku?
+  skuCapacity: int?
+  sizeInMB: int?
+  lockDuration: string?
+  requestQueue: string?
+  responseQueue: string?
+}
+
+@export()
+var ServiceBusQueueOptionsDefault = {
+  sku: 'Standard'
+  skuCapacity: null
+  sizeInMB: 2048
+  lockDuration: 'PT1M' //Should be equal with QueueOptionsDefault.messageLease
+  requestQueue: QueueOptionsDefault.requestQueue
+  responseQueue: QueueOptionsDefault.responseQueue
 }

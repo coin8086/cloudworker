@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.26.54.24096",
-      "templateHash": "2840740037410759005"
+      "version": "0.27.1.19265",
+      "templateHash": "1569385189359780535"
     }
   },
   "definitions": {
@@ -88,6 +88,19 @@
         }
       }
     },
+    "_1.ServiceBusQueueSku": {
+      "type": "string",
+      "allowedValues": [
+        "Basic",
+        "Premium",
+        "Standard"
+      ],
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
     "EnvionmentVariableArrayType": {
       "type": "array",
       "items": {
@@ -143,6 +156,40 @@
         }
       }
     },
+    "ServiceBusQueueOptions": {
+      "type": "object",
+      "properties": {
+        "sku": {
+          "$ref": "#/definitions/_1.ServiceBusQueueSku",
+          "nullable": true
+        },
+        "skuCapacity": {
+          "type": "int",
+          "nullable": true
+        },
+        "sizeInMB": {
+          "type": "int",
+          "nullable": true
+        },
+        "lockDuration": {
+          "type": "string",
+          "nullable": true
+        },
+        "requestQueue": {
+          "type": "string",
+          "nullable": true
+        },
+        "responseQueue": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
     "ServiceType": {
       "type": "string",
       "allowedValues": [
@@ -158,6 +205,10 @@
     }
   },
   "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "southeastasia"
+    },
     "nodeConfig": {
       "$ref": "#/definitions/NodeConfig",
       "nullable": true
@@ -188,10 +239,6 @@
     "computingRgName": {
       "type": "string"
     },
-    "location": {
-      "type": "string",
-      "defaultValue": "southeastasia"
-    },
     "appInsightsName": {
       "type": "string",
       "defaultValue": "[format('appinsights-{0}', uniqueString(parameters('messagingRgName')))]"
@@ -200,26 +247,32 @@
       "type": "string",
       "defaultValue": "[format('servicebus-{0}', uniqueString(parameters('messagingRgName')))]"
     },
-    "requestQueueName": {
-      "type": "string",
-      "defaultValue": "requests"
-    },
-    "responseQueueName": {
-      "type": "string",
-      "defaultValue": "responses"
+    "serviceBusQueueOptions": {
+      "$ref": "#/definitions/ServiceBusQueueOptions",
+      "nullable": true
     }
   },
   "variables": {
+    "_serviceBusQueueOptions": "[union(variables('ServiceBusQueueOptionsDefault'), coalesce(parameters('serviceBusQueueOptions'), createObject()))]",
     "queueOptions": {
-      "requestQueue": "[parameters('requestQueueName')]",
-      "responseQueue": "[parameters('responseQueueName')]"
+      "queueType": "servicebus",
+      "requestQueue": "[variables('_serviceBusQueueOptions').requestQueue]",
+      "responseQueue": "[variables('_serviceBusQueueOptions').responseQueue]"
     },
-    "QueueOptionsDefault": {
+    "_1.QueueOptionsDefault": {
       "queueType": "servicebus",
       "requestQueue": "requests",
       "responseQueue": "responses",
       "messageLease": 60,
       "queryInterval": 500
+    },
+    "ServiceBusQueueOptionsDefault": {
+      "sku": "Standard",
+      "skuCapacity": null,
+      "sizeInMB": 2048,
+      "lockDuration": "PT1M",
+      "requestQueue": "[variables('_1.QueueOptionsDefault').requestQueue]",
+      "responseQueue": "[variables('_1.QueueOptionsDefault').responseQueue]"
     }
   },
   "resources": {
@@ -229,9 +282,9 @@
       "name": "[parameters('messagingRgName')]",
       "location": "[parameters('location')]",
       "tags": {
-        "QueueType": "[variables('QueueOptionsDefault').queueType]",
-        "RequestQueueName": "[parameters('requestQueueName')]",
-        "ResponseQueueName": "[parameters('responseQueueName')]"
+        "QueueType": "[variables('queueOptions').queueType]",
+        "RequestQueueName": "[variables('queueOptions').requestQueue]",
+        "ResponseQueueName": "[variables('queueOptions').responseQueue]"
       }
     },
     "computingRg": {
@@ -260,63 +313,133 @@
           "location": {
             "value": "[parameters('location')]"
           },
-          "queueNames": {
-            "value": [
-              "[parameters('requestQueueName')]",
-              "[parameters('responseQueueName')]"
-            ]
+          "options": {
+            "value": "[variables('_serviceBusQueueOptions')]"
           }
         },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "languageVersion": "2.0",
           "contentVersion": "1.0.0.0",
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.54.24096",
-              "templateHash": "11417369904781063720"
+              "version": "0.27.1.19265",
+              "templateHash": "1958284932664324668"
+            }
+          },
+          "definitions": {
+            "_1.ServiceBusQueueSku": {
+              "type": "string",
+              "allowedValues": [
+                "Basic",
+                "Premium",
+                "Standard"
+              ],
+              "metadata": {
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "types.bicep"
+                }
+              }
+            },
+            "ServiceBusQueueOptions": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "$ref": "#/definitions/_1.ServiceBusQueueSku",
+                  "nullable": true
+                },
+                "skuCapacity": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "sizeInMB": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "lockDuration": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "requestQueue": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "responseQueue": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "metadata": {
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "types.bicep"
+                }
+              }
             }
           },
           "parameters": {
             "name": {
               "type": "string"
             },
-            "queueNames": {
-              "type": "array",
-              "defaultValue": []
-            },
             "location": {
               "type": "string",
               "defaultValue": "[resourceGroup().location]"
+            },
+            "options": {
+              "$ref": "#/definitions/ServiceBusQueueOptions",
+              "nullable": true
             }
           },
-          "resources": [
-            {
+          "variables": {
+            "_options": "[union(variables('ServiceBusQueueOptionsDefault'), coalesce(parameters('options'), createObject()))]",
+            "queueNames": [
+              "[variables('_options').requestQueue]",
+              "[variables('_options').responseQueue]"
+            ],
+            "_1.QueueOptionsDefault": {
+              "queueType": "servicebus",
+              "requestQueue": "requests",
+              "responseQueue": "responses",
+              "messageLease": 60,
+              "queryInterval": 500
+            },
+            "ServiceBusQueueOptionsDefault": {
+              "sku": "Standard",
+              "skuCapacity": null,
+              "sizeInMB": 2048,
+              "lockDuration": "PT1M",
+              "requestQueue": "[variables('_1.QueueOptionsDefault').requestQueue]",
+              "responseQueue": "[variables('_1.QueueOptionsDefault').responseQueue]"
+            }
+          },
+          "resources": {
+            "servicebus::queues": {
               "copy": {
                 "name": "queues",
-                "count": "[length(parameters('queueNames'))]"
+                "count": "[length(variables('queueNames'))]"
               },
               "type": "Microsoft.ServiceBus/namespaces/queues",
               "apiVersion": "2022-10-01-preview",
-              "name": "[format('{0}/{1}', parameters('name'), parameters('queueNames')[copyIndex()])]",
+              "name": "[format('{0}/{1}', parameters('name'), variables('queueNames')[copyIndex()])]",
               "properties": {
-                "lockDuration": "PT1M",
-                "maxSizeInMegabytes": 2048
+                "lockDuration": "[variables('_options').lockDuration]",
+                "maxSizeInMegabytes": "[variables('_options').sizeInMB]"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('name'))]"
+                "servicebus"
               ]
             },
-            {
+            "servicebus": {
               "type": "Microsoft.ServiceBus/namespaces",
               "apiVersion": "2022-10-01-preview",
               "name": "[parameters('name')]",
               "location": "[parameters('location')]",
               "sku": {
-                "name": "Standard"
+                "name": "[variables('_options').sku]",
+                "capacity": "[variables('_options').skuCapacity]"
               }
             }
-          ]
+          }
         }
       },
       "dependsOn": [
@@ -347,8 +470,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.54.24096",
-              "templateHash": "10017708045169757692"
+              "version": "0.27.1.19265",
+              "templateHash": "16493246762927877290"
             }
           },
           "parameters": {
@@ -447,8 +570,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.54.24096",
-              "templateHash": "9309129220520148804"
+              "version": "0.27.1.19265",
+              "templateHash": "9582114359458205782"
             }
           },
           "definitions": {
@@ -770,8 +893,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.26.54.24096",
-                      "templateHash": "16146252697069994432"
+                      "version": "0.27.1.19265",
+                      "templateHash": "7502021524236536312"
                     }
                   },
                   "definitions": {
