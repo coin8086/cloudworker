@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace CloudWorker.Client.SDK.ARM;
@@ -72,6 +73,47 @@ public class NodeConfig : IValidatable
         if (MemInGB.HasValue && MemInGB.Value < 1)
         {
             throw new ValidationError($"MemInGB is {MemInGB}, less than 1!");
+        }
+    }
+}
+
+
+public enum ServiceBusQueueSku
+{
+    Basic,
+    Standard,
+    Premium
+}
+
+public class ServiceBusQueueOptions : IValidatable
+{
+    public readonly int[] ValidSkuCapacity = [1, 2, 4, 8, 16];
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public ServiceBusQueueSku? Sku { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? SkuCapacity {  get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? SizeInMB {  get; set; }
+
+    //TODO: Validate the field's format
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? LockDuration {  get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? RequestQueue {  get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ResponseQueue { get; set; }
+
+    public void Validate()
+    {
+        if (SkuCapacity != null && !ValidSkuCapacity.Any(e => e == SkuCapacity))
+        {
+            throw new ValidationError($"Invalid value {SkuCapacity} for SkuCapacity.");
         }
     }
 }

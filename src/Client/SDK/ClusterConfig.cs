@@ -66,6 +66,9 @@ public class ClusterConfig : IValidatable
     [ValidateObject]
     public NodeConfig? NodeConfig { get; set; }
 
+    [ValidateObject]
+    public ServiceBusQueueOptions? ServiceBusQueueOptions { get; set; }
+
     public void Validate()
 #pragma warning disable CS8774 // Member must have a non-null value when exiting.
     {
