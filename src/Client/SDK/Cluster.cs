@@ -168,7 +168,7 @@ public class Cluster : ICluster
             ServiceBusName = ArmParamValue<string>.Create(ServiceBusName),
             AppInsightsName = ArmParamValue<string>.Create(AppInsightsName),
             NodeCount = ArmParamValue<int>.Create(_clusterConfig.NodeCount),
-            NodeConfig = ArmParamValue<NodeConfig>.Create(_clusterConfig.NodeConfig),
+            NodeOptions = ArmParamValue<NodeOptions>.Create(_clusterConfig.NodeOptions),
             ServiceBusQueueOptions = ArmParamValue<ARM.ServiceBusQueueOptions>.Create(_clusterConfig.ServiceBusQueueOptions)
         };
         return parameters;

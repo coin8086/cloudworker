@@ -59,5 +59,5 @@ public class StarterParameters
     public ArmParamValue<ServiceBusQueueOptions>? ServiceBusQueueOptions { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public ArmParamValue<NodeConfig>? NodeConfig { get; set; }
+    public ArmParamValue<NodeOptions>? NodeOptions { get; set; }
 }

@@ -65,17 +65,15 @@ type FileShareMountType = {
 @export()
 type FileShareMountArrayType = FileShareMountType[]
 
-//TODO: Rename it to NodeOptions
 @export()
-type NodeConfig = {
+type NodeOptions = {
   cpuCount: int?
   memInGB: int?
   image: string?
 }
 
-//TODO: Rename it to NodeOptionsDefault
 @export()
-var NodeConfigDefault = {
+var NodeOptionsDefault = {
   cpuCount: 1
   memInGB: 1
   image: 'leizacrdev.azurecr.io/soa/servicehost:1.5-ubuntu22'

@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.27.1.19265",
-      "templateHash": "1569385189359780535"
+      "templateHash": "4609582295316101124"
     }
   },
   "definitions": {
@@ -134,7 +134,7 @@
         }
       }
     },
-    "NodeConfig": {
+    "NodeOptions": {
       "type": "object",
       "properties": {
         "cpuCount": {
@@ -209,8 +209,8 @@
       "type": "string",
       "defaultValue": "southeastasia"
     },
-    "nodeConfig": {
-      "$ref": "#/definitions/NodeConfig",
+    "nodeOptions": {
+      "$ref": "#/definitions/NodeOptions",
       "nullable": true
     },
     "nodeCount": {
@@ -526,8 +526,8 @@
         },
         "mode": "Incremental",
         "parameters": {
-          "nodeConfig": {
-            "value": "[parameters('nodeConfig')]"
+          "nodeOptions": {
+            "value": "[parameters('nodeOptions')]"
           },
           "count": {
             "value": "[parameters('nodeCount')]"
@@ -571,7 +571,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.27.1.19265",
-              "templateHash": "9582114359458205782"
+              "templateHash": "7544341726283004803"
             }
           },
           "definitions": {
@@ -698,7 +698,7 @@
                 }
               }
             },
-            "NodeConfig": {
+            "NodeOptions": {
               "type": "object",
               "properties": {
                 "cpuCount": {
@@ -769,8 +769,8 @@
             }
           },
           "parameters": {
-            "nodeConfig": {
-              "$ref": "#/definitions/NodeConfig",
+            "nodeOptions": {
+              "$ref": "#/definitions/NodeOptions",
               "nullable": true
             },
             "count": {
@@ -854,8 +854,8 @@
                 },
                 "mode": "Incremental",
                 "parameters": {
-                  "nodeConfig": {
-                    "value": "[parameters('nodeConfig')]"
+                  "nodeOptions": {
+                    "value": "[parameters('nodeOptions')]"
                   },
                   "count": {
                     "value": "[parameters('count')]"
@@ -894,7 +894,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.27.1.19265",
-                      "templateHash": "7502021524236536312"
+                      "templateHash": "4344796610062655291"
                     }
                   },
                   "definitions": {
@@ -1021,7 +1021,7 @@
                         }
                       }
                     },
-                    "NodeConfig": {
+                    "NodeOptions": {
                       "type": "object",
                       "properties": {
                         "cpuCount": {
@@ -1108,8 +1108,8 @@
                       "type": "string",
                       "defaultValue": "southeastasia"
                     },
-                    "nodeConfig": {
-                      "$ref": "#/definitions/NodeConfig",
+                    "nodeOptions": {
+                      "$ref": "#/definitions/NodeOptions",
                       "nullable": true
                     },
                     "queueOptions": {
@@ -1141,7 +1141,7 @@
                     }
                   },
                   "variables": {
-                    "_nodeConfig": "[union(variables('NodeConfigDefault'), coalesce(parameters('nodeConfig'), createObject()))]",
+                    "_nodeOptions": "[union(variables('NodeOptionsDefault'), coalesce(parameters('nodeOptions'), createObject()))]",
                     "_queueOptions": "[union(variables('QueueOptionsDefault'), parameters('queueOptions'))]",
                     "serviceMap": {
                       "cgi": "/services/cgi/CloudWorker.Services.CGI.dll",
@@ -1197,7 +1197,7 @@
                     "fileShareVolumes": "[map(parameters('fileShares'), lambda('e', createObject('name', lambdaVariables('e').name, 'azureFile', createObject('shareName', lambdaVariables('e').fileShareName, 'storageAccountName', lambdaVariables('e').storageAccountName, 'storageAccountKey', lambdaVariables('e').storageAccountKey))))]",
                     "volumeMounts": "[concat(variables('gitRepoMounts'), variables('fileShareMounts'))]",
                     "volumes": "[concat(variables('gitRepoVolumes'), variables('fileShareVolumes'))]",
-                    "NodeConfigDefault": {
+                    "NodeOptionsDefault": {
                       "cpuCount": 1,
                       "memInGB": 1,
                       "image": "leizacrdev.azurecr.io/soa/servicehost:1.5-ubuntu22"
@@ -1226,12 +1226,12 @@
                           {
                             "name": "servicehost",
                             "properties": {
-                              "image": "[variables('_nodeConfig').image]",
+                              "image": "[variables('_nodeOptions').image]",
                               "environmentVariables": "[variables('envVars')]",
                               "resources": {
                                 "requests": {
-                                  "cpu": "[variables('_nodeConfig').cpuCount]",
-                                  "memoryInGB": "[variables('_nodeConfig').memInGB]"
+                                  "cpu": "[variables('_nodeOptions').cpuCount]",
+                                  "memoryInGB": "[variables('_nodeOptions').memInGB]"
                                 }
                               },
                               "volumeMounts": "[variables('volumeMounts')]"

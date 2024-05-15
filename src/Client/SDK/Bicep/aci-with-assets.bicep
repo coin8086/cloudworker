@@ -1,6 +1,6 @@
-import { NodeConfig, ServiceType, QueueOptionsType, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType } from 'types.bicep'
+import { NodeOptions, ServiceType, QueueOptionsType, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType } from 'types.bicep'
 
-param nodeConfig NodeConfig?
+param nodeOptions NodeOptions?
 param count int = 10
 param offset int = 0
 param location string = resourceGroup().location
@@ -39,7 +39,7 @@ var appInsightsConnectionString = useMonitor ? monitor.properties.ConnectionStri
 module aci 'aci.bicep' = {
   name: 'aci-deployment'
   params: {
-    nodeConfig: nodeConfig
+    nodeOptions: nodeOptions
     count: count
     offset: offset
     location: location

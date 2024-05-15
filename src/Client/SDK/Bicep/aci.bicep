@@ -1,4 +1,4 @@
-import { NodeConfig, NodeConfigDefault, ServiceType, QueueOptionsType, QueueOptionsDefault, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType } from 'types.bicep'
+import { NodeOptions, NodeOptionsDefault, ServiceType, QueueOptionsType, QueueOptionsDefault, EnvionmentVariableArrayType, GitRepoMountArrayType, FileShareMountArrayType } from 'types.bicep'
 
 /*
  * Container
@@ -8,8 +8,8 @@ param prefix string = 'servicehost'
 param count int = 1
 param offset int = 0
 param location string = 'southeastasia'
-param nodeConfig NodeConfig?
-var _nodeConfig = union(NodeConfigDefault, nodeConfig ?? {})
+param nodeOptions NodeOptions?
+var _nodeOptions = union(NodeOptionsDefault, nodeOptions ?? {})
 
 /*
  * Queue
@@ -129,12 +129,12 @@ resource containers 'Microsoft.ContainerInstance/containerGroups@2023-05-01' = [
         {
           name: 'servicehost'
           properties: {
-            image: _nodeConfig.image
+            image: _nodeOptions.image
             environmentVariables: envVars
             resources: {
               requests: {
-                cpu: _nodeConfig.cpuCount
-                memoryInGB: _nodeConfig.memInGB
+                cpu: _nodeOptions.cpuCount
+                memoryInGB: _nodeOptions.memInGB
               }
             }
             volumeMounts: volumeMounts

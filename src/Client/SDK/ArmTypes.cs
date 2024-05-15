@@ -53,7 +53,7 @@ public class FileShareMount : IValidatable
     }
 }
 
-public class NodeConfig : IValidatable
+public class NodeOptions : IValidatable
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? CpuCount { get; set; }

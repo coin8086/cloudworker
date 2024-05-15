@@ -64,7 +64,7 @@ public class ClusterConfig : IValidatable
     public int? NodeCount { get; set; }
 
     [ValidateObject]
-    public NodeConfig? NodeConfig { get; set; }
+    public NodeOptions? NodeOptions { get; set; }
 
     [ValidateObject]
     public ServiceBusQueueOptions? ServiceBusQueueOptions { get; set; }
