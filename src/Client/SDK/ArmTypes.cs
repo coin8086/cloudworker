@@ -99,9 +99,10 @@ public class ServiceBusQueueOptions : IValidatable
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? SizeInMB {  get; set; }
 
-    //TODO: Validate the field's format
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? LockDuration {  get; set; }
+    //NOTE: The default value is "PT1M", meaning 60 seconds. And the ACI's queueOptions.messageLease (not typed in C# yet)
+    //must be equal to the LockDuration. Since messageLease is not configurable in SDK, neither should LockDuration be.
+    //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    //public string? LockDuration {  get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? RequestQueue {  get; set; }
