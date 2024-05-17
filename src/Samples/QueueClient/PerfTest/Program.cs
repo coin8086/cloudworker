@@ -173,6 +173,7 @@ The connection string can also be set by environment variable {1}.
             builder.AddFilter("Default", options.LogLevel);
             builder.AddSimpleConsole(options =>
             {
+                options.UseUtcTimestamp = true;
                 options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ ";
             });
         });

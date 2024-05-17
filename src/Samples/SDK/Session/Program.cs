@@ -249,6 +249,7 @@ Usage:
             builder.ClearProviders();
             builder.AddSimpleConsole(options =>
             {
+                options.UseUtcTimestamp = true;
                 options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ ";
             });
             if (DebugOut)
