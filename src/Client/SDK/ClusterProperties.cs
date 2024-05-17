@@ -2,9 +2,33 @@
 
 namespace CloudWorker.Client.SDK;
 
-#pragma warning disable CS8774 // Member must have a non-null value when exiting.
+public interface IServiceProperties
+{
+    public string Service { get; }
+}
 
-public class ServiceProperties : IValidatable
+public interface IQueueProperties
+{
+    public string QueueType { get; }
+
+    public string ConnectionString { get; }
+
+    public string RequestQueueName { get; }
+
+    public string ResponseQueueName { get; }
+}
+
+public interface IClusterProperties
+{
+    public IServiceProperties ServiceProperties { get; }
+
+    public IQueueProperties QueueProperties { get; }
+}
+
+#pragma warning disable CS8774 // Member must have a non-null value when exiting.
+#pragma warning disable CS8766 // Nullability of reference types in return type of doesn't match implicitly implemented member (possibly because of nullability attributes).
+
+public class ServiceProperties : IServiceProperties, IValidatable
 {
     [Required]
     public string? Service {  get; set; }
@@ -16,7 +40,7 @@ public class ServiceProperties : IValidatable
     }
 }
 
-public class QueueProperties : IValidatable
+public class QueueProperties : IQueueProperties, IValidatable
 {
     [Required]
     public string? QueueType { get; set; }
@@ -37,15 +61,15 @@ public class QueueProperties : IValidatable
     }
 }
 
-public class ClusterProperties : IValidatable
+public class ClusterProperties : IClusterProperties, IValidatable
 {
     [Required]
     [ValidateObject]
-    public ServiceProperties? ServiceProperties { get; set; }
+    public IServiceProperties? ServiceProperties { get; set; }
 
     [Required]
     [ValidateObject]
-    public QueueProperties? QueueProperties { get; set; }
+    public IQueueProperties? QueueProperties { get; set; }
 
     [MemberNotNull(nameof(ServiceProperties), nameof(QueueProperties))]
     public void Validate()
@@ -55,3 +79,4 @@ public class ClusterProperties : IValidatable
 }
 
 #pragma warning restore CS8774 // Member must have a non-null value when exiting.
+#pragma warning restore CS8766 // Nullability of reference types in return type of doesn't match implicitly implemented member (possibly because of nullability attributes).

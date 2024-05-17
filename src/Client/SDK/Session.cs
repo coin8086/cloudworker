@@ -12,8 +12,7 @@ public interface ISession
 {
     string Id { get; }
 
-    //TODO: Some way to return a immutable/readonly object?
-    ClusterProperties ClusterProperties { get; }
+    IClusterProperties ClusterProperties { get; }
 
     IMessageQueue CreateSender();
 
@@ -28,11 +27,11 @@ public class Session : ISession
 
     private ICluster _cluster;
 
-    private ClusterProperties? _properties;
+    private IClusterProperties? _properties;
 
     private ILoggerFactory? _loggerFactory;
 
-    public ClusterProperties ClusterProperties => _properties ??
+    public IClusterProperties ClusterProperties => _properties ??
         throw new InvalidOperationException("GetClusterPropertiesAsync must be called before getting ClusterProperties.");
 
     private Session(ICluster cluster, ILoggerFactory? loggerFactory = null)
@@ -44,7 +43,6 @@ public class Session : ISession
     private async Task GetClusterPropertiesAsync()
     {
         _properties = await _cluster.GetPropertiesAsync();
-        _properties.Validate();
     }
 
     //TODO: Support Storage queue

@@ -28,8 +28,7 @@ public interface ICluster
 
     Task DestroyAsync(CancellationToken token = default);
 
-    //TODO: Or: Task<IDictionary<string, string>> GetPropertiesAsync() ?
-    Task<ClusterProperties> GetPropertiesAsync(CancellationToken token = default);
+    Task<IClusterProperties> GetPropertiesAsync(CancellationToken token = default);
 }
 
 public class Cluster : ICluster
@@ -214,7 +213,7 @@ public class Cluster : ICluster
     }
 
     //TODO: Get property for monitoring/AppInsights URL
-    public async Task<ClusterProperties> GetPropertiesAsync(CancellationToken token = default)
+    public async Task<IClusterProperties> GetPropertiesAsync(CancellationToken token = default)
     {
         try
         {
@@ -225,6 +224,9 @@ public class Cluster : ICluster
             var sTask = GetServicePropertiesAsync(sub, token);
 
             await Task.WhenAll(qTask, sTask);
+
+            qTask.Result.Validate();
+            sTask.Result.Validate();
 
             return new ClusterProperties()
             {
