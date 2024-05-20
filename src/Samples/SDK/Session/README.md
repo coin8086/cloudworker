@@ -4,7 +4,7 @@ The sample shows how to use `Session` class to create, update and destroy a syst
 
 ## Configuration
 
-There're two configuration files for the sample, `SessionConfig.json` and `GRpcSessionConfig.json`, for clusters of Echo service and GRpc service separately. You need to choose one and fill its required fields (those that are empty, like `SubScriptionId`).
+There're two configuration files for the sample, `EchoSessionConfig.json` and `GRpcSessionConfig.json`, for clusters of Echo service and GRpc service separately. You need to choose one and fill its required fields (those that are empty, like `SubScriptionId`).
 
 For `GRpcSessionConfig.json`, you also need a file share in Azure Storage for your gRPC service files. The sample uses a simple gRPC service [`GRpcHello`](../../../Services/GRpc/GRpcHello/). You need to build it (for Linux, since the default image for computing node is Linux) and upload the published files to a file share. Then fill the `StorageAccountName`, `StorageAccountKey` and `FileShareName` with your own values. Optionally, you can change `MountPath` (where your file share will be mounted on each computing node) and the environment variable `GRPC_ServerFileName` (where the gRPC server executable is).
 
@@ -18,7 +18,7 @@ Then you upload the published files (in directory like "GRpcHello/bin/Release/ne
 
 ## Run
 
-Create a session with a configuration file `SessionConfig.json` or `GRpcSessionConfig.json`, like
+Create a session with a configuration file `EchoSessionConfig.json` or `GRpcSessionConfig.json`, like
 
 ```bash
 dotnet run -- --create --config GRpcSessionConfig.json
