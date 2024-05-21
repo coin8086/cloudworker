@@ -189,7 +189,7 @@ Usage:
             {
                 var reply = task.Result;
                 Console.WriteLine(reply.Content);
-                reply.DeleteAsync().Wait();
+                return reply.DeleteAsync();
             });
         }
         Task.WaitAll(tasks);
@@ -234,7 +234,7 @@ Usage:
                 {
                     Console.WriteLine(reply.GRpcMessage);
                 }
-                reply.QueueMessage!.DeleteAsync().Wait();
+                return reply.QueueMessage!.DeleteAsync();
             });
         }
         Task.WaitAll(tasks);

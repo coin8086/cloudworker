@@ -175,7 +175,7 @@ The connection string can also be set by environment variable {1}.
             {
                 var reply = task.Result;
                 Console.WriteLine(reply.Content);
-                reply.DeleteAsync().Wait();
+                return reply.DeleteAsync();
             });
         }
 
@@ -217,7 +217,7 @@ The connection string can also be set by environment variable {1}.
                 {
                     Console.WriteLine(reply.GRpcMessage);
                 }
-                reply.QueueMessage!.DeleteAsync().Wait();
+                return reply.QueueMessage!.DeleteAsync();
             });
         }
 
