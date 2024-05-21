@@ -174,24 +174,26 @@ Usage:
     {
         Console.WriteLine($"Send message \"{msg}\" {count} time(s).");
         var sender = session.CreateSender();
-        var tasks = new Task[count];
+        var sendingTasks = new Task[count];
         for (var i = 0; i < count; i++)
         {
-            tasks[i] = sender.SendAsync(msg);
+            sendingTasks[i] = sender.SendAsync(msg);
         }
-        Task.WaitAll(tasks);
+        Task.WaitAll(sendingTasks);
 
         Console.WriteLine("Receive messages");
         var receiver = session.CreateReceiver();
+        var receivingTasks = new Task[count];
         for (var i = 0; i < count; i++)
         {
-            tasks[i] = receiver.WaitAsync().ContinueWith(task =>
+            receivingTasks[i] = receiver.WaitAsync().ContinueWith(task =>
             {
                 var reply = task.Result;
                 Console.WriteLine(reply.Content);
                 return reply.DeleteAsync();
             });
         }
+        var tasks = sendingTasks.Concat(receivingTasks).ToArray();
         Task.WaitAll(tasks);
     }
 
@@ -207,23 +209,25 @@ Usage:
         Console.WriteLine($"Send message \"{msg}\" {count} time(s).");
 
         var sender = session.CreateSender();
-        var tasks = new Task[count];
+        var sendingTasks = new Task[count];
         var gMethod = GRpcHello.Greeter.Descriptor.FindMethodByName("SayHello");
         var gMsg = new GRpcHello.HelloRequest() { Name = msg };
         var request = new GRpcRequest(gMethod, gMsg);
 
         for (var i = 0; i < count; i++)
         {
-            tasks[i] = sender.SendGRpcMessageAsync(request);
+            sendingTasks[i] = sender.SendGRpcMessageAsync(request);
         }
-        Task.WaitAll(tasks);
+        Task.WaitAll(sendingTasks);
 
         Console.WriteLine("Receive messages");
 
         var receiver = session.CreateReceiver();
+        var receivingTasks = new Task[count];
+
         for (var i = 0; i < count; i++)
         {
-            tasks[i] = receiver.WaitGRpcMessageAsync<GRpcHello.HelloReply>().ContinueWith(task =>
+            receivingTasks[i] = receiver.WaitGRpcMessageAsync<GRpcHello.HelloReply>().ContinueWith(task =>
             {
                 var reply = task.Result;
                 if (reply.Error != null)
@@ -237,6 +241,7 @@ Usage:
                 return reply.QueueMessage!.DeleteAsync();
             });
         }
+        var tasks = sendingTasks.Concat(receivingTasks).ToArray();
         Task.WaitAll(tasks);
     }
 

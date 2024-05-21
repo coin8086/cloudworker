@@ -163,9 +163,6 @@ The connection string can also be set by environment variable {1}.
             sendingTasks[i] = sender.SendAsync(options.Message!);
         }
 
-        //Optionally wait before receiving
-        //Task.WaitAll(sendingTasks);
-
         Console.WriteLine("Receiving messages");
         var receiver = CreateReceiver(options);
         var receivingTasks = new Task[options.Count];
@@ -196,9 +193,6 @@ The connection string can also be set by environment variable {1}.
         {
             sendingTasks[i] = sender.SendGRpcMessageAsync(request);
         }
-
-        //Optionally wait before receiving
-        //Task.WaitAll(sendingTasks);
 
         Console.WriteLine("Receiving gRPC messages");
 
