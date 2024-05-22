@@ -3,16 +3,19 @@ using Google.Protobuf;
 
 namespace CloudWorker.Services.GRpc.Client;
 
-//TODO: Make Response<T> implement IQueueMessage?
-public class Response<T> : ResponseMessage where T : IMessage<T>, new()
+public class Response<T> : ResponseMessage, IQueueMessage where T : IMessage<T>, new()
 {
-    public IQueueMessage? QueueMessage { get; private set; }
+    private IQueueMessage? _queueMessage;
 
     public T? GRpcMessage { get; private set; }
 
+    public string Id => _queueMessage?.Id ?? string.Empty;
+
+    public string Content => _queueMessage?.Content ?? string.Empty;
+
     public Response(IQueueMessage queueMessage) : this(queueMessage.Content)
     {
-        QueueMessage = queueMessage;
+        _queueMessage = queueMessage;
     }
 
     public Response(string value)
@@ -25,6 +28,24 @@ public class Response<T> : ResponseMessage where T : IMessage<T>, new()
         {
             GRpcMessage = ParseGRpcMessageFrom(Payload);
         }
+    }
+
+    public Task RenewLeaseAsync()
+    {
+        var qmsg = _queueMessage ?? throw new InvalidOperationException();
+        return qmsg.RenewLeaseAsync();
+    }
+
+    public Task ReturnAsync()
+    {
+        var qmsg = _queueMessage ?? throw new InvalidOperationException();
+        return qmsg.ReturnAsync();
+    }
+
+    public Task DeleteAsync()
+    {
+        var qmsg = _queueMessage ?? throw new InvalidOperationException();
+        return qmsg.DeleteAsync();
     }
 
     private static T ParseGRpcMessageFrom(string message)

@@ -238,7 +238,7 @@ Usage:
                 {
                     Console.WriteLine(reply.GRpcMessage);
                 }
-                await reply.QueueMessage!.DeleteAsync();
+                await reply.DeleteAsync();
             });
         }
         var tasks = sendingTasks.Concat(receivingTasks).ToArray();

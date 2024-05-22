@@ -211,7 +211,7 @@ The connection string can also be set by environment variable {1}.
                 {
                     Console.WriteLine(reply.GRpcMessage);
                 }
-                await reply.QueueMessage!.DeleteAsync();
+                await reply.DeleteAsync();
             });
         }
 
