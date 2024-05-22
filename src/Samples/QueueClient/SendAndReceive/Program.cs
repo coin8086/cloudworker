@@ -168,11 +168,11 @@ The connection string can also be set by environment variable {1}.
         var receivingTasks = new Task[options.Count];
         for (var i = 0; i < options.Count; i++)
         {
-            receivingTasks[i] = receiver.WaitAsync().ContinueWith(task =>
+            receivingTasks[i] = Task.Run(async () =>
             {
-                var reply = task.Result;
-                Console.WriteLine(reply.Content);
-                return reply.DeleteAsync();
+                var msg = await receiver.WaitAsync();
+                Console.WriteLine(msg.Content);
+                await msg.DeleteAsync();
             });
         }
 
@@ -200,9 +200,9 @@ The connection string can also be set by environment variable {1}.
         var receivingTasks = new Task[options.Count];
         for (var i = 0; i < options.Count; i++)
         {
-            receivingTasks[i] = receiver.WaitGRpcMessageAsync<GRpcHello.HelloReply>().ContinueWith(task =>
+            receivingTasks[i] = Task.Run(async () =>
             {
-                var reply = task.Result;
+                var reply = await receiver.WaitGRpcMessageAsync<GRpcHello.HelloReply>();
                 if (reply.Error != null)
                 {
                     Console.WriteLine($"Error: {reply.Error}");
@@ -211,7 +211,7 @@ The connection string can also be set by environment variable {1}.
                 {
                     Console.WriteLine(reply.GRpcMessage);
                 }
-                return reply.QueueMessage!.DeleteAsync();
+                await reply.QueueMessage!.DeleteAsync();
             });
         }
 

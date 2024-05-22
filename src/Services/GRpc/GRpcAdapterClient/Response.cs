@@ -3,6 +3,7 @@ using Google.Protobuf;
 
 namespace CloudWorker.Services.GRpc.Client;
 
+//TODO: Make Response<T> implement IQueueMessage?
 public class Response<T> : ResponseMessage where T : IMessage<T>, new()
 {
     public IQueueMessage? QueueMessage { get; private set; }

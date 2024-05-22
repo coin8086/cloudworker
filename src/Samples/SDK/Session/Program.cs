@@ -186,11 +186,11 @@ Usage:
         var receivingTasks = new Task[count];
         for (var i = 0; i < count; i++)
         {
-            receivingTasks[i] = receiver.WaitAsync().ContinueWith(task =>
+            receivingTasks[i] = Task.Run(async () =>
             {
-                var reply = task.Result;
+                var reply = await receiver.WaitAsync();
                 Console.WriteLine(reply.Content);
-                return reply.DeleteAsync();
+                await reply.DeleteAsync();
             });
         }
         var tasks = sendingTasks.Concat(receivingTasks).ToArray();
@@ -227,9 +227,9 @@ Usage:
 
         for (var i = 0; i < count; i++)
         {
-            receivingTasks[i] = receiver.WaitGRpcMessageAsync<GRpcHello.HelloReply>().ContinueWith(task =>
+            receivingTasks[i] = Task.Run(async () =>
             {
-                var reply = task.Result;
+                var reply = await receiver.WaitGRpcMessageAsync<GRpcHello.HelloReply>();
                 if (reply.Error != null)
                 {
                     Console.WriteLine($"Error: {reply.Error}");
@@ -238,7 +238,7 @@ Usage:
                 {
                     Console.WriteLine(reply.GRpcMessage);
                 }
-                return reply.QueueMessage!.DeleteAsync();
+                await reply.QueueMessage!.DeleteAsync();
             });
         }
         var tasks = sendingTasks.Concat(receivingTasks).ToArray();
