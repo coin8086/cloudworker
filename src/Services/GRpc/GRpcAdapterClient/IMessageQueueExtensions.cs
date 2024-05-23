@@ -14,14 +14,14 @@ public static class IMessageQueueExtensions
     public static async Task<IReadOnlyList<Response<T>>> WaitGRpcMessagesAsync<T>(this IMessageQueue queue, int batchSize, CancellationToken cancel = default)
         where T : IMessage<T>, new()
     {
-        var results = await queue.WaitBatchAsync(batchSize, cancel);
+        var results = await queue.WaitBatchAsync(batchSize, cancel).ConfigureAwait(false);
         return results.Select(qMsg => new Response<T>(qMsg)).ToImmutableList();
     }
 
     public static async Task<Response<T>> WaitGRpcMessageAsync<T>(this IMessageQueue queue, CancellationToken cancel = default)
         where T : IMessage<T>, new()
     {
-        var results = await queue.WaitGRpcMessagesAsync<T>(1, cancel);
+        var results = await queue.WaitGRpcMessagesAsync<T>(1, cancel).ConfigureAwait(false);
         return results[0];
     }
 }
