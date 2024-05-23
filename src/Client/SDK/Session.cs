@@ -42,7 +42,7 @@ public class Session : ISession
 
     private async Task GetClusterPropertiesAsync()
     {
-        _properties = await _cluster.GetPropertiesAsync();
+        _properties = await _cluster.GetPropertiesAsync().ConfigureAwait(false);
     }
 
     //TODO: Support Storage queue
@@ -83,9 +83,9 @@ public class Session : ISession
     {
         var logger = loggerFactory?.CreateLogger<Cluster>();
         var cluster = new Cluster(credential, sessionConfig, sessionId, logger);
-        await cluster.CreateOrUpdateAsync(token);
+        await cluster.CreateOrUpdateAsync(token).ConfigureAwait(false);
         var session = new Session(cluster, loggerFactory);
-        await session.GetClusterPropertiesAsync();
+        await session.GetClusterPropertiesAsync().ConfigureAwait(false);
         return session;
     }
 
@@ -94,9 +94,9 @@ public class Session : ISession
     {
         var logger = loggerFactory?.CreateLogger<Cluster>();
         var cluster = new Cluster(credential, sessionId, logger);
-        await cluster.ValidateAsync(token);
+        await cluster.ValidateAsync(token).ConfigureAwait(false);
         var session = new Session(cluster, loggerFactory);
-        await session.GetClusterPropertiesAsync();
+        await session.GetClusterPropertiesAsync().ConfigureAwait(false);
         return session;
     }
 
@@ -105,6 +105,6 @@ public class Session : ISession
     {
         var logger = loggerFactory?.CreateLogger<Cluster>();
         var cluster = new Cluster(credential, sessionId, logger);
-        await cluster.DestroyAsync(token);
+        await cluster.DestroyAsync(token).ConfigureAwait(false);
     }
 }

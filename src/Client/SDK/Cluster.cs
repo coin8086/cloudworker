@@ -63,7 +63,7 @@ public class Cluster : ICluster
     private const string ServiceTag = "Service";
 
     //To create a new cluster
-    public Cluster(TokenCredential credential, ClusterConfig clusterConfig, ILogger<Cluster>? logger = null) 
+    public Cluster(TokenCredential credential, ClusterConfig clusterConfig, ILogger<Cluster>? logger = null)
         : this(credential, clusterConfig, null, logger) {}
 
     //To use an existing cluster
@@ -135,7 +135,7 @@ public class Cluster : ICluster
             var deployments = sub.GetArmDeployments();
 
             _logger?.LogInformation("Create or update deployment {name}", DeploymentName);
-            var result = await deployments.CreateOrUpdateAsync(Azure.WaitUntil.Completed, DeploymentName, deploymentData, token);
+            var result = await deployments.CreateOrUpdateAsync(Azure.WaitUntil.Completed, DeploymentName, deploymentData, token).ConfigureAwait(false);
             var deployment = result.Value;
 
             _logger?.LogInformation("Finish deployment {name}", DeploymentName);
@@ -188,7 +188,7 @@ public class Cluster : ICluster
             var sub = client.GetDefaultSubscription();
             var qTask = DeleteResourceGroupAsync(sub, MessagingRgName);
             var cTask = DeleteResourceGroupAsync(sub, ComputingRgName);
-            await Task.WhenAll(qTask, cTask);
+            await Task.WhenAll(qTask, cTask).ConfigureAwait(false);
             _logger?.LogInformation("Cluster {id} is destroyed.", _clusterId);
         }
         catch (Exception ex)
@@ -203,7 +203,7 @@ public class Cluster : ICluster
         _logger?.LogInformation("Delete resource group {name} of subscription {id}", rgName, subscription.Id);
         try
         {
-            ResourceGroupResource rg = await subscription.GetResourceGroupAsync(rgName, token);
+            ResourceGroupResource rg = await subscription.GetResourceGroupAsync(rgName, token).ConfigureAwait(false);
             await rg.DeleteAsync(Azure.WaitUntil.Completed, cancellationToken: token);
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
@@ -223,7 +223,7 @@ public class Cluster : ICluster
             var qTask = GetQueuePropertiesAsync(sub, token);
             var sTask = GetServicePropertiesAsync(sub, token);
 
-            await Task.WhenAll(qTask, sTask);
+            await Task.WhenAll(qTask, sTask).ConfigureAwait(false);
 
             qTask.Result.Validate();
             sTask.Result.Validate();
@@ -243,7 +243,7 @@ public class Cluster : ICluster
 
     private async Task<QueueProperties> GetQueuePropertiesAsync(SubscriptionResource subscription, CancellationToken token = default)
     {
-        ResourceGroupResource rg = await subscription.GetResourceGroupAsync(MessagingRgName, token);
+        ResourceGroupResource rg = await subscription.GetResourceGroupAsync(MessagingRgName, token).ConfigureAwait(false);
 
         var queueProperties = new QueueProperties();
         foreach (var tag in rg.Data.Tags)
@@ -268,9 +268,9 @@ public class Cluster : ICluster
             return queueProperties;
         }
 
-        ServiceBusNamespaceResource sb = await rg.GetServiceBusNamespaceAsync(ServiceBusName, token);
-        ServiceBusNamespaceAuthorizationRuleResource rule = await sb.GetServiceBusNamespaceAuthorizationRuleAsync("RootManageSharedAccessKey", token);
-        ServiceBusAccessKeys keys = await rule.GetKeysAsync(token);
+        ServiceBusNamespaceResource sb = await rg.GetServiceBusNamespaceAsync(ServiceBusName, token).ConfigureAwait(false);
+        ServiceBusNamespaceAuthorizationRuleResource rule = await sb.GetServiceBusNamespaceAuthorizationRuleAsync("RootManageSharedAccessKey", token).ConfigureAwait(false);
+        ServiceBusAccessKeys keys = await rule.GetKeysAsync(token).ConfigureAwait(false);
         queueProperties.ConnectionString = keys.PrimaryConnectionString;
 
         return queueProperties;
@@ -278,7 +278,7 @@ public class Cluster : ICluster
 
     private async Task<ServiceProperties> GetServicePropertiesAsync(SubscriptionResource subscription, CancellationToken token = default)
     {
-        ResourceGroupResource rg = await subscription.GetResourceGroupAsync(ComputingRgName, token);
+        ResourceGroupResource rg = await subscription.GetResourceGroupAsync(ComputingRgName, token).ConfigureAwait(false);
 
         var serviceProperties = new ServiceProperties();
         foreach (var tag in rg.Data.Tags)
