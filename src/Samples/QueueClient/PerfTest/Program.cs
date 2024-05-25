@@ -220,7 +220,7 @@ The connection string can also be set by environment variable {1}.
                 Console.ReadKey(true);
                 Stop.Cancel();
             });
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Task.WhenAll(tasks);
         }
         sw.Stop();
 
@@ -270,7 +270,7 @@ The connection string can also be set by environment variable {1}.
             {
                 try
                 {
-                    await sender.SendAsync(message).ConfigureAwait(false);
+                    await sender.SendAsync(message);
                 }
                 catch (Exception ex)
                 {
@@ -306,7 +306,7 @@ The connection string can also be set by environment variable {1}.
             IReadOnlyList<IQueueMessage>? messages = null;
             try
             {
-                messages = await receiver.WaitBatchAsync(batchSize, Stop.Token).ConfigureAwait(false);
+                messages = await receiver.WaitBatchAsync(batchSize, Stop.Token);
             }
             catch (OperationCanceledException)
             {
@@ -320,7 +320,7 @@ The connection string can also be set by environment variable {1}.
                 {
                     try
                     {
-                        await message.DeleteAsync().ConfigureAwait(false);
+                        await message.DeleteAsync();
                     }
                     catch (Exception ex)
                     {
@@ -336,7 +336,7 @@ The connection string can also be set by environment variable {1}.
                 });
             }
             //TODO: No wait before receiving a new message for higher performance
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Task.WhenAll(tasks);
         }
     }
 
