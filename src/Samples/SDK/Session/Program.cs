@@ -179,7 +179,6 @@ Usage:
         {
             sendingTasks[i] = sender.SendAsync(msg);
         }
-        Task.WaitAll(sendingTasks);
 
         Console.WriteLine("Receive messages");
         var receiver = session.CreateReceiver();
@@ -218,7 +217,6 @@ Usage:
         {
             sendingTasks[i] = sender.SendGRpcMessageAsync(request);
         }
-        Task.WaitAll(sendingTasks);
 
         Console.WriteLine("Receive messages");
 
