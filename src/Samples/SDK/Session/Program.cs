@@ -277,7 +277,9 @@ Usage:
 
     static ILoggerFactory LoggerFactory => _lazyLoggerFactory.Value;
 
-    static ILogger Logger => LoggerFactory.CreateLogger<Program>();
+    static Lazy<ILogger> _lazyLogger = new Lazy<ILogger>(() => LoggerFactory.CreateLogger<Program>());
+
+    static ILogger Logger => _lazyLogger.Value;
 
     static TokenCredential Credential => new DefaultAzureCredential();
 
