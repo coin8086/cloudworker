@@ -154,9 +154,9 @@ The connection string can also be set by environment variable {1}.
     static int MessagesToReceive = 0;
     static int MessagesReceived = 0;
     static int MessagesFailedSending = 0;
-    static CancellationTokenSource Stop = new CancellationTokenSource();
-    static ILoggerFactory? _LoggerFactory;
-    static ILogger? _Logger;
+    static CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
+    static ILoggerFactory? LoggerFactory;
+    static ILogger? Logger;
 
     static async Task Main(string[] args)
     {
@@ -168,7 +168,7 @@ The connection string can also be set by environment variable {1}.
     {
         options.Validate();
 
-        _LoggerFactory = LoggerFactory.Create(builder =>
+        LoggerFactory = Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
         {
             builder.AddFilter("Default", options.LogLevel);
             builder.AddSimpleConsole(options =>
@@ -177,7 +177,7 @@ The connection string can also be set by environment variable {1}.
                 options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ ";
             });
         });
-        _Logger = _LoggerFactory.CreateLogger<Program>();
+        Logger = LoggerFactory.CreateLogger<Program>();
 
         if (options.SenderCount > 0)
         {
@@ -218,7 +218,7 @@ The connection string can also be set by environment variable {1}.
             _ = Task.Run(() =>
             {
                 Console.ReadKey(true);
-                Stop.Cancel();
+                CancellationTokenSource.Cancel();
             });
             await Task.WhenAll(tasks);
         }
@@ -251,7 +251,7 @@ The connection string can also be set by environment variable {1}.
     {
         var message = string.IsNullOrEmpty(options.Message) ?  new String('a', options.MessageLength) : options.Message;
         var batch = options.Count / options.SenderCount;
-        var logger = _LoggerFactory!.CreateLogger("Sender");
+        var logger = LoggerFactory!.CreateLogger("Sender");
         var tasks = new Task[options.SenderCount];
         for (var i = 0; i < options.SenderCount; i++)
         {
@@ -274,12 +274,12 @@ The connection string can also be set by environment variable {1}.
                 }
                 catch (Exception ex)
                 {
-                    _Logger!.LogWarning(ex, "Error in sending a message");
+                    Logger!.LogWarning(ex, "Error in sending a message");
                     Interlocked.Increment(ref MessagesFailedSending);
                     Interlocked.Decrement(ref MessagesToReceive);
                     if (MessagesReceived >= MessagesToReceive)
                     {
-                        Stop.Cancel();
+                        CancellationTokenSource.Cancel();
                     }
                 }
             });
@@ -289,7 +289,7 @@ The connection string can also be set by environment variable {1}.
 
     static Task StartReceiving(Options options)
     {
-        var logger = _LoggerFactory!.CreateLogger("Receiver");
+        var logger = LoggerFactory!.CreateLogger("Receiver");
         var tasks = new Task[options.ReceiverCount];
         for (var i = 0; i < options.ReceiverCount; i++)
         {
@@ -301,12 +301,12 @@ The connection string can also be set by environment variable {1}.
 
     static async Task StartReceiver(IMessageQueue receiver, int batchSize)
     {
-        while (!Stop.IsCancellationRequested)
+        while (!CancellationTokenSource.IsCancellationRequested)
         {
             IReadOnlyList<IQueueMessage>? messages = null;
             try
             {
-                messages = await receiver.WaitBatchAsync(batchSize, Stop.Token);
+                messages = await receiver.WaitBatchAsync(batchSize, CancellationTokenSource.Token);
             }
             catch (OperationCanceledException)
             {
@@ -324,14 +324,14 @@ The connection string can also be set by environment variable {1}.
                     }
                     catch (Exception ex)
                     {
-                        _Logger!.LogWarning(ex, "Error in deleting a message");
+                        Logger!.LogWarning(ex, "Error in deleting a message");
                     }
                     Interlocked.Increment(ref MessagesReceived);
                     //NOTE: When the initial request and/or response queues are not empty and batchSize is greater than one,
                     //then more messages than MessagesToReceive may be received.
                     if (MessagesReceived >= MessagesToReceive)
                     {
-                        Stop.Cancel();
+                        CancellationTokenSource.Cancel();
                     }
                 });
             }
