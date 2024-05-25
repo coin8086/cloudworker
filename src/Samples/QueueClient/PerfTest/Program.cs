@@ -25,15 +25,12 @@ class Program
 
         public string? Message { get; set; }
 
-        //Number of messages to send and/or receive
-        public int Count { get; set; } = 2000;
+        //Number of messages to send and/or receive. It must be dividable by both SenderCount and ReceiverCount.
+        public int Count { get; set; } = 5000;
 
         public int SenderCount { get; set; } = 10;
 
-        public int ReceiverCount { get; set; } = 100;
-
-        //Max number of messages to receive in one receive call
-        public int BatchSize { get; set; } = 1;
+        public int ReceiverCount { get; set; } = 10;
 
         //From trace(0) to none(6)
         public LogLevel LogLevel { get; set; } = LogLevel.Information;
@@ -62,9 +59,13 @@ class Program
             {
                 throw new ArgumentException("Count must be greater than 0!");
             }
-            if (SenderCount > 0 && Count < SenderCount)
+            if (SenderCount > 0 && Count % SenderCount != 0)
             {
-                throw new ArgumentException("Count cannot be less than SenderCount!");
+                throw new ArgumentException($"Count({Count}) is not dividable by SenderCount({SenderCount})!");
+            }
+            if (ReceiverCount > 0 && Count % ReceiverCount != 0)
+            {
+                throw new ArgumentException($"Count({Count}) is not dividable by ReceiverCount({ReceiverCount})!");
             }
             if (SenderCount > 0 && string.IsNullOrWhiteSpace(RequestQueueName))
             {
@@ -81,7 +82,7 @@ class Program
     {
         var usage = @"
 Usage:
-{0} --connect <queue connection string> [--queue-type <type>] [--request-queue <name>] [--response-queue <name>] [--query-interval <time in ms>] [--message-length <num in bytes>] [--message <content>] [--count <num of messages to send and/or receive>] [--senders <num>] [--receivers <num>] [--batch-size <size>] [--help | -h]
+{0} --connect <queue connection string> [--queue-type <type>] [--request-queue <name>] [--response-queue <name>] [--query-interval <time in ms>] [--message-length <num in bytes>] [--message <content>] [--count <num of messages to send and/or receive>] [--senders <num>] [--receivers <num>] [--help | -h]
 
 Note:
 The connection string can also be set by environment variable {1}.
@@ -129,9 +130,6 @@ The connection string can also be set by environment variable {1}.
                     case "--receivers":
                         options.ReceiverCount = int.Parse(args[++i]);
                         break;
-                    case "--batch-size":
-                        options.BatchSize = int.Parse(args[++i]);
-                        break;
                     case "-h":
                     case "--help":
                         ShowUsageAndExit(0);
@@ -150,7 +148,6 @@ The connection string can also be set by environment variable {1}.
         return options;
     }
 
-    //TODO: Refactor the following names
     static int MessagesToReceive = 0;
     static int MessagesReceived = 0;
     static int MessagesFailedSending = 0;
@@ -179,16 +176,7 @@ The connection string can also be set by environment variable {1}.
         });
         Logger = LoggerFactory.CreateLogger<Program>();
 
-        if (options.SenderCount > 0)
-        {
-            var messagesToSend = (options.Count / options.SenderCount) * options.SenderCount;
-            options.Count = messagesToSend;
-            MessagesToReceive = messagesToSend;
-        }
-        else
-        {
-            MessagesToReceive = options.Count;
-        }
+        MessagesToReceive = options.Count;
 
         Console.WriteLine($"Log level: {options.LogLevel}");
         Console.WriteLine($"Messages to send and/or receive: {options.Count}");
@@ -197,7 +185,6 @@ The connection string can also be set by environment variable {1}.
         Console.WriteLine($"Sender count: {options.SenderCount}");
         Console.WriteLine($"Send to: {options.RequestQueueName}");
         Console.WriteLine($"Receiver count: {options.ReceiverCount}");
-        Console.WriteLine($"Receive batch size: {options.BatchSize}");
         Console.WriteLine($"Receive from: {options.ResponseQueueName}");
 
         var tasks = new List<Task>(2);
@@ -239,7 +226,6 @@ The connection string can also be set by environment variable {1}.
             Console.WriteLine($"Stopped at: {DateTimeOffset.UtcNow:yyyy-MM-ddTHH:mm:ss.fffZ}");
             Console.WriteLine($"Number of messages to send and/or receive: {options.Count}");
             Console.WriteLine($"Number of messages failed being sent: {MessagesFailedSending}");
-            Console.WriteLine($"Adjusted number of messages to receive: {MessagesToReceive}");
             Console.WriteLine($"Actual number of messages received: {MessagesReceived}");
             Console.WriteLine($"Time elapsed: {sw.Elapsed}");
             Console.WriteLine($"End-to-end effective throughput: {throughput:f3} messages/second");
@@ -290,54 +276,42 @@ The connection string can also be set by environment variable {1}.
     static Task StartReceiving(Options options)
     {
         var logger = LoggerFactory!.CreateLogger("Receiver");
+        var count = options.Count / options.ReceiverCount;
         var tasks = new Task[options.ReceiverCount];
         for (var i = 0; i < options.ReceiverCount; i++)
         {
             var receiver = CreateReceiver(options, logger);
-            tasks[i] = StartReceiver(receiver, options.BatchSize);
+            tasks[i] = StartReceiver(receiver, count);
         }
         return Task.WhenAll(tasks);
     }
 
-    static async Task StartReceiver(IMessageQueue receiver, int batchSize)
+    static Task StartReceiver(IMessageQueue receiver, int count)
     {
-        while (!CancellationTokenSource.IsCancellationRequested)
+        var tasks = new Task[count];
+        for (var i = 0; i < count; i++)
         {
-            IReadOnlyList<IQueueMessage>? messages = null;
-            try
+            tasks[i] = Task.Run(async () =>
             {
-                messages = await receiver.WaitBatchAsync(batchSize, CancellationTokenSource.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            var tasks = new Task[messages.Count];
-            for (var i = 0; i <  messages.Count; i++)
-            {
-                var message = messages[i];
-                tasks[i] = Task.Run(async() =>
+                var message = await receiver.WaitAsync(CancellationTokenSource.Token);
+                try
                 {
-                    try
-                    {
-                        await message.DeleteAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger!.LogWarning(ex, "Error in deleting a message");
-                    }
-                    Interlocked.Increment(ref MessagesReceived);
-                    //NOTE: When the initial request and/or response queues are not empty and batchSize is greater than one,
-                    //then more messages than MessagesToReceive may be received.
-                    if (MessagesReceived >= MessagesToReceive)
-                    {
-                        CancellationTokenSource.Cancel();
-                    }
-                });
-            }
-            //TODO: No wait before receiving a new message for higher performance
-            await Task.WhenAll(tasks);
+                    await message.DeleteAsync();
+                }
+                catch (Exception ex)
+                {
+                    Logger!.LogWarning(ex, "Error in deleting a message");
+                }
+                Interlocked.Increment(ref MessagesReceived);
+                //NOTE: When the initial request and/or response queues are not empty and batchSize is greater than one,
+                //then more messages than MessagesToReceive may be received.
+                if (MessagesReceived >= MessagesToReceive)
+                {
+                    CancellationTokenSource.Cancel();
+                }
+            }, CancellationTokenSource.Token);
         }
+        return Task.WhenAll(tasks);
     }
 
     static IMessageQueue CreateQueueClient(string queueType, string connectionString, string queueName, ILogger? logger = null)
