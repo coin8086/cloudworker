@@ -132,29 +132,29 @@ Usage:
 
     static Session CreateSession(string configFile)
     {
-        Console.WriteLine($"Create session");
+        Logger.LogInformation("Create session");
         var config = GetConfig(configFile);
         var session = Session.CreateOrUpdateAsync(Credential, config, null, LoggerFactory).Result;
-        Console.WriteLine($"Created session {session.Id}");
+        Logger.LogInformation("Created session {id}", session.Id);
         return session;
     }
 
     static Session UpdateSession(string id, string configFile)
     {
-        Console.WriteLine($"Update session {id}");
+        Logger.LogInformation("Update session {id}", id);
         var config = GetConfig(configFile);
         return Session.CreateOrUpdateAsync(Credential, config, id, LoggerFactory).Result;
     }
 
     static Session UseSession(string id)
     {
-        Console.WriteLine($"Use session {id}");
+        Logger.LogInformation("Use session {id}", id);
         return Session.GetAsync(Credential, id, LoggerFactory).Result;
     }
 
     static void DeleteSession(string id)
     {
-        Console.WriteLine($"Delete session {id}");
+        Logger.LogInformation("Delete session {id}", id);
         Session.DestroyAsync(Credential, id, LoggerFactory).Wait();
     }
 
@@ -172,7 +172,7 @@ Usage:
 
     static void SendAndReceiveMessage(Session session, string msg, int count)
     {
-        Console.WriteLine($"Send message \"{msg}\" {count} time(s).");
+        Logger.LogInformation("Send message \"{msg}\" {count} time(s).", msg, count);
         var sender = session.CreateSender();
         var sendingTasks = new Task[count];
         for (var i = 0; i < count; i++)
@@ -180,7 +180,7 @@ Usage:
             sendingTasks[i] = sender.SendAsync(msg);
         }
 
-        Console.WriteLine("Receive messages");
+        Logger.LogInformation("Receive messages");
         var receiver = session.CreateReceiver();
         var receivingTasks = new Task[count];
         for (var i = 0; i < count; i++)
@@ -188,7 +188,7 @@ Usage:
             receivingTasks[i] = Task.Run(async () =>
             {
                 var reply = await receiver.WaitAsync();
-                Console.WriteLine(reply.Content);
+                Logger.LogDebug(reply.Content);
                 await reply.DeleteAsync();
             });
         }
@@ -201,11 +201,11 @@ Usage:
         var service = session.ClusterProperties?.ServiceProperties?.Service;
         if (!"grpc".Equals(service))
         {
-            Console.WriteLine($"grpc service is expected but '{service}' is.");
+            Logger.LogError("grpc service is expected but '{service}' is.", service);
             return;
         }
 
-        Console.WriteLine($"Send message \"{msg}\" {count} time(s).");
+        Logger.LogInformation("Send message \"{msg}\" {count} time(s).", msg, count);
 
         var sender = session.CreateSender();
         var sendingTasks = new Task[count];
@@ -213,12 +213,14 @@ Usage:
         var gMsg = new GRpcHello.HelloRequest() { Name = msg };
         var request = new GRpcRequest(gMethod, gMsg);
 
+        Logger.LogDebug("Real message to send:\n{msg}", request.ToJson());
+
         for (var i = 0; i < count; i++)
         {
             sendingTasks[i] = sender.SendGRpcMessageAsync(request);
         }
 
-        Console.WriteLine("Receive messages");
+        Logger.LogInformation("Receive messages");
 
         var receiver = session.CreateReceiver();
         var receivingTasks = new Task[count];
@@ -230,11 +232,11 @@ Usage:
                 var reply = await receiver.WaitGRpcMessageAsync<GRpcHello.HelloReply>();
                 if (reply.Error != null)
                 {
-                    Console.WriteLine($"Error: {reply.Error}");
+                    Logger.LogError("Error: {error}", reply.Error);
                 }
                 else
                 {
-                    Console.WriteLine(reply.GRpcMessage);
+                    Logger.LogDebug("{msg}", reply.GRpcMessage);
                 }
                 await reply.DeleteAsync();
             });
@@ -263,6 +265,8 @@ Usage:
     });
 
     static ILoggerFactory LoggerFactory => _lazyLoggerFactory.Value;
+
+    static ILogger Logger => LoggerFactory.CreateLogger<Program>();
 
     static TokenCredential Credential => new DefaultAzureCredential();
 
