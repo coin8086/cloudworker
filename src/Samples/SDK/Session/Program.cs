@@ -172,17 +172,20 @@ Usage:
 
     static void SendAndReceiveMessage(Session session, string msg, int count)
     {
-        Logger.LogInformation("Send message \"{msg}\" {count} time(s).", msg, count);
         var sender = session.CreateSender();
+        var receiver = session.CreateReceiver();
         var sendingTasks = new Task[count];
+        var receivingTasks = new Task[count];
+        var stopWatch = new Stopwatch();
+
+        Logger.LogInformation("Send message \"{msg}\" {count} time(s).", msg, count);
+        stopWatch.Start();
         for (var i = 0; i < count; i++)
         {
             sendingTasks[i] = sender.SendAsync(msg);
         }
 
         Logger.LogInformation("Receive messages");
-        var receiver = session.CreateReceiver();
-        var receivingTasks = new Task[count];
         for (var i = 0; i < count; i++)
         {
             receivingTasks[i] = Task.Run(async () =>
@@ -194,6 +197,11 @@ Usage:
         }
         var tasks = sendingTasks.Concat(receivingTasks).ToArray();
         Task.WaitAll(tasks);
+        stopWatch.Stop();
+
+        var seconds = stopWatch.Elapsed.TotalSeconds;
+        var throughput = count / seconds;
+        Logger.LogInformation("Sent and received {count} messages in {time:f3} seconds. Throughput={throughput:f3}", count, seconds, throughput);
     }
 
     static void SendAndReceiveGRpcMessage(Session session, string msg, int count)
@@ -205,26 +213,24 @@ Usage:
             return;
         }
 
-        Logger.LogInformation("Send message \"{msg}\" {count} time(s).", msg, count);
-
         var sender = session.CreateSender();
         var sendingTasks = new Task[count];
         var gMethod = GRpcHello.Greeter.Descriptor.FindMethodByName("SayHello");
         var gMsg = new GRpcHello.HelloRequest() { Name = msg };
         var request = new GRpcRequest(gMethod, gMsg);
+        var receiver = session.CreateReceiver();
+        var receivingTasks = new Task[count];
+        var stopWatch = new Stopwatch();
 
+        Logger.LogInformation("Send message \"{msg}\" {count} time(s).", msg, count);
         Logger.LogDebug("Real message to send:\n{msg}", request.ToJson());
-
+        stopWatch.Start();
         for (var i = 0; i < count; i++)
         {
             sendingTasks[i] = sender.SendGRpcMessageAsync(request);
         }
 
         Logger.LogInformation("Receive messages");
-
-        var receiver = session.CreateReceiver();
-        var receivingTasks = new Task[count];
-
         for (var i = 0; i < count; i++)
         {
             receivingTasks[i] = Task.Run(async () =>
@@ -243,6 +249,11 @@ Usage:
         }
         var tasks = sendingTasks.Concat(receivingTasks).ToArray();
         Task.WaitAll(tasks);
+        stopWatch.Stop();
+
+        var seconds = stopWatch.Elapsed.TotalSeconds;
+        var throughput = count / seconds;
+        Logger.LogInformation("Sent and received {count} messages in {time:f3} seconds. Throughput={throughput:f3}", count, seconds, throughput);
     }
 
     static bool DebugOut { get; set; } = false;
