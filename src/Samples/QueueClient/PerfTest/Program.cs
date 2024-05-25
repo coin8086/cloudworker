@@ -26,7 +26,7 @@ class Program
         public string? Message { get; set; }
 
         //Number of messages to send and/or receive. It must be dividable by both SenderCount and ReceiverCount.
-        public int Count { get; set; } = 5000;
+        public int Count { get; set; } = 50000;
 
         public int SenderCount { get; set; } = 10;
 

@@ -14,7 +14,7 @@ Change them to match your values.
 
 Other parameters all have proper default values, among which you may want to change
 
-* `--count` Total number of messages to send and receive, default to 5000
+* `--count` Total number of messages to send and receive, default to 50000
 * `--senders` Parallel senders, default to 10
 * `--receivers` Parallel receivers, default to 10
 * `--message-length` Length of each message, default to 4 bytes
