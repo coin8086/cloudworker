@@ -52,4 +52,5 @@ dotnet run -- --delete 9fda6ae5-1210-43b9-a2da-703f0cdc253e:c49d8c24-3062-44b8-9
 
 ## Note
 
-In CloudWorker, a session is backed by a cluster composed of computing nodes and messaging queues, etc. A session ID is effectively a cluster ID. `Session` class is based on `Cluster` class, with additional methods to send and receive messages. And a session config is effectively a [cluster config](../../../Client/SDK/ClusterConfig.cs).
+* In CloudWorker, a session is backed by a cluster composed of computing nodes and messaging queues, etc. A session ID is effectively a cluster ID. `Session` class is based on `Cluster` class, with additional methods to send and receive messages. And a session config is effectively a [cluster config](../../../Client/SDK/ClusterConfig.cs).
+* This is not a sample for high performance messaging. See the sample [PerfTest](../../QueueClient/PerfTest) for such purpose.
